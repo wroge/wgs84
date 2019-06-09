@@ -45,6 +45,13 @@ Subpackages with predefined coordinate systems for a specific geodetic datum:
 - [OSGB36](https://github.com/wroge/wgs84/tree/master/osgb36)
 - [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
 
+```go
+dhdn2001.GK(3)
+etrs89.UTM(32)
+osgb36.NationalGrid()
+RGF93.CC(50)
+```
+
 Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)
 
 ## Features
