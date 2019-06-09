@@ -26,7 +26,19 @@ lon, lat, h := f(501000, 5760000, 0)
 // 9.014563 51.990665 -0.000065
 ```
 
-Examples for implementing a geodetic datum:
+Example of the realization of a geodetic datum (OSGB36):
+
+```go
+func OSGB36(sys system.System) wgs84.CoordinateReferenceSystem {
+	return wgs84.CoordinateReferenceSystem{
+		Spheroid:       spheroid.Airy(),
+		Transformation: transformation.WGS84().Helmert(446.448, -125.157, 542.06, 0.15, 0.247, 0.842, -20.489),
+		System:         sys,
+	}
+}
+```
+
+Subpackages with predefined coordinate systems for a specific geodetic datum:
 
 - [DHDN2001](https://github.com/wroge/wgs84/tree/master/dhdn2001)
 - [ETRS89](https://github.com/wroge/wgs84/tree/master/etrs89)
