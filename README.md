@@ -26,7 +26,22 @@ lon, lat, h := f(501000, 5760000, 0)
 // 9.014563 51.990665 -0.000065
 ```
 
-Example of the realization of a geodetic datum (OSGB36):
+## Features
+
+- Helmert Transformation
+- Geocentric Translation
+- Geocentric/Cartesian (XYZ)
+- Geographic (LonLat)
+- Web Mercator
+- Transverse Mercator (UTM/Gauss-Krueger)
+- (Normal) Mercator
+- Lambert Conformal Conic 1SP/2SP
+- Equidistant Conic
+- Albers Equal Area Conic
+
+## Examples
+
+Realization of a geodetic datum (OSGB36) and a specific coordinate system (NationalGrid):
 
 ```go
 func OSGB36(sys system.System) wgs84.CoordinateReferenceSystem {
@@ -36,6 +51,10 @@ func OSGB36(sys system.System) wgs84.CoordinateReferenceSystem {
 		System:         sys,
 	}
 }
+
+var NationalGrid = system.TransverseMercator(-2, 49, 0.9996012717, 400000, -100000)
+
+var EPSG27700 = OSGB36(NationalGrid)
 ```
 
 Subpackages with predefined coordinate systems for a specific geodetic datum:
@@ -49,20 +68,7 @@ Subpackages with predefined coordinate systems for a specific geodetic datum:
 dhdn2001.GK(3)
 etrs89.UTM(32)
 osgb36.NationalGrid()
-RGF93.CC(50)
+rgf93.CC(50)
 ```
 
 Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)
-
-## Features
-
-- Helmert Transformation
-- Geocentric Translation
-- Geocentric/Cartesian (XYZ)
-- Geographic (LonLat)
-- Web Mercator
-- Transverse Mercator (UTM/Gauss-Krueger)
-- (Normal) Mercator
-- Lambert Conformal Conic 1SP/2SP
-- Equidistant Conic
-- Albers Equal Area Conic
