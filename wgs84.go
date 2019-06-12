@@ -18,18 +18,11 @@ type Transformation interface {
 	FromWGS84(x0, y0, z0 float64) (x, y, z float64)
 }
 
-// The unnamed Spheroid interface is implemented by
-// github.com/wroge/wgs84/spheroid spheroid.Spheroid.
-type Spheroid = interface {
-	A() float64
-	Fi() float64
-}
-
 // The System interface is implemented by
 // github.com/wroge/wgs84/system system.WithSystem.
 type System interface {
-	ToXYZ(a, b, c float64, sph Spheroid) (x, y, z float64)
-	FromXYZ(x, y, z float64, sph Spheroid) (a, b, c float64)
+	ToXYZ(a, b, c float64, sph system.Spheroid) (x, y, z float64)
+	FromXYZ(x, y, z float64, sph system.Spheroid) (a, b, c float64)
 }
 
 // A CoordinateReferenceSystem contains a geodetic
@@ -41,7 +34,7 @@ type System interface {
 // An empty CoordinateReferenceSystem struct behaves like
 // the WGS84 geographic system: wgs84.LonLat().
 type CoordinateReferenceSystem struct {
-	Spheroid       Spheroid
+	Spheroid       system.Spheroid
 	Transformation Transformation
 	System         System
 }
