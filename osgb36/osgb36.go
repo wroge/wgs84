@@ -7,19 +7,19 @@ import (
 	"github.com/wroge/wgs84/transformation"
 )
 
-func XYZ() wgs84.CoordinateReferenceSystem {
-	return System(system.XYZ())
-}
-
+// LonLat is equal to EPSG-Code 4277
 func LonLat() wgs84.CoordinateReferenceSystem {
-	return System(system.LonLat())
+	return WithSystem(system.LonLat())
 }
 
+// NationalGrid is equal to EPSG-Code 27700
 func NationalGrid() wgs84.CoordinateReferenceSystem {
-	return System(system.TransverseMercator(-2, 49, 0.9996012717, 400000, -100000))
+	return WithSystem(system.TransverseMercator(-2, 49, 0.9996012717, 400000, -100000))
 }
 
-func System(sys system.System) wgs84.CoordinateReferenceSystem {
+// WithSystem provides any wgs84.System in the OSGB36
+// geodetic datum.
+func WithSystem(sys wgs84.System) wgs84.CoordinateReferenceSystem {
 	return wgs84.CoordinateReferenceSystem{
 		Spheroid:       spheroid.Airy(),
 		Transformation: transformation.WGS84().Helmert(446.448, -125.157, 542.06, 0.15, 0.247, 0.842, -20.489),

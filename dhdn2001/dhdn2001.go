@@ -7,19 +7,17 @@ import (
 	"github.com/wroge/wgs84/transformation"
 )
 
-func XYZ() wgs84.CoordinateReferenceSystem {
-	return System(system.XYZ())
-}
-
-func LonLat() wgs84.CoordinateReferenceSystem {
-	return System(system.LonLat())
-}
-
+// GK(2) is equal to EPSG-Code 31466.
+// GK(3) is equal to EPSG-Code 31467.
+// GK(4) is equal to EPSG-Code 31468.
+// GK(5) is equal to EPSG-Code 31469.
 func GK(zone float64) wgs84.CoordinateReferenceSystem {
-	return System(system.GK(zone))
+	return WithSystem(system.GK(zone))
 }
 
-func System(sys system.System) wgs84.CoordinateReferenceSystem {
+// WithSystem provides any wgs84.System in the DHDN2001
+// geodetic datum.
+func WithSystem(sys wgs84.System) wgs84.CoordinateReferenceSystem {
 	return wgs84.CoordinateReferenceSystem{
 		Spheroid:       spheroid.Bessel(),
 		Transformation: transformation.WGS84().Helmert(598.1, 73.7, 418.2, 0.202, 0.045, -2.455, 6.7),

@@ -1,30 +1,18 @@
 # WGS84
 
-A pure Go package for coordinate conversion and transformation..
+A pure Go package for coordinate conversion and transformation.
 
 [![GoDoc](https://godoc.org/github.com/wroge/wgs84?status.svg)](https://godoc.org/github.com/wroge/wgs84)
 
-```go
-import "github.com/wroge/wgs84"
+Subpackages with predefined coordinate reference systems within a geodetic datum:
 
-coordinate conversion:
+- [DHDN2001](https://github.com/wroge/wgs84/tree/master/dhdn2001)
+- [ETRS89](https://github.com/wroge/wgs84/tree/master/etrs89)
+- [OSGB36](https://github.com/wroge/wgs84/tree/master/osgb36)
+- [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
 
-f := wgs84.ToUTM(32, true)         // wgs84.LonLat().ToUTM(32, true)
-east, north, h := f(8.5, 52.5, 0)
-// 466058.576840 5816769.501816 0.000000
+Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)
 
-f = wgs84.WebMercator().ToXYZ().Round(3)
-x, y, z := f(1002000, 6800100, 0)
-// 3886514.741000 615641.281000 5002793.702000
-
-coordinate transformation:
-	
-import "github.com/wroge/wgs84/etrs89"
-
-f := wgs84.From(etrs89.UTM(32))
-lon, lat, h := f(501000, 5760000, 0)
-// 9.014563 51.990665 -0.000065
-```
 
 ## Features
 
@@ -38,37 +26,3 @@ lon, lat, h := f(501000, 5760000, 0)
 - Lambert Conformal Conic 1SP/2SP
 - Equidistant Conic
 - Albers Equal Area Conic
-
-## Examples
-
-Realization of a geodetic datum (OSGB36) and a specific coordinate system (NationalGrid):
-
-```go
-func OSGB36(sys system.System) wgs84.CoordinateReferenceSystem {
-	return wgs84.CoordinateReferenceSystem{
-		Spheroid:       spheroid.Airy(),
-		Transformation: transformation.WGS84().Helmert(446.448, -125.157, 542.06, 0.15, 0.247, 0.842, -20.489),
-		System:         sys,
-	}
-}
-
-var NationalGrid = system.TransverseMercator(-2, 49, 0.9996012717, 400000, -100000)
-
-var EPSG27700 = OSGB36(NationalGrid)
-```
-
-Subpackages with predefined coordinate systems for a specific geodetic datum:
-
-- [DHDN2001](https://github.com/wroge/wgs84/tree/master/dhdn2001)
-- [ETRS89](https://github.com/wroge/wgs84/tree/master/etrs89)
-- [OSGB36](https://github.com/wroge/wgs84/tree/master/osgb36)
-- [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
-
-```go
-dhdn2001.GK(3)
-etrs89.UTM(32)
-osgb36.NationalGrid()
-rgf93.CC(50)
-```
-
-Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)

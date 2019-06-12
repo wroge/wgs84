@@ -9,9 +9,15 @@ Store and search
 ```go
 import "github.com/wroge/wgs84/epsg"
 
+coordinate transformation:
+t := epsg.Transform(4326, 25832)
+if t != nil {
+    fmt.Println(t(9, 52, 0))
+}
+
 EPSG-Codes covering a specific Lon/Lat WGS84 coordinate:
 epsg.Codes(9, 52)
-// [3857 31467 900913 32632 4978 4326]
+// [4978 3857 4326 31467 25832 900913 32632]
 
 Get a wgs84.CoordinateReferenceSystem:
 crs, ok := epsg.Code(4326)

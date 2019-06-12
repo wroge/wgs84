@@ -7,19 +7,15 @@ import (
 	"github.com/wroge/wgs84/transformation"
 )
 
-func XYZ() wgs84.CoordinateReferenceSystem {
-	return System(system.XYZ())
-}
-
-func LonLat() wgs84.CoordinateReferenceSystem {
-	return System(system.LonLat())
-}
-
+// UTM(32) is equal to EPSG-Code 25832
+// UTM(33) is equal to EPSG-Code 25833 ...
 func UTM(zone float64) wgs84.CoordinateReferenceSystem {
-	return System(system.UTM(zone, true))
+	return WithSystem(system.UTM(zone, true))
 }
 
-func System(sys system.System) wgs84.CoordinateReferenceSystem {
+// WithSystem provides any wgs84.System in the ETRS89
+// geodetic datum.
+func WithSystem(sys wgs84.System) wgs84.CoordinateReferenceSystem {
 	return wgs84.CoordinateReferenceSystem{
 		Spheroid:       spheroid.GRS80(),
 		Transformation: transformation.WGS84(),

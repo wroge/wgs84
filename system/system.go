@@ -1,3 +1,4 @@
+// Package system implements the wgs84.System interface.
 package system
 
 import (
@@ -6,48 +7,68 @@ import (
 	"github.com/wroge/wgs84/spheroid"
 )
 
+// The unnamed Spheroid interface is implemented by
+// github.com/wroge/wgs84/spheroid spheroid.Spheroid.
+type Spheroid = interface {
+	A() float64
+	Fi() float64
+}
+
+// System implements the wgs84.System interface.
 type System struct {
-	toXYZ   func(a, b, c float64, sph spheroid.Spheroid) (x, y, z float64)
-	fromXYZ func(x, y, z float64, sph spheroid.Spheroid) (a, b, c float64)
+	toXYZ   func(a, b, c float64, s Spheroid) (x, y, z float64)
+	fromXYZ func(x, y, z float64, s Spheroid) (a, b, c float64)
 }
 
-func (sys System) ToXYZ(a, b, c float64, sph spheroid.Spheroid) (x, y, z float64) {
+// ToXYZ is used in the wgs84.System interface.
+func (sys System) ToXYZ(a, b, c float64, s Spheroid) (x, y, z float64) {
 	if sys.toXYZ == nil {
-		return LonLat().toXYZ(a, b, c, sph)
+		return LonLat().toXYZ(a, b, c, s)
 	}
-	return sys.toXYZ(a, b, c, sph)
+	return sys.toXYZ(a, b, c, s)
 }
 
-func (sys System) FromXYZ(x, y, z float64, sph spheroid.Spheroid) (a, b, c float64) {
+// FromXYZ is used in the wgs84.System interface.
+func (sys System) FromXYZ(x, y, z float64, s Spheroid) (a, b, c float64) {
 	if sys.fromXYZ == nil {
-		return LonLat().fromXYZ(x, y, z, sph)
+		return LonLat().fromXYZ(x, y, z, s)
 	}
-	return sys.fromXYZ(x, y, z, sph)
+	return sys.fromXYZ(x, y, z, s)
 }
 
+// XYZ is a geocentric coordinate System.
 func XYZ() System {
 	return System{
-		toXYZ: func(a, b, c float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(a, b, c float64, s Spheroid) (x, y, z float64) {
 			return a, b, c
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (a, b, c float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (a, b, c float64) {
 			return x, y, z
 		},
 	}
 }
 
+// LonLat is a geocentric coordinate System.
 func LonLat() System {
 	N := func(φ float64, sph spheroid.Spheroid) float64 {
 		return sph.A() / math.Sqrt(1-sph.E2()*math.Pow(math.Sin(φ), 2))
 	}
 	return System{
-		toXYZ: func(lon, lat, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(lon, lat, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			x = (N(radian(lat), sph) + h) * math.Cos(radian(lon)) * math.Cos(radian(lat))
 			y = (N(radian(lat), sph) + h) * math.Cos(radian(lat)) * math.Sin(radian(lon))
 			z = (N(radian(lat), sph)*math.Pow(sph.A()*(1-sph.F()), 2)/(sph.A2()) + h) * math.Sin(radian(lat))
 			return
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (lon, lat, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (lon, lat, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			sd := math.Sqrt(x*x + y*y)
 			T := math.Atan(z * sph.A() / (sd * sph.B()))
 			B := math.Atan((z + sph.E2()*(sph.A2())/sph.B()*math.Pow(math.Sin(T), 3)) / (sd - sph.E2()*sph.A()*math.Pow(math.Cos(T), 3)))
@@ -57,6 +78,9 @@ func LonLat() System {
 	}
 }
 
+// TransverseMercator is a projected coordinate System.
+// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Easting, False Northing.
 func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 	M := func(φ float64, sph spheroid.Spheroid) float64 {
 		return sph.A() * ((1-sph.E2()/4-3*sph.E4()/64-5*sph.E6()/256)*φ -
@@ -74,7 +98,11 @@ func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 		return sph.Ei2() * cos2(φ)
 	}
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			east -= eastf
 			north -= northf
 			Mi := M(radian(latf), sph) + north/scale
@@ -92,7 +120,11 @@ func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 				math.Pow(D, 5)/120)/math.Cos(φ1)
 			return LonLat().toXYZ(degree(λ), degree(φ), h, sph)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
 			φ := radian(lat)
 			A := (radian(lon) - radian(lonf)) * math.Cos(φ)
@@ -105,6 +137,9 @@ func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 	}
 }
 
+// UTM is a projected coordinate System (TransverseMercator).
+// It has 6 degrees zone width and a scale factor of 0.9996
+// at the central meridian.
 func UTM(zone float64, northern bool) System {
 	if northern {
 		return TransverseMercator(zone*6-183, 0, 0.9996, 500000, 0)
@@ -112,13 +147,21 @@ func UTM(zone float64, northern bool) System {
 	return TransverseMercator(zone*6-183, 0, 0.9996, 500000, 10000000)
 }
 
+// GK is a projected coordinate System (TransverseMercator).
+// It has 3 degrees zone width.
 func GK(zone float64) System {
 	return TransverseMercator(zone*3, 0, 1, zone*1000000+500000, 0)
 }
 
+// Mercator is a projected coordinate System. The parameters:
+// False Longitude, Scale Factor, False Easting, False Northing.
 func Mercator(lonf, scale, eastf, northf float64) System {
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			east = (east - eastf) / scale
 			north = (north - northf) / scale
 			t := math.Exp(-north * sph.A())
@@ -128,7 +171,11 @@ func Mercator(lonf, scale, eastf, northf float64) System {
 			}
 			return LonLat().toXYZ(east/sph.A()+lonf, degree(φ), h, sph)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
 			east = scale * sph.A() * (radian(lon) - radian(lonf))
 			north = scale * sph.A() / 2 *
@@ -138,22 +185,31 @@ func Mercator(lonf, scale, eastf, northf float64) System {
 	}
 }
 
+// WebMercator is a projected coordinate System.
 func WebMercator() System {
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
-			lon := degree(east / sph.A())
-			lat := math.Atan(math.Exp(north/sph.A()))*degree(1)*2 - 90
-			return LonLat().toXYZ(lon, lat, h, sph)
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			lon := degree(east / s.A())
+			lat := math.Atan(math.Exp(north/s.A()))*degree(1)*2 - 90
+			return LonLat().toXYZ(lon, lat, h, s)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
-			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
-			east = radian(lon) * sph.A()
-			north = math.Log(math.Tan(radian((90+lat)/2))) * sph.A()
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			lon, lat, h := LonLat().fromXYZ(x, y, z, s)
+			east = radian(lon) * s.A()
+			north = math.Log(math.Tan(radian((90+lat)/2))) * s.A()
 			return
 		},
 	}
 }
 
+// LambertConformalConic1SP is a projected coordinate System. The parameters:
+// False Longitude, False Latitude, Scale Factor, False Easting, False Northing.
 func LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) System {
 	t := func(φ float64, sph spheroid.Spheroid) float64 {
 		return math.Tan(math.Pi/4-φ/2) /
@@ -170,7 +226,11 @@ func LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) System {
 		return sph.A() * F(sph) * math.Pow(t(φ, sph)*scale, n)
 	}
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			ρi := math.Sqrt(math.Pow(east-eastf, 2) + math.Pow(ρ(radian(latf), sph)-(north-northf), 2))
 			if n < 0 {
 				ρi = -ρi
@@ -183,7 +243,11 @@ func LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) System {
 			λ := math.Atan((east-eastf)/(ρ(radian(latf), sph)-(north-northf)))/n + radian(lonf)
 			return LonLat().toXYZ(degree(λ), degree(φ), h, sph)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
 			θ := n * (radian(lon) - radian(lonf))
 			east = eastf + ρ(radian(lat), sph)*math.Sin(θ)
@@ -193,6 +257,9 @@ func LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) System {
 	}
 }
 
+// LambertConformalConic2SP is a projected coordinate System. The parameters:
+// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Easting, False Northing.
 func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) System {
 	t := func(φ float64, sph spheroid.Spheroid) float64 {
 		return math.Tan(math.Pi/4-φ/2) /
@@ -214,7 +281,11 @@ func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) Sys
 		return sph.A() * F(sph) * math.Pow(t(φ, sph), n(sph))
 	}
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			ρi := math.Sqrt(math.Pow(east-eastf, 2) + math.Pow(ρ(radian(latf), sph)-(north-northf), 2))
 			if n(sph) < 0 {
 				ρi = -ρi
@@ -227,7 +298,11 @@ func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) Sys
 			λ := math.Atan((east-eastf)/(ρ(radian(latf), sph)-(north-northf)))/n(sph) + radian(lonf)
 			return LonLat().toXYZ(degree(λ), degree(φ), h, sph)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
 			θ := n(sph) * (radian(lon) - radian(lonf))
 			east = eastf + ρ(radian(lat), sph)*math.Sin(θ)
@@ -237,6 +312,9 @@ func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) Sys
 	}
 }
 
+// AlbersEqualAreaConic is a projected coordinate System. The parameters:
+// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Easting, False Northing.
 func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System {
 	m := func(φ float64, sph spheroid.Spheroid) float64 {
 		return math.Cos(φ) / math.Sqrt(1-sph.E2()*sin2(φ))
@@ -258,7 +336,11 @@ func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System 
 		return sph.A() * math.Sqrt(C(sph)-n(sph)*q(φ, sph)) / n(sph)
 	}
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			east -= eastf
 			north -= northf
 			ρi := math.Sqrt(east*east + math.Pow(ρ(radian(latf), sph)-north, 2))
@@ -273,7 +355,11 @@ func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System 
 			θ := math.Atan(east / (ρ(radian(latf), sph) - north))
 			return LonLat().toXYZ(degree(radian(lonf)+θ/n(sph)), degree(φ), h, sph)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
 			θ := n(sph) * (radian(lon) - radian(lonf))
 			east = eastf + ρ(radian(lat), sph)*math.Sin(θ)
@@ -283,6 +369,9 @@ func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System 
 	}
 }
 
+// EquidistantConic is a projected coordinate System. The parameters:
+// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Easting, False Northing.
 func EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) System {
 	M := func(φ float64, sph spheroid.Spheroid) float64 {
 		return sph.A() * ((1-sph.E2()/4-3*sph.E4()/64-5*sph.E6()/256)*φ -
@@ -306,7 +395,11 @@ func EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) System {
 		return sph.A()*G(sph) - M(φ, sph)
 	}
 	return System{
-		toXYZ: func(east, north, h float64, sph spheroid.Spheroid) (x, y, z float64) {
+		toXYZ: func(east, north, h float64, s Spheroid) (x, y, z float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			east -= eastf
 			north -= northf
 			ρi := math.Sqrt(east*east + math.Pow(ρ(radian(latf), sph)-north, 2))
@@ -322,7 +415,11 @@ func EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) System {
 			θ := math.Atan(east / (ρ(radian(latf), sph) - north))
 			return LonLat().toXYZ(degree((radian(lonf) + θ/n(sph))), degree(φ), h, sph)
 		},
-		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (east, north, h float64) {
+		fromXYZ: func(x, y, z float64, s Spheroid) (east, north, h float64) {
+			if s == nil {
+				s = spheroid.WGS84()
+			}
+			sph := spheroid.New(s.A(), s.Fi())
 			lon, lat, h := LonLat().fromXYZ(x, y, z, sph)
 			θ := n(sph) * (radian(lon) - radian(lonf))
 			east = eastf + ρ(radian(lat), sph)*math.Sin(θ)

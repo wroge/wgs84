@@ -1,3 +1,4 @@
+// Package epsg supports the ability to store and search for EPSG-Codes.
 package epsg
 
 import (
@@ -19,7 +20,7 @@ type boundingBox struct {
 	minlon, minlat, maxlon, maxlat float64
 }
 
-func (b boundingBox) Contains(lon, lat float64) bool {
+func (b boundingBox) contains(lon, lat float64) bool {
 	for lon < -180 {
 		lon += 360
 	}
@@ -63,11 +64,15 @@ func (b boundingBox) normalize() boundingBox {
 	return b
 }
 
+// A Repository stores wgs84.CoordinateReferenceSystem's
+// as EPSG-Codes.
 type Repository struct {
 	codes map[int]epsg
 	m     sync.Mutex
 }
 
+// Add a wgs84.CoordinateReferenceSystem as an EPSG-Code with
+// a specified BoundingBox.
 func (r *Repository) Add(c int, crs wgs84.CoordinateReferenceSystem, minlon, minlat, maxlon, maxlat float64) {
 	r.m.Lock()
 	defer r.m.Unlock()
@@ -78,26 +83,36 @@ func (r *Repository) Add(c int, crs wgs84.CoordinateReferenceSystem, minlon, min
 	r.codes[c] = epsg{crs, b}
 }
 
+// Get all Codes provided by the DefaultRepository at
+// a geographic WGS84 coordinate.
 func Codes(lon, lat float64) []int {
 	return DefaultRepository().Codes(lon, lat)
 }
 
+// Get all Codes from a Repository provided at
+// a geographic WGS84 coordinate.
 func (r *Repository) Codes(lon, lat float64) []int {
 	r.m.Lock()
 	defer r.m.Unlock()
 	cc := []int{}
 	for c, e := range r.codes {
-		if e.bbox.Contains(lon, lat) {
+		if e.bbox.contains(lon, lat) {
 			cc = append(cc, c)
 		}
 	}
 	return cc
 }
 
+// Get a wgs84.CoordinateReferenceSystem provided
+// by the DefaultRepository. False if the EPSG-Code
+// is not supported.
 func Code(c int) (wgs84.CoordinateReferenceSystem, bool) {
 	return DefaultRepository().Code(c)
 }
 
+// Get a wgs84.CoordinateReferenceSystem provided
+// by the Repository. False if the EPSG-Code
+// is not supported.
 func (r *Repository) Code(c int) (wgs84.CoordinateReferenceSystem, bool) {
 	r.m.Lock()
 	defer r.m.Unlock()
@@ -105,6 +120,7 @@ func (r *Repository) Code(c int) (wgs84.CoordinateReferenceSystem, bool) {
 	return e.crs, ok
 }
 
+// DefaultRepository includes a selection of EPSG-Codes.
 func DefaultRepository() *Repository {
 	r := &Repository{}
 	r.codes = map[int]epsg{
@@ -127,7 +143,27 @@ func DefaultRepository() *Repository {
 		r.Add(31464+i, dhdn2001.GK(float64(i)), float64(i)*3-1.5, 47.27, float64(i)*3+1.5, 55.09)
 	}
 	for i := 28; i < 39; i++ {
-		r.Add(25800+i, etrs89.UTM(float64(i)), float64(i)*6-186, 32.88, float64(i)*6-186, 84.17)
+		r.Add(25800+i, etrs89.UTM(float64(i)), float64(i)*6-186, 32.88, float64(i)*6-180, 84.17)
 	}
 	return r
+}
+
+// Transform from one EPSG-Code to another.
+// Is nil if an EPSG-Code is not supported in the Repository.
+func (r *Repository) Transform(from, to int) wgs84.Func {
+	f, ok := r.Code(from)
+	if !ok {
+		return nil
+	}
+	t, ok := r.Code(to)
+	if !ok {
+		return nil
+	}
+	return f.To(t)
+}
+
+// Transform from one EPSG-Code to another.
+// Is nil if an EPSG-Code is not supported in the DefaultRepository.
+func Transform(from, to int) wgs84.Func {
+	return DefaultRepository().Transform(from, to)
 }
