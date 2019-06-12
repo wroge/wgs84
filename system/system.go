@@ -71,7 +71,8 @@ func LonLat() System {
 		fromXYZ: func(x, y, z float64, sph spheroid.Spheroid) (lon, lat, h float64) {
 			sd := math.Sqrt(x*x + y*y)
 			T := math.Atan(z * sph.A() / (sd * sph.B()))
-			B := math.Atan((z + sph.E2()*(sph.A2())/sph.B()*math.Pow(math.Sin(T), 3)) / (sd - sph.E2()*sph.A()*math.Pow(math.Cos(T), 3)))
+			B := math.Atan((z + sph.E2()*(sph.A2())/sph.B()*
+				math.Pow(math.Sin(T), 3)) / (sd - sph.E2()*sph.A()*math.Pow(math.Cos(T), 3)))
 			h = sd/math.Cos(B) - N(B, sph)
 			return degree(math.Atan2(y, x)), degree(B), h
 		},
@@ -79,7 +80,7 @@ func LonLat() System {
 }
 
 // TransverseMercator is a projected coordinate System.
-// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Longitude, False Latitude, 1. Parallel Latitude, 2. Parallel Latitude,
 // False Easting, False Northing.
 func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 	M := func(φ float64, sph spheroid.Spheroid) float64 {
@@ -91,9 +92,7 @@ func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 	N := func(φ float64, sph spheroid.Spheroid) float64 {
 		return sph.A() / math.Sqrt(1-sph.E2()*sin2(φ))
 	}
-	T := func(φ float64) float64 {
-		return tan2(φ)
-	}
+	T := tan2
 	C := func(φ float64, sph spheroid.Spheroid) float64 {
 		return sph.Ei2() * cos2(φ)
 	}
@@ -112,7 +111,8 @@ func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 			φ := φ1 - (N(φ1, sph)*math.Tan(φ1)/R1)*(D*D/2-(5+3*T(φ1)+10*C(φ1, sph)-4*C(φ1, sph)*C(φ1, sph)-9*sph.Ei2())*
 				math.Pow(D, 4)/24+(61+90*T(φ1)+298*C(φ1, sph)+45*T(φ1)*T(φ1)-252*sph.Ei2()-3*C(φ1, sph)*C(φ1, sph))*
 				math.Pow(D, 6)/720)
-			λ := radian(lonf) + (D-(1+2*T(φ1)+C(φ1, sph))*D*D*D/6+(5-2*C(φ1, sph)+28*T(φ1)-3*C(φ1, sph)*C(φ1, sph)+8*sph.Ei2()+24*T(φ1)*T(φ1))*
+			λ := radian(lonf) + (D-(1+2*T(φ1)+C(φ1, sph))*D*D*D/6+(5-2*C(φ1, sph)+
+				28*T(φ1)-3*C(φ1, sph)*C(φ1, sph)+8*sph.Ei2()+24*T(φ1)*T(φ1))*
 				math.Pow(D, 5)/120)/math.Cos(φ1)
 			return LonLat().ToXYZ(degree(λ), degree(φ), h, sph)
 		},
@@ -121,9 +121,11 @@ func TransverseMercator(lonf, latf, scale, eastf, northf float64) System {
 			φ := radian(lat)
 			A := (radian(lon) - radian(lonf)) * math.Cos(φ)
 			east = scale*N(φ, sph)*(A+(1-T(φ)+C(φ, sph))*
-				math.Pow(A, 3)/6+(5-18*T(φ)+T(φ)*T(φ)+72*C(φ, sph)-58*sph.Ei2())*math.Pow(A, 5)/120) + eastf
-			north = scale*(M(φ, sph)-M(radian(latf), sph)+N(φ, sph)*math.Tan(φ)*(A*A/2+(5-T(φ)+9*C(φ, sph)+4*C(φ, sph)*C(φ, sph))*
-				math.Pow(A, 4)/24+(61-58*T(φ)+T(φ)*T(φ)+600*C(φ, sph)-330*sph.Ei2())*math.Pow(A, 6)/720)) + northf
+				math.Pow(A, 3)/6+(5-18*T(φ)+T(φ)*T(φ)+72*C(φ, sph)-58*sph.Ei2())*
+				math.Pow(A, 5)/120) + eastf
+			north = scale*(M(φ, sph)-M(radian(latf), sph)+N(φ, sph)*math.Tan(φ)*
+				(A*A/2+(5-T(φ)+9*C(φ, sph)+4*C(φ, sph)*C(φ, sph))*
+					math.Pow(A, 4)/24+(61-58*T(φ)+T(φ)*T(φ)+600*C(φ, sph)-330*sph.Ei2())*math.Pow(A, 6)/720)) + northf
 			return
 		},
 	}
@@ -163,7 +165,8 @@ func Mercator(lonf, scale, eastf, northf float64) System {
 			lon, lat, h := LonLat().FromXYZ(x, y, z, sph)
 			east = scale * sph.A() * (radian(lon) - radian(lonf))
 			north = scale * sph.A() / 2 *
-				math.Log(1+math.Sin(radian(lat))/(1-math.Sin(radian(lat)))*math.Pow((1-sph.E()*math.Sin(radian(lat)))/(1+sph.E()*math.Sin(radian(lat))), math.E))
+				math.Log(1+math.Sin(radian(lat))/(1-math.Sin(radian(lat)))*
+					math.Pow((1-sph.E()*math.Sin(radian(lat)))/(1+sph.E()*math.Sin(radian(lat))), math.E))
 			return
 		},
 	}
@@ -228,7 +231,7 @@ func LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) System {
 }
 
 // LambertConformalConic2SP is a projected coordinate System. The parameters:
-// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Longitude, False Latitude, 1. Parallel Latitude, 2. Parallel Latitude,
 // False Easting, False Northing.
 func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) System {
 	t := func(φ float64, sph spheroid.Spheroid) float64 {
@@ -242,7 +245,8 @@ func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) Sys
 		if radian(lat1) == radian(lat2) {
 			return math.Sin(radian(lat1))
 		}
-		return (math.Log(m(radian(lat1), sph)) - math.Log(m(radian(lat2), sph))) / (math.Log(t(radian(lat1), sph)) - math.Log(t(radian(lat2), sph)))
+		return (math.Log(m(radian(lat1), sph)) - math.Log(m(radian(lat2), sph))) /
+			(math.Log(t(radian(lat1), sph)) - math.Log(t(radian(lat2), sph)))
 	}
 	F := func(sph spheroid.Spheroid) float64 {
 		return m(radian(lat1), sph) / (n(sph) * math.Pow(t(radian(lat1), sph), n(sph)))
@@ -275,7 +279,7 @@ func LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) Sys
 }
 
 // AlbersEqualAreaConic is a projected coordinate System. The parameters:
-// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Longitude, False Latitude, 1. Parallel Latitude, 2. Parallel Latitude,
 // False Easting, False Northing.
 func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System {
 	m := func(φ float64, sph spheroid.Spheroid) float64 {
@@ -289,7 +293,8 @@ func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System 
 		if radian(lat1) == radian(lat2) {
 			return math.Sin(radian(lat1))
 		}
-		return (m(radian(lat1), sph)*m(radian(lat1), sph) - m(radian(lat2), sph)*m(radian(lat2), sph)) / (q(radian(lat2), sph) - q(radian(lat1), sph))
+		return (m(radian(lat1), sph)*m(radian(lat1), sph) - m(radian(lat2), sph)*m(radian(lat2), sph)) /
+			(q(radian(lat2), sph) - q(radian(lat1), sph))
 	}
 	C := func(sph spheroid.Spheroid) float64 {
 		return m(radian(lat1), sph)*m(radian(lat1), sph) + n(sph)*q(radian(lat1), sph)
@@ -324,7 +329,7 @@ func AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) System 
 }
 
 // EquidistantConic is a projected coordinate System. The parameters:
-// False Longitude, False Latitude, 1. Parrallel Latitude, 2. Parrallel Latitude,
+// False Longitude, False Latitude, 1. Parallel Latitude, 2. Parallel Latitude,
 // False Easting, False Northing.
 func EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) System {
 	M := func(φ float64, sph spheroid.Spheroid) float64 {

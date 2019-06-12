@@ -15,7 +15,11 @@ func FranceLambert() wgs84.CoordinateReferenceSystem {
 // CC(42) is equal to EPSG-Code 3942
 // CC(50) is equal to EPSG-Code 3950 ...
 func CC(latitude float64) wgs84.CoordinateReferenceSystem {
-	return WithSystem(system.LambertConformalConic2SP(3, latitude, latitude-0.75, latitude+0.75, 1700000, 2200000+(latitude-43)*1000000))
+	return WithSystem(
+		system.LambertConformalConic2SP(
+			3, latitude, latitude-0.75, latitude+0.75, 1700000, 2200000+(latitude-43)*1000000,
+		),
+	)
 }
 
 // WithSystem provides any wgs84.System in the RGF93
