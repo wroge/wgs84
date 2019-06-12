@@ -3,6 +3,7 @@
 A pure Go package for coordinate conversion and transformation.
 
 [![GoDoc](https://godoc.org/github.com/wroge/wgs84?status.svg)](https://godoc.org/github.com/wroge/wgs84)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/wroge/wgs84.svg?style=social)
 
 Subpackages with predefined coordinate reference systems within a geodetic datum:
 
