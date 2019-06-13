@@ -1,6 +1,6 @@
 # WGS84
 
-A pure Go package for geodetic coordinate conversion and transformation.
+A pure go package for the conversion and transformation of geodesic coordinates.
 
 ```go
 go get github.com/wroge/wgs84
