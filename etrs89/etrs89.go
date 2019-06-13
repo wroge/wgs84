@@ -1,3 +1,5 @@
+// Package etrs89 implements wgs84.CoordinateReferenceSystem's
+// in the ETRS89 geodetic datum.
 package etrs89
 
 import (

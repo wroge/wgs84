@@ -1,3 +1,5 @@
+// Package osgb36 implements wgs84.CoordinateReferenceSystem's
+// in the OSGB36 geodetic datum.
 package osgb36
 
 import (

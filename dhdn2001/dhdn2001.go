@@ -1,3 +1,5 @@
+// Package dhdn2001 implements wgs84.CoordinateReferenceSystem's
+// in the DHDN2001 geodetic datum.
 package dhdn2001
 
 import (

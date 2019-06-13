@@ -1,3 +1,5 @@
+// Package rgf93 implements wgs84.CoordinateReferenceSystem's
+// in the RGF93 geodetic datum.
 package rgf93
 
 import (
