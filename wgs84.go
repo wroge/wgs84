@@ -19,14 +19,14 @@ type Transformation interface {
 }
 
 // The System interface is implemented by
-// github.com/wroge/wgs84/system system.WithSystem.
+// github.com/wroge/wgs84/system System.
 type System interface {
 	ToXYZ(a, b, c float64, sph system.Spheroid) (x, y, z float64)
 	FromXYZ(x, y, z float64, sph system.Spheroid) (a, b, c float64)
 }
 
 // A CoordinateReferenceSystem contains a geodetic
-// datum and a coordinate system (WithSystem).
+// datum and a coordinate system (System).
 // A geodetic datum is composed of the two components
 // Spheroid and Transformation. A Transformation is a
 // struct for transforming geocentric coordinates from
@@ -65,8 +65,8 @@ func UTM(zone float64, northern bool) CoordinateReferenceSystem {
 	return WithSystem(system.UTM(zone, northern))
 }
 
-// WithSystem it is possible to use any system.WithSystem in the
-// WGS84 geodetic datum. Only the most commonly used system.WithSystem's
+// WithSystem it is possible to use any System in the
+// WGS84 geodetic datum. Only the most commonly used System's
 // for WGS84 are implemented directly in this package.
 func WithSystem(sys System) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
