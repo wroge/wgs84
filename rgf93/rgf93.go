@@ -12,6 +12,9 @@ func FranceLambert() wgs84.CoordinateReferenceSystem {
 	return WithSystem(system.LambertConformalConic2SP(3, 46.5, 49, 44, 700000, 6600000))
 }
 
+// CC is a conformal conic system in the RGF93
+// geodetic datum.
+//
 // CC(42) is equal to EPSG-Code 3942
 // CC(50) is equal to EPSG-Code 3950 ...
 func CC(latitude float64) wgs84.CoordinateReferenceSystem {

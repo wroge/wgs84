@@ -83,13 +83,13 @@ func (r *Repository) Add(c int, crs wgs84.CoordinateReferenceSystem, minlon, min
 	r.codes[c] = epsg{crs, b}
 }
 
-// Get all Codes provided by the DefaultRepository at
+// Codes provided by the DefaultRepository at
 // a geographic WGS84 coordinate.
 func Codes(lon, lat float64) []int {
 	return DefaultRepository().Codes(lon, lat)
 }
 
-// Get all Codes from a Repository provided at
+// Codes from a Repository provided at
 // a geographic WGS84 coordinate.
 func (r *Repository) Codes(lon, lat float64) []int {
 	r.m.Lock()
@@ -103,14 +103,14 @@ func (r *Repository) Codes(lon, lat float64) []int {
 	return cc
 }
 
-// Get a wgs84.CoordinateReferenceSystem provided
+// Code is a wgs84.CoordinateReferenceSystem provided
 // by the DefaultRepository. False if the EPSG-Code
 // is not supported.
 func Code(c int) (wgs84.CoordinateReferenceSystem, bool) {
 	return DefaultRepository().Code(c)
 }
 
-// Get a wgs84.CoordinateReferenceSystem provided
+// Code is a wgs84.CoordinateReferenceSystem provided
 // by the Repository. False if the EPSG-Code
 // is not supported.
 func (r *Repository) Code(c int) (wgs84.CoordinateReferenceSystem, bool) {

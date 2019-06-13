@@ -1,8 +1,15 @@
 # WGS84
 
-A pure Go package for converting and transforming geodetic coordinates.
+A pure Go package for geodetic coordinate conversion and transformation.
 
-[![GoDoc](https://godoc.org/github.com/wroge/wgs84?status.svg)](https://godoc.org/github.com/wroge/wgs84)
+```go
+go get github.com/wroge/wgs84
+```
+
+[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/github.com/wroge/wgs84)
+[![GoWalker](https://img.shields.io/badge/Go_Walker-Doc-blue.svg?style=flat-square)](https://gowalker.org/github.com/wroge/wgs84)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84)](https://goreportcard.com/report/github.com/wroge/wgs84)
+[![GolangCI](https://golangci.com/badges/github.com/wroge/wgs84.svg)](https://golangci.com/r/github.com/wroge/wgs84)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/wroge/wgs84.svg?style=social)](https://github.com/wroge/wgs84/tags)
 
 Subpackages with predefined coordinate reference systems within a geodetic datum:
@@ -13,7 +20,6 @@ Subpackages with predefined coordinate reference systems within a geodetic datum
 - [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
 
 Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)
-
 
 ## Features
 

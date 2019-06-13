@@ -7,6 +7,9 @@ import (
 	"github.com/wroge/wgs84/transformation"
 )
 
+// UTM is a universal transverse mercator system in the
+// ETRS89 geodetic datum.
+//
 // UTM(32) is equal to EPSG-Code 25832
 // UTM(33) is equal to EPSG-Code 25833 ...
 func UTM(zone float64) wgs84.CoordinateReferenceSystem {

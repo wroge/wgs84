@@ -7,6 +7,9 @@ import (
 	"github.com/wroge/wgs84/transformation"
 )
 
+// GK is a Gauss Krueger system in the DHDN2001
+// geodetic datum.
+//
 // GK(2) is equal to EPSG-Code 31466.
 // GK(3) is equal to EPSG-Code 31467.
 // GK(4) is equal to EPSG-Code 31468.

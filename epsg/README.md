@@ -4,7 +4,8 @@ Store and search
 [WGS84](https://github.com/wroge/wgs84) CoordinateReferenceSystem`s as
 [EPSG](https://en.wikipedia.org/wiki/Spatial_reference_system#Identifiers) Codes.
 
-[![GoDoc](https://godoc.org/github.com/wroge/wgs84/epsg?status.svg)](https://godoc.org/github.com/wroge/wgs84/epsg)
+[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/github.com/wroge/wgs84/epsg)
+[![GoWalker](https://img.shields.io/badge/Go_Walker-Doc-blue.svg?style=flat-square)](https://gowalker.org/github.com/wroge/wgs84/epsg)
 
 ```go
 import "github.com/wroge/wgs84/epsg"

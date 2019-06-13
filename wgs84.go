@@ -1,4 +1,4 @@
-// Package WGS84 provides multiple coordinate
+// Package wgs84 provides multiple coordinate
 // conversions and transformations.
 package wgs84
 
@@ -76,13 +76,13 @@ func WithSystem(sys System) CoordinateReferenceSystem {
 	}
 }
 
-// All conversions and transformations end in the Func Type.
+// The Func type is the result of all conversions and transformations.
 // With this type it is possible to spice up the result, for
 // example by rounding functions or changing the order of the
 // parameters.
 type Func func(a, b, c float64) (a2, b2, c2 float64)
 
-// With Round, the result of a func can be rounded to a certain
+// Round the result of a Func to a specified
 // decimal place. It is not a rounding to a certain accuracy,
 // as some coordinates are defined as degrees (LonLat) and others
 // as meters (projected and geocentric).
@@ -141,7 +141,7 @@ func (crs CoordinateReferenceSystem) ToSystem(sys System) Func {
 	}
 }
 
-// ToSystem provides the conversion from a coordinate system
+// FromSystem provides the conversion from a coordinate system
 // implementing the System interface to a CoordinateReferenceSystem.
 func (crs CoordinateReferenceSystem) FromSystem(sys System) Func {
 	if crs.System == nil {
@@ -225,19 +225,19 @@ func (crs CoordinateReferenceSystem) ToAlbersEqualAreaConic(lonf, latf, lat1, la
 	return crs.ToSystem(system.AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf))
 }
 
-// ToXYZ is a coordinate conversion within the WGS84 geodetic datum.
+// FromXYZ is a coordinate conversion within the WGS84 geodetic datum.
 // The incoming parameters are x, y and z in units of meters.
 func (crs CoordinateReferenceSystem) FromXYZ() Func {
 	return crs.FromSystem(system.XYZ())
 }
 
-// ToLonLat is a coordinate conversion within the WGS84 geodetic datum.
+// FromLonLat is a coordinate conversion within the WGS84 geodetic datum.
 // The incoming parameters are lon, lat, h in units of degrees.
 func (crs CoordinateReferenceSystem) FromLonLat() Func {
 	return crs.FromSystem(system.LonLat())
 }
 
-// ToWebMercator is a coordinate conversion within the WGS84 geodetic datum.
+// FromWebMercator is a coordinate conversion within the WGS84 geodetic datum.
 // The incoming parameters are east, north and h in units of meters.
 func (crs CoordinateReferenceSystem) FromWebMercator() Func {
 	return crs.FromSystem(system.WebMercator())
@@ -291,7 +291,7 @@ func (crs CoordinateReferenceSystem) FromAlbersEqualAreaConic(lonf, latf, lat1, 
 	return crs.FromSystem(system.AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf))
 }
 
-// Transform To another CoordinateReferenceSystem.
+// To transform from one CoordinateReeferenceSystem to another.
 func (crs CoordinateReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	if crs.System == nil {
 		crs.System = system.LonLat()
@@ -310,7 +310,7 @@ func (crs CoordinateReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	}
 }
 
-// Transform From another CoordinateReferenceSystem.
+// From is the reverse of the To func.
 func (crs CoordinateReferenceSystem) From(from CoordinateReferenceSystem) Func {
 	return from.To(crs)
 }
@@ -326,7 +326,7 @@ func ToXYZ() Func {
 // ToWebMercator converts geographic WGS84 coordinates to web mercator
 // coordinates. The incoming parameters are lon, lat, h in units
 // of degrees and the resulting parameters are east, north, h in units
-//// of meters.
+// of meters.
 func ToWebMercator() Func {
 	return LonLat().ToWebMercator()
 }
@@ -334,7 +334,7 @@ func ToWebMercator() Func {
 // ToUTM converts geographic WGS84 coordinates to utm
 // coordinates. The incoming parameters are lon, lat, h in units
 // of degrees and the resulting parameters are east, north, h in units
-////// of meters.
+// of meters.
 func ToUTM(zone float64, northern bool) Func {
 	return LonLat().ToUTM(zone, northern)
 }
@@ -342,7 +342,7 @@ func ToUTM(zone float64, northern bool) Func {
 // FromXYZ converts geocentric WGS84 coordinates to geographic
 // coordinates. The incoming parameters are x, y, z in units
 // of meters and the resulting parameters are lon, lat, h in
-//// units of degrees..
+// units of degrees..
 func FromXYZ() Func {
 	return LonLat().FromXYZ()
 }
@@ -350,7 +350,7 @@ func FromXYZ() Func {
 // FromWebMercator converts web mercator WGS84 coordinates to geographic
 // coordinates. The incoming parameters are east, north, h in units
 // of meters and the resulting parameters are lon, lat, h in
-//// units of degrees..
+// units of degrees..
 func FromWebMercator() Func {
 	return LonLat().FromWebMercator()
 }
