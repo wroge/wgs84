@@ -2,6 +2,7 @@ package wgs84
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/wroge/wgs84/spheroid"
 	"github.com/wroge/wgs84/system"
@@ -34,4 +35,22 @@ func ExampleTo() {
 func ExampleCoordinateReferenceSystem_ToWebMercator() {
 	east, north, h := LonLat().ToWebMercator().Round(0)(9, 52, 0)
 	fmt.Println(east, north, h)
+}
+
+func BenchmarkToWebMercator(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ToWebMercator()(9, 52, 0)
+	}
+}
+
+func BenchmarkTo(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		To(WebMercator())(9, 52, 0)
+	}
+}
+
+func BenchmarkCoordinateReferenceSystem_ToWebMercator(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		LonLat().ToWebMercator()(9, 52, 0)
+	}
 }

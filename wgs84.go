@@ -5,6 +5,7 @@ package wgs84
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/wroge/wgs84/spheroid"
 	"github.com/wroge/wgs84/system"
@@ -18,11 +19,18 @@ type Transformation interface {
 	FromWGS84(x0, y0, z0 float64) (x, y, z float64)
 }
 
+// Spheroid is an unnamed interface type implemented by
+// github.com/wroge/wgs84/spheroid spheroid.Spheroid.
+type Spheroid = interface {
+	A() float64
+	Fi() float64
+}
+
 // The System interface is implemented by
 // github.com/wroge/wgs84/system System.
 type System interface {
-	ToXYZ(a, b, c float64, sph system.Spheroid) (x, y, z float64)
-	FromXYZ(x, y, z float64, sph system.Spheroid) (a, b, c float64)
+	ToXYZ(a, b, c float64, sph Spheroid) (x, y, z float64)
+	FromXYZ(x, y, z float64, sph Spheroid) (a, b, c float64)
 }
 
 // A CoordinateReferenceSystem contains a geodetic
@@ -34,7 +42,7 @@ type System interface {
 // An empty CoordinateReferenceSystem struct behaves like
 // the WGS84 geographic system: wgs84.LonLat().
 type CoordinateReferenceSystem struct {
-	Spheroid       system.Spheroid
+	Spheroid       Spheroid
 	Transformation Transformation
 	System         System
 }
@@ -139,6 +147,25 @@ func (crs CoordinateReferenceSystem) ToSystem(sys System) Func {
 		x, y, z := crs.System.ToXYZ(a, b, c, crs.Spheroid)
 		return sys.FromXYZ(x, y, z, crs.Spheroid)
 	}
+}
+
+func merge(cs ...<-chan func(float64, float64, float64) (float64, float64, float64)) <-chan func(float64, float64, float64) (float64, float64, float64) {
+	out := make(chan func(float64, float64, float64) (float64, float64, float64))
+	var wg sync.WaitGroup
+	wg.Add(len(cs))
+	for _, c := range cs {
+		go func(c <-chan func(float64, float64, float64) (float64, float64, float64)) {
+			for v := range c {
+				out <- v
+			}
+			wg.Done()
+		}(c)
+	}
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+	return out
 }
 
 // FromSystem provides the conversion from a coordinate system
@@ -291,7 +318,7 @@ func (crs CoordinateReferenceSystem) FromAlbersEqualAreaConic(lonf, latf, lat1, 
 	return crs.FromSystem(system.AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf))
 }
 
-// To transform from one CoordinateReeferenceSystem to another.
+// To transforms from one CoordinateReferenceSystem to another.
 func (crs CoordinateReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	if crs.System == nil {
 		crs.System = system.LonLat()

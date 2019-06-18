@@ -2,6 +2,7 @@ package epsg
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/wroge/wgs84/etrs89"
 	"github.com/wroge/wgs84/system"
@@ -18,5 +19,11 @@ func ExampleRepository_Add() {
 	f := r.Transform(4326, 3416)
 	if f != nil {
 		fmt.Println(f.Round(0)(16, 48, 0))
+	}
+}
+
+func BenchmarkTransform(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Transform(4326, 3857)(9, 52, 0)
 	}
 }

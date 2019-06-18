@@ -7,9 +7,9 @@ import (
 	"github.com/wroge/wgs84/spheroid"
 )
 
-// The Spheroid interface is implemented by
+// Spheroid is an unnamed interface type implemented by
 // github.com/wroge/wgs84/spheroid spheroid.Spheroid.
-type Spheroid interface {
+type Spheroid = interface {
 	A() float64
 	Fi() float64
 }
