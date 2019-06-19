@@ -5,7 +5,6 @@ package wgs84
 import (
 	"fmt"
 	"strconv"
-	"sync"
 
 	"github.com/wroge/wgs84/spheroid"
 	"github.com/wroge/wgs84/system"
@@ -147,25 +146,6 @@ func (crs CoordinateReferenceSystem) ToSystem(sys System) Func {
 		x, y, z := crs.System.ToXYZ(a, b, c, crs.Spheroid)
 		return sys.FromXYZ(x, y, z, crs.Spheroid)
 	}
-}
-
-func merge(cs ...<-chan func(float64, float64, float64) (float64, float64, float64)) <-chan func(float64, float64, float64) (float64, float64, float64) {
-	out := make(chan func(float64, float64, float64) (float64, float64, float64))
-	var wg sync.WaitGroup
-	wg.Add(len(cs))
-	for _, c := range cs {
-		go func(c <-chan func(float64, float64, float64) (float64, float64, float64)) {
-			for v := range c {
-				out <- v
-			}
-			wg.Done()
-		}(c)
-	}
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
-	return out
 }
 
 // FromSystem provides the conversion from a coordinate system
