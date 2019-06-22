@@ -48,12 +48,16 @@ import (
 )
 
 func main() {
+	longitude := 9.0
+	latitude := 52.0
+	height := 0
+	
 	conversion := wgs84.ToWebMercator().Round(0)
-	east, north, height := conversion(9, 52, 0)
+	east, north, height := conversion(longitude, latitude, height)
 	// 1001875.000000 6800125.000000 0.000000
 
 	transformation := wgs84.To(etrs89.UTM(32))
-	east, north, height = transformation(9, 52, 0)
+	east, north, height = transformation(longitude, latitude, height)
 	// 500000.000000 5761038.213044 0.000065
 }
 ```
