@@ -4,6 +4,8 @@ package epsg
 import (
 	"sync"
 
+	"github.com/wroge/wgs84/nad83"
+
 	"github.com/wroge/wgs84"
 	"github.com/wroge/wgs84/dhdn2001"
 	"github.com/wroge/wgs84/etrs89"
@@ -83,6 +85,22 @@ func (r *Repository) Add(c int, crs wgs84.CoordinateReferenceSystem, minlon, min
 	r.codes[c] = epsg{crs, b}
 }
 
+// AllCodes provided by the DefaultRepository
+func AllCodes() []int {
+	return DefaultRepository().AllCodes()
+}
+
+// AllCodes provided by a Repository.
+func (r *Repository) AllCodes() []int {
+	r.m.Lock()
+	defer r.m.Unlock()
+	cc := []int{}
+	for c, _ := range r.codes {
+		cc = append(cc, c)
+	}
+	return cc
+}
+
 // Codes provided by the DefaultRepository at
 // a geographic WGS84 coordinate.
 func Codes(lon, lat float64) []int {
@@ -131,6 +149,14 @@ func DefaultRepository() *Repository {
 		2154:   {rgf93.FranceLambert(), boundingBox{-9.86, 41.15, 10.38, 51.56}},
 		27700:  {osgb36.NationalGrid(), boundingBox{-8.82, 49.79, 1.92, 60.94}},
 		4277:   {osgb36.LonLat(), boundingBox{-8.82, 49.79, 1.92, 60.94}},
+		100002: {nad83.Austin(), boundingBox{30.519581, -97.5634, 30.060181, -97.935928}},
+		32145:  {nad83.Vermont(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		32136:  {nad83.Tennessee(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		32104:  {nad83.Nebraska(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		32100:  {nad83.Montana(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		26985:  {nad83.Maryland(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		26957:  {nad83.Delaware(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		26956:  {nad83.Connecticut(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
 	}
 	for i := 1; i < 61; i++ {
 		r.Add(32600+i, wgs84.UTM(float64(i), true), float64(i)*6-186, 0, float64(i)*6-180, 84)

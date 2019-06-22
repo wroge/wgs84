@@ -19,3 +19,15 @@ func BenchmarkUTM(b *testing.B) {
 		UTM(32).From(wgs84.LonLat())(9, 52, 0)
 	}
 }
+
+func TestUTM(t *testing.T) {
+	longitude := 10.0
+	latitude := 52.0
+	east := 568649.70
+	north := 5761510.32
+
+	e, n, _ := UTM(32).From(wgs84.LonLat()).Round(2)(longitude, latitude, 0)
+	if e != east || n != north {
+		t.Error("UTM is not correct.")
+	}
+}

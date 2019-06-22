@@ -16,6 +16,7 @@ Subpackages with predefined coordinate reference systems within a geodetic datum
 
 - [DHDN2001](https://github.com/wroge/wgs84/tree/master/dhdn2001)
 - [ETRS89](https://github.com/wroge/wgs84/tree/master/etrs89)
+- [NAD83](https://github.com/wroge/wgs84/tree/master/nad83)
 - [OSGB36](https://github.com/wroge/wgs84/tree/master/osgb36)
 - [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
 
@@ -33,3 +34,26 @@ Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master
 - Lambert Conformal Conic 1SP/2SP
 - Equidistant Conic
 - Albers Equal Area Conic
+
+## Example
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/wroge/wgs84"
+	"github.com/wroge/wgs84/etrs89"
+)
+
+func main() {
+	conversion := wgs84.ToWebMercator().Round(0)
+	east, north, height := conversion(9, 52, 0)
+	// 1001875.000000 6800125.000000 0.000000
+
+	transformation := wgs84.To(etrs89.UTM(32))
+	east, north, height = transformation(9, 52, 0)
+	// 500000.000000 5761038.213044 0.000065
+}
+```
