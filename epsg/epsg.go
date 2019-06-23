@@ -4,11 +4,10 @@ package epsg
 import (
 	"sync"
 
-	"github.com/wroge/wgs84/nad83"
-
 	"github.com/wroge/wgs84"
 	"github.com/wroge/wgs84/dhdn2001"
 	"github.com/wroge/wgs84/etrs89"
+	"github.com/wroge/wgs84/nad83"
 	"github.com/wroge/wgs84/osgb36"
 	"github.com/wroge/wgs84/rgf93"
 )
@@ -95,7 +94,7 @@ func (r *Repository) AllCodes() []int {
 	r.m.Lock()
 	defer r.m.Unlock()
 	cc := []int{}
-	for c, _ := range r.codes {
+	for c := range r.codes {
 		cc = append(cc, c)
 	}
 	return cc
