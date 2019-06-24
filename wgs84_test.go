@@ -15,8 +15,10 @@ func ExampleCoordinateReferenceSystem() {
 		Transformation: transformation.WGS84().Helmert(446.448, -125.157, 542.06, 0.15, 0.247, 0.842, -20.489),
 		System:         system.TransverseMercator(-2, 49, 0.9996012717, 400000, -100000),
 	}
-	east, north, h := EPSG27700.FromLonLat()(-1, 52, 0)
-	fmt.Println(east, north, h)
+	conversion := EPSG27700.FromLonLat()
+	if conversion != nil {
+		fmt.Println(conversion(-1, 52, 0))
+	}
 }
 
 func ExampleTo() {
@@ -28,13 +30,17 @@ func ExampleTo() {
 		Transformation: nil,
 		System:         system.UTM(32, true),
 	}
-	east, north, h := To(EPSG25832)(9, 52, 0)
-	fmt.Println(east, north, h)
+	transformation := To(EPSG25832)
+	if transformation != nil {
+		fmt.Println(transformation(9, 52, 0))
+	}
 }
 
 func ExampleCoordinateReferenceSystem_ToWebMercator() {
-	east, north, h := LonLat().ToWebMercator().Round(0)(9, 52, 0)
-	fmt.Println(east, north, h)
+	conversion := LonLat().ToWebMercator().Round(0)
+	if conversion != nil {
+		fmt.Println(conversion(9, 52, 0))
+	}
 }
 
 func BenchmarkToWebMercator(b *testing.B) {

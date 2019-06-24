@@ -1,6 +1,6 @@
 # WGS84
 
-A pure go package for the conversion and transformation of geodesic coordinates.
+A pure go package for the conversion and transformation (datum conversion) of geodesic coordinates.
 
 ```go
 go get github.com/wroge/wgs84
@@ -50,14 +50,22 @@ import (
 func main() {
 	longitude := 9.0
 	latitude := 52.0
-	height := 0
-	
+	height := 0.0
+
 	conversion := wgs84.ToWebMercator().Round(0)
+	
 	east, north, height := conversion(longitude, latitude, height)
+	fmt.Printf("%f %f %f\n", east, north, height)
 	// 1001875.000000 6800125.000000 0.000000
+	
 
 	transformation := wgs84.To(etrs89.UTM(32))
-	east, north, height = transformation(longitude, latitude, height)
-	// 500000.000000 5761038.213044 0.000065
+	
+	// Check nil for safe usage
+	if transformation != nil {
+		east, north, height = transformation(longitude, latitude, height)
+		fmt.Printf("%f %f %f\n", east, north, height)
+		// 500000.000000 5761038.213044 0.000065
+	}
 }
 ```

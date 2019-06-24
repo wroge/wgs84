@@ -38,8 +38,6 @@ type System interface {
 // Spheroid and Transformation. A Transformation is a
 // struct for transforming geocentric coordinates from
 // and to the WGS84 system.
-// An empty CoordinateReferenceSystem struct behaves like
-// the WGS84 geographic system: wgs84.LonLat().
 type CoordinateReferenceSystem struct {
 	Spheroid       Spheroid
 	Transformation Transformation
@@ -94,6 +92,9 @@ type Func func(a, b, c float64) (a2, b2, c2 float64)
 // as some coordinates are defined as degrees (LonLat) and others
 // as meters (projected and geocentric).
 func (f Func) Round(places uint) Func {
+	if f == nil {
+		return nil
+	}
 	r := func(v float64) float64 {
 		v, _ = strconv.ParseFloat(fmt.Sprintf("%."+strconv.Itoa(int(places))+"f", v), 64)
 		if v == -0 {
@@ -113,6 +114,9 @@ func (f Func) Round(places uint) Func {
 // this function it is possible to insert the parameters
 // in the order latitude, longitude, height.
 func (f Func) SwitchIn() Func {
+	if f == nil {
+		return nil
+	}
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		return f(b, a, c)
 	}
@@ -124,6 +128,9 @@ func (f Func) SwitchIn() Func {
 // this function it is possible to get the result
 // in the order latitude, longitude, height.
 func (f Func) SwitchOut() Func {
+	if f == nil {
+		return nil
+	}
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		a, b, c = f(a, b, c)
 		return b, a, c
@@ -133,14 +140,8 @@ func (f Func) SwitchOut() Func {
 // ToSystem provides the conversion of a CoordinateReferenceSystem
 // to a coordinate system implementing the System interface.
 func (crs CoordinateReferenceSystem) ToSystem(sys System) Func {
-	if crs.System == nil {
-		crs.System = system.LonLat()
-	}
-	if crs.Spheroid == nil {
-		crs.Spheroid = spheroid.WGS84()
-	}
-	if crs.Transformation == nil {
-		crs.Transformation = transformation.WGS84()
+	if crs.System == nil || crs.Spheroid == nil || crs.Transformation == nil {
+		return nil
 	}
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		x, y, z := crs.System.ToXYZ(a, b, c, crs.Spheroid)
@@ -151,14 +152,8 @@ func (crs CoordinateReferenceSystem) ToSystem(sys System) Func {
 // FromSystem provides the conversion from a coordinate system
 // implementing the System interface to a CoordinateReferenceSystem.
 func (crs CoordinateReferenceSystem) FromSystem(sys System) Func {
-	if crs.System == nil {
-		crs.System = system.LonLat()
-	}
-	if crs.Spheroid == nil {
-		crs.Spheroid = spheroid.WGS84()
-	}
-	if crs.Transformation == nil {
-		crs.Transformation = transformation.WGS84()
+	if crs.System == nil || crs.Spheroid == nil || crs.Transformation == nil {
+		return nil
 	}
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		x, y, z := sys.ToXYZ(a, b, c, crs.Spheroid)
@@ -300,14 +295,11 @@ func (crs CoordinateReferenceSystem) FromAlbersEqualAreaConic(lonf, latf, lat1, 
 
 // To transforms from one CoordinateReferenceSystem to another.
 func (crs CoordinateReferenceSystem) To(to CoordinateReferenceSystem) Func {
-	if crs.System == nil {
-		crs.System = system.LonLat()
+	if crs.System == nil || crs.Spheroid == nil || crs.Transformation == nil {
+		return nil
 	}
-	if crs.Spheroid == nil {
-		crs.Spheroid = spheroid.WGS84()
-	}
-	if crs.Transformation == nil {
-		crs.Transformation = transformation.WGS84()
+	if to.System == nil || to.Spheroid == nil || to.Transformation == nil {
+		return nil
 	}
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		x, y, z := crs.System.ToXYZ(a, b, c, crs.Spheroid)
