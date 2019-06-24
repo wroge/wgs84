@@ -19,6 +19,7 @@ Subpackages with predefined coordinate reference systems within a geodetic datum
 - [NAD83](https://github.com/wroge/wgs84/tree/master/nad83)
 - [OSGB36](https://github.com/wroge/wgs84/tree/master/osgb36)
 - [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
+- [GDA94](https://github.com/wroge/wgs84/tree/master/gda94)
 
 Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)
 
