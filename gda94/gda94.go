@@ -51,8 +51,8 @@ func SALambert() wgs84.CoordinateReferenceSystem {
 
 // UTM provides UTM south coordinates in the GDA94 geodetic datum.
 //
-// UTM Zone 59 is equal to EPSG-Code 6738
-// UTM Zone 47 is equal to EPSG-Code 6737
+// UTM Zone 49 is equal to EPSG-Code 28349,
+// UTM Zone 50 is equal to EPSG-Code 28350.
 func UTM(zone float64) wgs84.CoordinateReferenceSystem {
 	return WithSystem(system.UTM(zone, false))
 }
