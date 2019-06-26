@@ -70,3 +70,8 @@ func main() {
 	}
 }
 ```
+
+WGS84 is a **geodetic datum**! In this package WGS84 is also associated with the geographic coordinate system (EPSG 4326).   
+```go
+wgs84.ToWebMercator() == wgs84.LonLat().ToWebMercator()
+```

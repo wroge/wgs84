@@ -20,16 +20,16 @@ type Transformation interface {
 
 // Spheroid is an unnamed interface type implemented by
 // github.com/wroge/wgs84/spheroid spheroid.Spheroid.
-type Spheroid = interface {
-	A() float64
-	Fi() float64
-}
+// type Spheroid = interface {
+//	A() float64
+//	Fi() float64
+// }
 
 // The System interface is implemented by
 // github.com/wroge/wgs84/system System.
 type System interface {
-	ToXYZ(a, b, c float64, sph Spheroid) (x, y, z float64)
-	FromXYZ(x, y, z float64, sph Spheroid) (a, b, c float64)
+	ToXYZ(a, b, c float64, sph system.Spheroid) (x, y, z float64)
+	FromXYZ(x, y, z float64, sph system.Spheroid) (a, b, c float64)
 }
 
 // A CoordinateReferenceSystem contains a geodetic
@@ -39,7 +39,7 @@ type System interface {
 // struct for transforming geocentric coordinates from
 // and to the WGS84 system.
 type CoordinateReferenceSystem struct {
-	Spheroid       Spheroid
+	Spheroid       system.Spheroid
 	Transformation Transformation
 	System         System
 }

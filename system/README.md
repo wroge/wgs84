@@ -21,6 +21,11 @@ Implementing the following methods ...
 ```go
 ToXYZ(a, b, c float64, sph Spheroid) (x, y, z float64)
 FromXYZ(x, y, z float64, sph Spheroid) (a, b, c float64)
+
+type Spheroid = interface {
+    A() float64
+    Fi() float64
+}
 ```
 
 Back to [WGS84](https://github.com/wroge/wgs84).

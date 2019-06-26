@@ -11,7 +11,15 @@ import (
 
 // Austin is equal to EPSG-Code 100002
 func Austin() wgs84.CoordinateReferenceSystem {
-	return WithSystem(system.LambertConformalConic2SP(-100.333333333333, 29.6666666666667, 31.8833333333333, 30.1166666666667, 2296583.333333, 9842500.0000000))
+	return WithSystem(
+		system.LambertConformalConic2SP(
+			-100.333333333333,
+			29.6666666666667,
+			31.8833333333333,
+			30.1166666666667,
+			2296583.333333,
+			9842500.0000000),
+	)
 }
 
 // Vermont is equal to EPSG-Code 32145
@@ -31,7 +39,9 @@ func Nebraska() wgs84.CoordinateReferenceSystem {
 
 // Montana is equal to EPSG-Code 32100
 func Montana() wgs84.CoordinateReferenceSystem {
-	return WithSystem(system.LambertConformalConic2SP(-109.5, 44.25, 49, 45, 600000, 0))
+	return WithSystem(
+		system.LambertConformalConic2SP(-109.5, 44.25, 49, 45, 600000, 0),
+	)
 }
 
 // Maryland is equal to EPSG-Code 26985
@@ -46,7 +56,9 @@ func Delaware() wgs84.CoordinateReferenceSystem {
 
 // Connecticut is equal to EPSG-Code 26956
 func Connecticut() wgs84.CoordinateReferenceSystem {
-	return WithSystem(system.LambertConformalConic2SP(-72.75, 40.83333333333334, 41.86666666666667, 41.2, 304800.6096, 152400.3048))
+	return WithSystem(
+		system.LambertConformalConic2SP(-72.75, 40.83333333333334, 41.86666666666667, 41.2, 304800.6096, 152400.3048),
+	)
 }
 
 // WithSystem provides any wgs84.System in the NAD83

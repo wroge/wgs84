@@ -4,6 +4,8 @@ package epsg
 import (
 	"sync"
 
+	"github.com/wroge/wgs84/gda94"
+
 	"github.com/wroge/wgs84"
 	"github.com/wroge/wgs84/dhdn2001"
 	"github.com/wroge/wgs84/etrs89"
@@ -156,6 +158,14 @@ func DefaultRepository() *Repository {
 		26985:  {nad83.Maryland(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
 		26957:  {nad83.Delaware(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
 		26956:  {nad83.Connecticut(), boundingBox{-172.54, 23.81, -47.74, 86.46}},
+		4283:   {gda94.LonLat(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		6723:   {gda94.CKIG94(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		6721:   {gda94.CIG94(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		3113:   {gda94.BCSG02(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		3111:   {gda94.Vicgrid94(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		3577:   {gda94.AustralianAlbers(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		3308:   {gda94.NSWLambert(), boundingBox{93.41, -60.56, 173.35, -8.47}},
+		3107:   {gda94.SALambert(), boundingBox{93.41, -60.56, 173.35, -8.47}},
 	}
 	for i := 1; i < 61; i++ {
 		r.Add(32600+i, wgs84.UTM(float64(i), true), float64(i)*6-186, 0, float64(i)*6-180, 84)
@@ -169,6 +179,9 @@ func DefaultRepository() *Repository {
 	}
 	for i := 28; i < 39; i++ {
 		r.Add(25800+i, etrs89.UTM(float64(i)), float64(i)*6-186, 32.88, float64(i)*6-180, 84.17)
+	}
+	for i := 49; i < 57; i++ {
+		r.Add(28349+i, gda94.UTM(float64(i)), float64(i)*6-186, -60.56, float64(i)*6-180, -8.47)
 	}
 	return r
 }
