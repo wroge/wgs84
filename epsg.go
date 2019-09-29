@@ -27,7 +27,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 	if z := code - 25800; z >= 28 && z <= 38 {
 		return ETRS89().UTM(float64(z))
 	}
-	if lat := code - 28349; lat >= 49 && lat <= 56 {
+	if lat := code - 3900; lat >= 42 && lat <= 50 {
 		return RGF93().CC(float64(lat))
 	}
 	return CoordinateReferenceSystem{}
