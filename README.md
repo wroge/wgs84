@@ -13,7 +13,7 @@ go get github.com/wroge/wgs84
 
 ### Usage
 ```go
-transform := wgs84.LonLat().To(wgs84.ETRS89().UTM(32))
+transform := wgs84.LonLat().To(wgs84.ETRS89{}.UTM(32))
 east, north, h := transform(9, 52, 0)
 
 transform = wgs84.EPSG(25832).To(wgs84.EPSG(4326))
