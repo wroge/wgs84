@@ -20,13 +20,10 @@ austria_lambert := austria.LambertConformalConic2SP(13.33333333333333, 74.5,49,4
 
 ### Features
 
-- ...
 - Helmert Transformation
-- Geocentric Translation
 - Web Mercator
 - Lambert Conformal Conic
 - Transverse Mercator (UTM)
-- Albers Equal Area Conic
 - ...
 
 ### Data-Structure
