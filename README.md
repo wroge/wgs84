@@ -1,77 +1,59 @@
 # WGS84
 
-A pure go package for the conversion and transformation (datum conversion) of geodesic coordinates.
+A pure Go package for coordinate transformations.
 
 ```go
 go get github.com/wroge/wgs84
 ```
 
-[![GoDoc](http://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://godoc.org/github.com/wroge/wgs84)
-[![GoWalker](https://img.shields.io/badge/Go_Walker-Doc-blue.svg?style=flat-square)](https://gowalker.org/github.com/wroge/wgs84)
-[![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84?style=flat-square)](https://goreportcard.com/report/github.com/wroge/wgs84)
-[![GolangCI](https://golangci.com/badges/github.com/wroge/wgs84.svg)](https://golangci.com/r/github.com/wroge/wgs84)
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/wroge/wgs84.svg?style=social)](https://github.com/wroge/wgs84/tags)
-
-Subpackages with predefined coordinate reference systems within a geodetic datum:
-
-- [DHDN2001](https://github.com/wroge/wgs84/tree/master/dhdn2001)
-- [ETRS89](https://github.com/wroge/wgs84/tree/master/etrs89)
-- [NAD83](https://github.com/wroge/wgs84/tree/master/nad83)
-- [OSGB36](https://github.com/wroge/wgs84/tree/master/osgb36)
-- [RGF93](https://github.com/wroge/wgs84/tree/master/rgf93)
-- [GDA94](https://github.com/wroge/wgs84/tree/master/gda94)
-
-Package for EPSG-Code support: [EPSG](https://github.com/wroge/wgs84/tree/master/epsg)
-
-## Features
-
-- Helmert Transformation
-- Geocentric Translation
-- Geocentric/Cartesian (XYZ)
-- Geographic (LonLat)
-- Web Mercator
-- Transverse Mercator (UTM/Gauss-Krueger)
-- (Normal) Mercator
-- Lambert Conformal Conic 1SP/2SP
-- Equidistant Conic
-- Albers Equal Area Conic
-
-## Example
-
+### Usage
 ```go
-package main
+transform := wgs84.LonLat().To(wgs84.ETRS89().UTM(32))
+east, north, h := transform(9, 52, 0)
 
-import (
-	"fmt"
+transform = wgs84.EPSG(25832).To(wgs84.EPSG(4326))
+lon, lat, h = transform(500000, 5761038, 0)
 
-	"github.com/wroge/wgs84"
-	"github.com/wroge/wgs84/etrs89"
-)
-
-func main() {
-	longitude := 9.0
-	latitude := 52.0
-	height := 0.0
-
-	conversion := wgs84.ToWebMercator().Round(0)
-	
-	east, north, height := conversion(longitude, latitude, height)
-	fmt.Printf("%f %f %f\n", east, north, height)
-	// 1001875.000000 6800125.000000 0.000000
-	
-
-	transformation := wgs84.To(etrs89.UTM(32))
-	
-	// Check nil for safe usage
-	if transformation != nil {
-		east, north, height = transformation(longitude, latitude, height)
-		fmt.Printf("%f %f %f\n", east, north, height)
-		// 500000.000000 5761038.213044 0.000065
-	}
-}
+austria := wgs84.NewDatum(6377397.155, 299.1528128).Helmert(577.326, 90.129, 463.919, 5.137, 1.474, 5.297, 2.4232)
+austria_lambert := austria.LambertConformalConic2SP(13.33333333333333, 74.5,49,46,400000,400000)
 ```
 
-WGS84 is a **geodetic datum**! In this package WGS84 is also associated with the geographic coordinate system (EPSG 4326).   
+### Features
+
+- ...
+- Helmert Transformation
+- Geocentric Translation
+- Web Mercator
+- Lambert Conformal Conic
+- Transverse Mercator (UTM)
+- Albers Equal Area Conic
+- ...
+
+### Data-Structure
+
 ```go
-wgs84.ToWebMercator() == wgs84.LonLat().ToWebMercator()
+type Spheroid interface {
+	A() float64
+	Fi() float64
+}
+
+type Transformation interface {
+	ToWGS84(x, y, z float64) (x0, y0, z0 float64)
+	FromWGS84(x0, y0, z0 float64) (x, y, z float64)
+}
+
+type GeodeticDatum struct {
+	Spheroid       Spheroid
+	Transformation Transformation
+}
+
+type CoordinateSystem interface {
+	ToXYZ(a, b, c float64, s Spheroid) (x, y, z float64)
+	FromXYZ(x, y, z float64, s Spheroid) (a, b, c float64)
+}
+
+type CoordinateReferenceSystem struct {
+	GeodeticDatum    GeodeticDatum
+	CoordinateSystem CoordinateSystem
+}
 ```
