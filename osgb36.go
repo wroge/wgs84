@@ -12,10 +12,12 @@ func OSGB36() GeodeticDatum {
 	}
 }
 
+// EPSG-Code 4277
 func OSGB36LonLat() CoordinateReferenceSystem {
 	return OSGB36().LonLat()
 }
 
+// EPSG-Code 27700
 func OSGB36NationalGrid() CoordinateReferenceSystem {
 	return OSGB36().TransverseMercator(-2, 49, 0.9996012717, 400000, -100000)
 }

@@ -2,6 +2,7 @@ package wgs84
 
 import "github.com/wroge/wgs84/system"
 
+// By default WGS84
 type GeodeticDatum struct {
 	Spheroid       Spheroid
 	Transformation Transformation
@@ -34,7 +35,13 @@ func (d GeodeticDatum) TransverseMercator(lonf, latf, scale, eastf, northf float
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
-		System:         system.TransverseMercator{lonf, latf, scale, eastf, northf},
+		System: system.TransverseMercator{
+			Lonf:   lonf,
+			Latf:   latf,
+			Scale:  scale,
+			Eastf:  eastf,
+			Northf: northf,
+		},
 	}
 }
 
@@ -58,7 +65,12 @@ func (d GeodeticDatum) Mercator(lonf, scale, eastf, northf float64) CoordinateRe
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
-		System:         system.Mercator{lonf, scale, eastf, northf},
+		System: system.Mercator{
+			Lonf:   lonf,
+			Scale:  scale,
+			Eastf:  eastf,
+			Northf: northf,
+		},
 	}
 }
 
@@ -66,7 +78,13 @@ func (d GeodeticDatum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
-		System:         system.LambertConformalConic1SP{lonf, latf, scale, eastf, northf},
+		System: system.LambertConformalConic1SP{
+			Lonf:   lonf,
+			Latf:   latf,
+			Scale:  scale,
+			Eastf:  eastf,
+			Northf: northf,
+		},
 	}
 }
 
@@ -74,7 +92,14 @@ func (d GeodeticDatum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, n
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
-		System:         system.LambertConformalConic2SP{lonf, latf, lat1, lat2, eastf, northf},
+		System: system.LambertConformalConic2SP{
+			Lonf:   lonf,
+			Latf:   latf,
+			Lat1:   lat1,
+			Lat2:   lat2,
+			Eastf:  eastf,
+			Northf: northf,
+		},
 	}
 }
 
@@ -82,7 +107,14 @@ func (d GeodeticDatum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, north
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
-		System:         system.AlbersEqualAreaConic{lonf, latf, lat1, lat2, eastf, northf},
+		System: system.AlbersEqualAreaConic{
+			Lonf:   lonf,
+			Latf:   latf,
+			Lat1:   lat1,
+			Lat2:   lat2,
+			Eastf:  eastf,
+			Northf: northf,
+		},
 	}
 }
 
@@ -90,6 +122,13 @@ func (d GeodeticDatum) EquidistantConic(lonf, latf, lat1, lat2, eastf, northf fl
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
-		System:         system.EquidistantConic{lonf, latf, lat1, lat2, eastf, northf},
+		System: system.EquidistantConic{
+			Lonf:   lonf,
+			Latf:   latf,
+			Lat1:   lat1,
+			Lat2:   lat2,
+			Eastf:  eastf,
+			Northf: northf,
+		},
 	}
 }

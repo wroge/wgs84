@@ -12,6 +12,7 @@ func DHDN2001() GeodeticDatum {
 	}
 }
 
+// GK2 - GK5, EPSG-Codes 31466-31469
 func DHDN2001GK(zone float64) CoordinateReferenceSystem {
 	return DHDN2001().GK(zone)
 }

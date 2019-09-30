@@ -1,5 +1,7 @@
 package wgs84
 
+import "github.com/wroge/wgs84/spheroid"
+
 type Spheroid = interface {
 	A() float64
 	Fi() float64
@@ -21,7 +23,14 @@ type CoordinateReferenceSystem struct {
 	System         System
 }
 
+// Empty CoordinateReferenceSystems are handled as WGS84 XYZ (EPSG-Code 4978)
 func (crs CoordinateReferenceSystem) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+	if crs.Spheroid == nil {
+		crs.Spheroid = spheroid.WGS84()
+	}
+	if to.Spheroid == nil {
+		to.Spheroid = spheroid.WGS84()
+	}
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		if crs.System != nil {
 			a, b, c = crs.System.ToXYZ(a, b, c, crs.Spheroid)

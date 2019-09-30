@@ -10,6 +10,7 @@ func ETRS89() GeodeticDatum {
 	}
 }
 
+// UTM28 - UTM38, EPSG-Codes 25828-25838
 func ETRS89UTM(zone float64) CoordinateReferenceSystem {
 	return ETRS89().UTM(zone, true)
 }
