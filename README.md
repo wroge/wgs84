@@ -13,14 +13,10 @@ go get github.com/wroge/wgs84
 
 ### Usage
 ```go
-transform := wgs84.LonLat().To(wgs84.ETRS89{}.UTM(32))
-east, north, h := transform(9, 52, 0)
+east, north, h := wgs84.LonLat().To(wgs84.ETRS89UTM(32))(9, 52, 0)
 
-transform = wgs84.EPSG(25832).To(wgs84.EPSG(4326))
-lon, lat, h = transform(500000, 5761038, 0)
-
-austria := wgs84.NewDatum(6377397.155, 299.1528128).Helmert(577.326, 90.129, 463.919, 5.137, 1.474, 5.297, 2.4232)
-austria_lambert := austria.LambertConformalConic2SP(13.33333333333333, 74.5,49,46,400000,400000)
+epsg := wgs84.EPSG()
+lon, lat, h := epsg.Code(25832).To(epsg.Code(4326))(500000, 5761038, 0)
 ```
 
 ### Features

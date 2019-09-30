@@ -1,34 +1,65 @@
 package wgs84
 
-func EPSG(code int) CoordinateReferenceSystem {
-	switch code {
-	case 4326:
-		return LonLat()
-	case 4978:
-		return Datum().XYZ()
-	case 3857, 900913:
-		return WebMercator()
-	case 27700:
-		return OSGB36{}.NationalGrid()
-	case 4277:
-		return OSGB36{}.LonLat()
-	case 2154:
-		return RGF93{}.FranceLambert()
+import (
+	"sync"
+
+	"github.com/wroge/wgs84/system"
+)
+
+func EPSG() *Repository {
+	codes := map[int]CoordinateReferenceSystem{}
+	codes[4326] = LonLat()
+	codes[4978] = CoordinateReferenceSystem{}
+	codes[3857] = WebMercator()
+	codes[900913] = WebMercator()
+	codes[27700] = OSGB36().LonLat()
+	codes[4277] = OSGB36NationalGrid()
+	codes[2154] = RGF93FranceLambert()
+	for i := 1; i < 61; i++ {
+		codes[32600+i] = CoordinateReferenceSystem{System: system.UTM(float64(i), true)}
+		codes[32700+i] = CoordinateReferenceSystem{System: system.UTM(float64(i), false)}
 	}
-	if z := code - 32600; z >= 1 && z <= 60 {
-		return Datum().UTM(float64(z), true)
+	for i := 42; i < 51; i++ {
+		codes[3900+i] = RGF93CC(float64(i))
 	}
-	if z := code - 32700; z >= 1 && z <= 60 {
-		return Datum().UTM(float64(z), false)
+	for i := 2; i < 6; i++ {
+		codes[31464+i] = DHDN2001GK(float64(i))
 	}
-	if z := code - 31464; z >= 2 && z <= 5 {
-		return DHDN2001{}.GK(float64(z))
+	for i := 28; i < 39; i++ {
+		codes[25800+i] = ETRS89UTM(float64(i))
 	}
-	if z := code - 25800; z >= 28 && z <= 38 {
-		return ETRS89{}.UTM(float64(z))
+	return &Repository{
+		codes: codes,
 	}
-	if lat := code - 3900; lat >= 42 && lat <= 50 {
-		return RGF93{}.CC(float64(lat))
+}
+
+type Repository struct {
+	codes map[int]CoordinateReferenceSystem
+	mutex sync.Mutex
+}
+
+func (r *Repository) Code(c int) CoordinateReferenceSystem {
+	if r.codes == nil {
+		return CoordinateReferenceSystem{}
 	}
-	return CoordinateReferenceSystem{}
+	return r.codes[c]
+}
+
+func (r *Repository) Add(c int, crs CoordinateReferenceSystem) {
+	if r.codes == nil {
+		r.codes = map[int]CoordinateReferenceSystem{}
+	}
+	r.mutex.Lock()
+	r.codes[c] = crs
+	r.mutex.Unlock()
+}
+
+func (r *Repository) Codes() []int {
+	r.mutex.Lock()
+	var cc []int
+	for c := range r.codes {
+		cc = append(cc, c)
+	}
+	r.mutex.Unlock()
+	return cc
 }

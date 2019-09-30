@@ -1,103 +1,95 @@
 package wgs84
 
-func NewDatum(a, fi float64) GeodeticDatum {
-	return GeodeticDatum{
-		Spheroid: spheroid{a, fi},
-	}
-}
+import "github.com/wroge/wgs84/system"
 
 type GeodeticDatum struct {
 	Spheroid       Spheroid
 	Transformation Transformation
 }
 
-func (gd GeodeticDatum) GeocentricTranslation(tx, ty, tz float64) GeodeticDatum {
-	return GeodeticDatum{
-		Spheroid:       gd.Spheroid,
-		Transformation: geocentricTranslation(gd.Transformation, tx, ty, tz),
-	}
-}
-
-func (gd GeodeticDatum) Helmert(tx, ty, tz, rx, ry, rz, ds float64) GeodeticDatum {
-	return GeodeticDatum{
-		Spheroid:       gd.Spheroid,
-		Transformation: helmert(gd.Transformation, tx, ty, tz, rx, ry, rz, ds),
-	}
-}
-
-func (gd GeodeticDatum) XYZ() CoordinateReferenceSystem {
+func (d GeodeticDatum) XYZ() CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: nil,
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
 	}
 }
 
-func (gd GeodeticDatum) LonLat() CoordinateReferenceSystem {
+func (d GeodeticDatum) LonLat() CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: lonLat(),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.LonLat{},
 	}
 }
 
-func (gd GeodeticDatum) WebMercator() CoordinateReferenceSystem {
+func (d GeodeticDatum) WebMercator() CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: webMercator(),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.WebMercator{},
 	}
 }
 
-func (gd GeodeticDatum) TransverseMercator(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) TransverseMercator(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: transverseMercator(lonf, latf, scale, eastf, northf),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.TransverseMercator{lonf, latf, scale, eastf, northf},
 	}
 }
 
-func (gd GeodeticDatum) UTM(zone float64, northern bool) CoordinateReferenceSystem {
+func (d GeodeticDatum) UTM(zone float64, northern bool) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: utm(zone, northern),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.UTM(zone, northern),
 	}
 }
 
-func (gd GeodeticDatum) GK(zone float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) GK(zone float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: gk(zone),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.GK(zone),
 	}
 }
 
-func (gd GeodeticDatum) Mercator(lonf, scale, eastf, northf float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) Mercator(lonf, scale, eastf, northf float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: mercator(lonf, scale, eastf, northf),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.Mercator{lonf, scale, eastf, northf},
 	}
 }
 
-func (gd GeodeticDatum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: lambertConformalConic1SP(lonf, latf, scale, eastf, northf),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.LambertConformalConic1SP{lonf, latf, scale, eastf, northf},
 	}
 }
 
-func (gd GeodeticDatum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: lambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.LambertConformalConic2SP{lonf, latf, lat1, lat2, eastf, northf},
 	}
 }
 
-func (gd GeodeticDatum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: albersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.AlbersEqualAreaConic{lonf, latf, lat1, lat2, eastf, northf},
 	}
 }
 
-func (gd GeodeticDatum) EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
+func (d GeodeticDatum) EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    gd,
-		CoordinateSystem: equidistantConic(lonf, latf, lat1, lat2, eastf, northf),
+		Spheroid:       d.Spheroid,
+		Transformation: d.Transformation,
+		System:         system.EquidistantConic{lonf, latf, lat1, lat2, eastf, northf},
 	}
 }

@@ -1,0 +1,63 @@
+package system
+
+import (
+	"math"
+
+	"github.com/wroge/wgs84/spheroid"
+)
+
+type LambertConformalConic1SP struct {
+	Lonf, Latf, Scale, Eastf, Northf float64
+}
+
+func (sys LambertConformalConic1SP) ToXYZ(east, north, h float64, s Spheroid) (x, y, z float64) {
+	t := func(φ float64, sph spheroid.Spheroid) float64 {
+		return math.Tan(math.Pi/4-φ/2) /
+			math.Pow((1-sph.E()*math.Sin(φ))/(1+sph.E()*math.Sin(φ)), sph.E()/2)
+	}
+	m := func(φ float64, sph spheroid.Spheroid) float64 {
+		return math.Cos(φ) / math.Sqrt(1-sph.E2()*sin2(φ))
+	}
+	n := math.Sin(radian(sys.Latf))
+	F := func(sph spheroid.Spheroid) float64 {
+		return m(radian(sys.Latf), sph) / (n * math.Pow(t(radian(sys.Latf), sph), n))
+	}
+	ρ := func(φ float64, sph spheroid.Spheroid) float64 {
+		return sph.A() * F(sph) * math.Pow(t(φ, sph)*sys.Scale, n)
+	}
+	sph := getSpheroid(s)
+	ρi := math.Sqrt(math.Pow(east-sys.Eastf, 2) + math.Pow(ρ(radian(sys.Latf), sph)-(north-sys.Northf), 2))
+	if n < 0 {
+		ρi = -ρi
+	}
+	ti := math.Pow(ρi/(sph.A()*sys.Scale*F(sph)), 1/n)
+	φ := math.Pi/2 - 2*math.Atan(ti)
+	for i := 0; i < 5; i++ {
+		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-sph.E()*math.Sin(φ))/(1+sph.E()*math.Sin(φ)), sph.E()/2))
+	}
+	λ := math.Atan((east-sys.Eastf)/(ρ(radian(sys.Latf), sph)-(north-sys.Northf)))/n + radian(sys.Lonf)
+	return LonLat{}.ToXYZ(degree(λ), degree(φ), h, sph)
+}
+
+func (sys LambertConformalConic1SP) FromXYZ(x, y, z float64, s Spheroid) (east, north, h float64) {
+	t := func(φ float64, sph spheroid.Spheroid) float64 {
+		return math.Tan(math.Pi/4-φ/2) /
+			math.Pow((1-sph.E()*math.Sin(φ))/(1+sph.E()*math.Sin(φ)), sph.E()/2)
+	}
+	m := func(φ float64, sph spheroid.Spheroid) float64 {
+		return math.Cos(φ) / math.Sqrt(1-sph.E2()*sin2(φ))
+	}
+	n := math.Sin(radian(sys.Latf))
+	F := func(sph spheroid.Spheroid) float64 {
+		return m(radian(sys.Latf), sph) / (n * math.Pow(t(radian(sys.Latf), sph), n))
+	}
+	ρ := func(φ float64, sph spheroid.Spheroid) float64 {
+		return sph.A() * F(sph) * math.Pow(t(φ, sph)*sys.Scale, n)
+	}
+	sph := getSpheroid(s)
+	lon, lat, h := LonLat{}.FromXYZ(x, y, z, sph)
+	θ := n * (radian(lon) - radian(sys.Lonf))
+	east = sys.Eastf + ρ(radian(lat), sph)*math.Sin(θ)
+	north = sys.Northf + ρ(radian(sys.Latf), sph) - ρ(radian(lat), sph)*math.Cos(θ)
+	return
+}

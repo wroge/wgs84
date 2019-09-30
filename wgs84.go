@@ -1,19 +1,20 @@
 package wgs84
 
-func Datum() GeodeticDatum {
-	return NewDatum(6378137, 298.257223563)
-}
+import (
+	"github.com/wroge/wgs84/spheroid"
+	"github.com/wroge/wgs84/system"
+)
 
 func LonLat() CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    Datum(),
-		CoordinateSystem: lonLat(),
+		Spheroid: spheroid.WGS84(),
+		System:   system.LonLat{},
 	}
 }
 
 func WebMercator() CoordinateReferenceSystem {
 	return CoordinateReferenceSystem{
-		GeodeticDatum:    Datum(),
-		CoordinateSystem: webMercator(),
+		Spheroid: spheroid.WGS84(),
+		System:   system.LonLat{},
 	}
 }
