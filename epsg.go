@@ -12,8 +12,8 @@ func EPSG() *Repository {
 	codes[4978] = CoordinateReferenceSystem{}
 	codes[3857] = WebMercator()
 	codes[900913] = WebMercator()
-	codes[27700] = OSGB36().LonLat()
-	codes[4277] = OSGB36NationalGrid()
+	codes[27700] = OSGB36NationalGrid()
+	codes[4277] = OSGB36LonLat()
 	codes[2154] = RGF93FranceLambert()
 	for i := 1; i < 61; i++ {
 		codes[32600+i] = CoordinateReferenceSystem{System: system.UTM(float64(i), true)}
