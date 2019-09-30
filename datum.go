@@ -1,14 +1,20 @@
 package wgs84
 
-import "github.com/wroge/wgs84/system"
+import (
+	"github.com/wroge/wgs84/spheroid"
+	"github.com/wroge/wgs84/system"
+)
 
-// By default WGS84
+// By default handled as WGS84
 type GeodeticDatum struct {
 	Spheroid       Spheroid
 	Transformation Transformation
 }
 
 func (d GeodeticDatum) XYZ() CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -16,6 +22,9 @@ func (d GeodeticDatum) XYZ() CoordinateReferenceSystem {
 }
 
 func (d GeodeticDatum) LonLat() CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -24,6 +33,9 @@ func (d GeodeticDatum) LonLat() CoordinateReferenceSystem {
 }
 
 func (d GeodeticDatum) WebMercator() CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -32,6 +44,9 @@ func (d GeodeticDatum) WebMercator() CoordinateReferenceSystem {
 }
 
 func (d GeodeticDatum) TransverseMercator(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -46,6 +61,9 @@ func (d GeodeticDatum) TransverseMercator(lonf, latf, scale, eastf, northf float
 }
 
 func (d GeodeticDatum) UTM(zone float64, northern bool) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -54,6 +72,9 @@ func (d GeodeticDatum) UTM(zone float64, northern bool) CoordinateReferenceSyste
 }
 
 func (d GeodeticDatum) GK(zone float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -62,6 +83,9 @@ func (d GeodeticDatum) GK(zone float64) CoordinateReferenceSystem {
 }
 
 func (d GeodeticDatum) Mercator(lonf, scale, eastf, northf float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -75,6 +99,9 @@ func (d GeodeticDatum) Mercator(lonf, scale, eastf, northf float64) CoordinateRe
 }
 
 func (d GeodeticDatum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -89,6 +116,9 @@ func (d GeodeticDatum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf
 }
 
 func (d GeodeticDatum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -104,6 +134,9 @@ func (d GeodeticDatum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, n
 }
 
 func (d GeodeticDatum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
@@ -119,6 +152,9 @@ func (d GeodeticDatum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, north
 }
 
 func (d GeodeticDatum) EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
+	if d.Spheroid == nil {
+		d.Spheroid = spheroid.WGS84()
+	}
 	return CoordinateReferenceSystem{
 		Spheroid:       d.Spheroid,
 		Transformation: d.Transformation,
