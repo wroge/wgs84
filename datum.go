@@ -1,170 +1,215 @@
 package wgs84
 
-import (
-	"github.com/wroge/wgs84/spheroid"
-	"github.com/wroge/wgs84/system"
-)
-
-// By default handled as WGS84
-type GeodeticDatum struct {
-	Spheroid       Spheroid
-	Transformation Transformation
+type Datum struct {
+	GeodeticSpheroid GeodeticSpheroid
+	Transformation   Transformation
 }
 
-func (d GeodeticDatum) XYZ() CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-	}
+func (d Datum) MajorAxis() float64 {
+	return spheroid(d.GeodeticSpheroid).MajorAxis()
 }
 
-func (d GeodeticDatum) LonLat() CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System:         system.LonLat{},
-	}
+func (d Datum) InverseFlattening() float64 {
+	return spheroid(d.GeodeticSpheroid).InverseFlattening()
 }
 
-func (d GeodeticDatum) WebMercator() CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System:         system.WebMercator{},
-	}
+func (d Datum) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
+	return toWGS84(d.Transformation, x, y, z)
 }
 
-func (d GeodeticDatum) TransverseMercator(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System: system.TransverseMercator{
-			Lonf:   lonf,
-			Latf:   latf,
-			Scale:  scale,
-			Eastf:  eastf,
-			Northf: northf,
-		},
+func (d Datum) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
+	return fromWGS84(d.Transformation, x0, y0, z0)
+}
+
+type ETRS89 struct{}
+
+func (d ETRS89) Spheroid() Spheroid {
+	return GRS80()
+}
+
+func (d ETRS89) MajorAxis() float64 {
+	return d.Spheroid().MajorAxis()
+}
+
+func (d ETRS89) InverseFlattening() float64 {
+	return d.Spheroid().InverseFlattening()
+}
+
+func (d ETRS89) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
+	return x, y, z
+}
+
+func (d ETRS89) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
+	return x0, y0, z0
+}
+
+func (d ETRS89) LonLat() LonLat {
+	return LonLat{
+		GeodeticDatum: d,
 	}
 }
 
-func (d GeodeticDatum) UTM(zone float64, northern bool) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System:         system.UTM(zone, northern),
-	}
-}
-
-func (d GeodeticDatum) GK(zone float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System:         system.GK(zone),
+func (d ETRS89) UTM(zone float64) TransverseMercator {
+	return TransverseMercator{
+		GeodeticDatum: d,
+		Lonf:          zone*6 - 183,
+		Latf:          0,
+		Scale:         0.9996,
+		Eastf:         500000,
+		Northf:        0,
 	}
 }
 
-func (d GeodeticDatum) Mercator(lonf, scale, eastf, northf float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System: system.Mercator{
-			Lonf:   lonf,
-			Scale:  scale,
-			Eastf:  eastf,
-			Northf: northf,
-		},
+type OSGB36 struct{}
+
+func (d OSGB36) Spheroid() Spheroid {
+	return Airy()
+}
+
+func (d OSGB36) Helmert() Helmert {
+	return Helmert{
+		Tx: 446.448,
+		Ty: -125.157,
+		Tz: 542.06,
+		Rx: 0.15,
+		Ry: 0.247,
+		Rz: 0.842,
+		Ds: -20.489,
 	}
 }
 
-func (d GeodeticDatum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System: system.LambertConformalConic1SP{
-			Lonf:   lonf,
-			Latf:   latf,
-			Scale:  scale,
-			Eastf:  eastf,
-			Northf: northf,
-		},
+func (d OSGB36) MajorAxis() float64 {
+	return d.Spheroid().MajorAxis()
+}
+
+func (d OSGB36) InverseFlattening() float64 {
+	return d.Spheroid().InverseFlattening()
+}
+
+func (d OSGB36) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
+	return d.Helmert().ToWGS84(x, y, z)
+}
+
+func (d OSGB36) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
+	return d.Helmert().FromWGS84(x0, y0, z0)
+}
+
+func (d OSGB36) LonLat() LonLat {
+	return LonLat{
+		GeodeticDatum: d,
 	}
 }
 
-func (d GeodeticDatum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System: system.LambertConformalConic2SP{
-			Lonf:   lonf,
-			Latf:   latf,
-			Lat1:   lat1,
-			Lat2:   lat2,
-			Eastf:  eastf,
-			Northf: northf,
-		},
+func (d OSGB36) NationalGrid() TransverseMercator {
+	return TransverseMercator{
+		GeodeticDatum: d,
+		Lonf:          -2,
+		Latf:          49,
+		Scale:         0.9996012717,
+		Eastf:         400000,
+		Northf:        -100000,
 	}
 }
 
-func (d GeodeticDatum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
-	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System: system.AlbersEqualAreaConic{
-			Lonf:   lonf,
-			Latf:   latf,
-			Lat1:   lat1,
-			Lat2:   lat2,
-			Eastf:  eastf,
-			Northf: northf,
-		},
+type DHDN2001 struct{}
+
+func (d DHDN2001) Spheroid() Spheroid {
+	return Bessel()
+}
+
+func (d DHDN2001) Helmert() Helmert {
+	return Helmert{
+		Tx: 598.1,
+		Ty: 73.7,
+		Tz: 418.2,
+		Rx: 0.202,
+		Ry: 0.045,
+		Rz: -2.455,
+		Ds: 6.7,
 	}
 }
 
-func (d GeodeticDatum) EquidistantConic(lonf, latf, lat1, lat2, eastf, northf float64) CoordinateReferenceSystem {
-	if d.Spheroid == nil {
-		d.Spheroid = spheroid.WGS84()
+func (d DHDN2001) MajorAxis() float64 {
+	return d.Spheroid().MajorAxis()
+}
+
+func (d DHDN2001) InverseFlattening() float64 {
+	return d.Spheroid().InverseFlattening()
+}
+
+func (d DHDN2001) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
+	return d.Helmert().ToWGS84(x, y, z)
+}
+
+func (d DHDN2001) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
+	return d.Helmert().FromWGS84(x0, y0, z0)
+}
+
+func (d DHDN2001) LonLat() LonLat {
+	return LonLat{
+		GeodeticDatum: d,
 	}
-	return CoordinateReferenceSystem{
-		Spheroid:       d.Spheroid,
-		Transformation: d.Transformation,
-		System: system.EquidistantConic{
-			Lonf:   lonf,
-			Latf:   latf,
-			Lat1:   lat1,
-			Lat2:   lat2,
-			Eastf:  eastf,
-			Northf: northf,
-		},
+}
+
+func (d DHDN2001) GK(zone float64) TransverseMercator {
+	return TransverseMercator{
+		GeodeticDatum: d,
+		Lonf:          zone * 3,
+		Latf:          0,
+		Scale:         1,
+		Eastf:         zone*1000000 + 500000,
+		Northf:        0,
+	}
+}
+
+type RGF93 struct{}
+
+func (d RGF93) Spheroid() Spheroid {
+	return GRS80()
+}
+
+func (d RGF93) MajorAxis() float64 {
+	return d.Spheroid().MajorAxis()
+}
+
+func (d RGF93) InverseFlattening() float64 {
+	return d.Spheroid().InverseFlattening()
+}
+
+func (d RGF93) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
+	return x, y, z
+}
+
+func (d RGF93) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
+	return x0, y0, z0
+}
+
+func (d RGF93) LonLat() LonLat {
+	return LonLat{
+		GeodeticDatum: d,
+	}
+}
+
+func (d RGF93) CC(lat float64) LambertConformalConic2SP {
+	return LambertConformalConic2SP{
+		GeodeticDatum: d,
+		Lonf:          3,
+		Latf:          lat,
+		Lat1:          lat - 0.75,
+		Lat2:          lat + 0.75,
+		Eastf:         1700000,
+		Northf:        2200000 + (lat-43)*1000000,
+	}
+}
+
+func (d RGF93) FranceLambert() LambertConformalConic2SP {
+	return LambertConformalConic2SP{
+		GeodeticDatum: d,
+		Lonf:          3,
+		Latf:          46.5,
+		Lat1:          49,
+		Lat2:          44,
+		Eastf:         700000,
+		Northf:        6600000,
 	}
 }

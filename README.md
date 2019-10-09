@@ -13,10 +13,9 @@ go get github.com/wroge/wgs84
 
 ### Usage
 ```go
-east, north, h := wgs84.LonLat().To(wgs84.ETRS89UTM(32))(9, 52, 0)
+east, north, h := wgs84.LonLat{}.To(wgs84.ETRS89{}.UTM(32))(9, 52, 0)
 
-epsg := wgs84.EPSG()
-lon, lat, h := epsg.Code(25832).To(epsg.Code(4326))(500000, 5761038, 0)
+lon, lat, h := wgs84.ETRS89{}.UTM(32).To(wgs84.EPSG().Code(4326))(500000, 5761038, 0)
 ```
 
 ### Features
