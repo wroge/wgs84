@@ -4,14 +4,19 @@ import (
 	"sync"
 )
 
+// EPSG returns a Repository for dealing with EPSG-Codes and
+// CoordinateReferenceSystems.
 func EPSG() *Repository {
 	codes := map[int]CoordinateReferenceSystem{}
 	codes[4326] = LonLat{}
 	codes[4978] = XYZ{}
 	codes[3857] = WebMercator{}
 	codes[900913] = WebMercator{}
+	codes[4258] = ETRS89{}.LonLat()
+	codes[4314] = DHDN2001{}.LonLat()
 	codes[27700] = OSGB36{}.NationalGrid()
 	codes[4277] = OSGB36{}.LonLat()
+	codes[4171] = RGF93{}.LonLat()
 	codes[2154] = RGF93{}.FranceLambert()
 	for i := 1; i < 61; i++ {
 		codes[32600+i] = UTM(float64(i), true)
@@ -31,11 +36,13 @@ func EPSG() *Repository {
 	}
 }
 
+// Repository holds the EPSG-Codes and CoordinateReferenceSystems.
 type Repository struct {
 	codes map[int]CoordinateReferenceSystem
 	mutex sync.Mutex
 }
 
+// Code returns a CoordinateReferenceSystem of a specific EPSG-Code.
 func (r *Repository) Code(c int) CoordinateReferenceSystem {
 	if r.codes == nil {
 		return XYZ{}
@@ -43,6 +50,7 @@ func (r *Repository) Code(c int) CoordinateReferenceSystem {
 	return r.codes[c]
 }
 
+// Add an EPSG-Code to the Repository.
 func (r *Repository) Add(c int, crs CoordinateReferenceSystem) {
 	if r.codes == nil {
 		r.codes = map[int]CoordinateReferenceSystem{}
@@ -52,11 +60,25 @@ func (r *Repository) Add(c int, crs CoordinateReferenceSystem) {
 	r.mutex.Unlock()
 }
 
+// Codes returns all available codes.
 func (r *Repository) Codes() []int {
 	r.mutex.Lock()
 	var cc []int
 	for c := range r.codes {
 		cc = append(cc, c)
+	}
+	r.mutex.Unlock()
+	return cc
+}
+
+// CodesContain returns all Codes covering a specific WGS84 location.
+func (r *Repository) CodesContain(lon, lat float64) []int {
+	r.mutex.Lock()
+	var cc []int
+	for c, crs := range r.codes {
+		if crs.Contains(lon, lat) {
+			cc = append(cc, c)
+		}
 	}
 	r.mutex.Unlock()
 	return cc

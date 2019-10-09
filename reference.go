@@ -6,6 +6,20 @@ import (
 
 type XYZ struct {
 	GeodeticDatum GeodeticDatum
+	Area          Area
+}
+
+func (crs XYZ) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs XYZ) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -38,6 +52,20 @@ func (crs XYZ) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
 
 type LonLat struct {
 	GeodeticDatum GeodeticDatum
+	Area          Area
+}
+
+func (crs LonLat) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs LonLat) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -87,6 +115,20 @@ func (crs LonLat) _N(φ float64, s Spheroid) float64 {
 type Projection struct {
 	GeodeticDatum        GeodeticDatum
 	CoordinateProjection CoordinateProjection
+	Area                 Area
+}
+
+func (crs Projection) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs Projection) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -138,6 +180,20 @@ func (crs Projection) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c flo
 
 type WebMercator struct {
 	GeodeticDatum GeodeticDatum
+	Area          Area
+}
+
+func (crs WebMercator) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 85.06 {
+		return false
+	}
+	return true
 }
 
 func (crs WebMercator) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -193,6 +249,20 @@ func (crs WebMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, 
 type Mercator struct {
 	Lonf, Scale, Eastf, Northf float64
 	GeodeticDatum              GeodeticDatum
+	Area                       Area
+}
+
+func (crs Mercator) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs Mercator) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -263,12 +333,32 @@ func UTM(zone float64, northern bool) TransverseMercator {
 		Scale:  0.9996,
 		Eastf:  500000,
 		Northf: northf,
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < zone*6-186 || lon > zone*6-180 {
+				return false
+			}
+			return true
+		}),
 	}
 }
 
 type TransverseMercator struct {
 	Lonf, Latf, Scale, Eastf, Northf float64
 	GeodeticDatum                    GeodeticDatum
+	Area                             Area
+}
+
+func (crs TransverseMercator) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs TransverseMercator) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -363,6 +453,20 @@ func (TransverseMercator) _C(φ float64, s Spheroid) float64 {
 type LambertConformalConic1SP struct {
 	Lonf, Latf, Scale, Eastf, Northf float64
 	GeodeticDatum                    GeodeticDatum
+	Area                             Area
+}
+
+func (crs LambertConformalConic1SP) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs LambertConformalConic1SP) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -448,6 +552,20 @@ func (crs LambertConformalConic1SP) _ρ(φ float64, s Spheroid) float64 {
 type LambertConformalConic2SP struct {
 	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
 	GeodeticDatum                         GeodeticDatum
+	Area                                  Area
+}
+
+func (crs LambertConformalConic2SP) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs LambertConformalConic2SP) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -537,6 +655,20 @@ func (crs LambertConformalConic2SP) _ρ(φ float64, s Spheroid) float64 {
 type AlbersEqualAreaConic struct {
 	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
 	GeodeticDatum                         GeodeticDatum
+	Area                                  Area
+}
+
+func (crs AlbersEqualAreaConic) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs AlbersEqualAreaConic) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
@@ -628,6 +760,20 @@ func (crs AlbersEqualAreaConic) _ρ(φ float64, s Spheroid) float64 {
 type EquidistantConic struct {
 	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
 	GeodeticDatum                         GeodeticDatum
+	Area                                  Area
+}
+
+func (crs EquidistantConic) Contains(lon, lat float64) bool {
+	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+		return false
+	}
+	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
+		return false
+	}
+	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+		return false
+	}
+	return true
 }
 
 func (crs EquidistantConic) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {

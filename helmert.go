@@ -2,14 +2,19 @@ package wgs84
 
 import "math"
 
+// Helmert implements the Transformation interface.
 type Helmert struct {
 	Tx, Ty, Tz, Rx, Ry, Rz, Ds float64
 }
 
+// ToWGS84 transforms geocentric coordinates to WGS84 geocentric
+// coordinates.
 func (t Helmert) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
 	return helmert(x, y, z, t.Tx, t.Ty, t.Tz, t.Rx, t.Ry, t.Rz, t.Ds)
 }
 
+// FromWGS84 transforms WGS84 geocentric coordinates to geocentric
+// coordinates.
 func (t Helmert) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
 	return helmert(x0, y0, z0, -t.Tx, -t.Ty, -t.Tz, -t.Rx, -t.Ry, -t.Rz, -t.Ds)
 }
