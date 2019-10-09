@@ -311,19 +311,19 @@ func (crs TransverseMercator) ToLonLat(east, north float64, gs GeodeticSpheroid)
 	s := spheroid(gs, crs.GeodeticDatum)
 	east -= crs.Eastf
 	north -= crs.Northf
-	Mi := crs.M(radian(crs.Latf), s) + north/crs.Scale
+	Mi := crs._M(radian(crs.Latf), s) + north/crs.Scale
 	μ := Mi / (s.MajorAxis() * (1 - s.E2()/4 - 3*s.E4()/64 - 5*s.E6()/256))
 	φ1 := μ + (3*s.Ei()/2-27*s.Ei3()/32)*math.Sin(2*μ) +
 		(21*s.Ei2()/16-55*s.Ei4()/32)*math.Sin(4*μ) +
 		(151*s.Ei3()/96)*math.Sin(6*μ) +
 		(1097*s.Ei4()/512)*math.Sin(8*μ)
 	R1 := s.MajorAxis() * (1 - s.E2()) / math.Pow(1-s.E2()*sin2(φ1), 3/2)
-	D := east / (crs.N(φ1, s) * crs.Scale)
-	φ := φ1 - (crs.N(φ1, s)*math.Tan(φ1)/R1)*(D*D/2-(5+3*crs.T(φ1)+10*crs.C(φ1, s)-4*crs.C(φ1, s)*crs.C(φ1, s)-9*s.Ei2())*
-		math.Pow(D, 4)/24+(61+90*crs.T(φ1)+298*crs.C(φ1, s)+45*crs.T(φ1)*crs.T(φ1)-252*s.Ei2()-3*crs.C(φ1, s)*crs.C(φ1, s))*
+	D := east / (crs._N(φ1, s) * crs.Scale)
+	φ := φ1 - (crs._N(φ1, s)*math.Tan(φ1)/R1)*(D*D/2-(5+3*crs._T(φ1)+10*crs._C(φ1, s)-4*crs._C(φ1, s)*crs._C(φ1, s)-9*s.Ei2())*
+		math.Pow(D, 4)/24+(61+90*crs._T(φ1)+298*crs._C(φ1, s)+45*crs._T(φ1)*crs._T(φ1)-252*s.Ei2()-3*crs._C(φ1, s)*crs._C(φ1, s))*
 		math.Pow(D, 6)/720)
-	λ := radian(crs.Lonf) + (D-(1+2*crs.T(φ1)+crs.C(φ1, s))*D*D*D/6+(5-2*crs.C(φ1, s)+
-		28*crs.T(φ1)-3*crs.C(φ1, s)*crs.C(φ1, s)+8*s.Ei2()+24*crs.T(φ1)*crs.T(φ1))*
+	λ := radian(crs.Lonf) + (D-(1+2*crs._T(φ1)+crs._C(φ1, s))*D*D*D/6+(5-2*crs._C(φ1, s)+
+		28*crs._T(φ1)-3*crs._C(φ1, s)*crs._C(φ1, s)+8*s.Ei2()+24*crs._T(φ1)*crs._T(φ1))*
 		math.Pow(D, 5)/120)/math.Cos(φ1)
 	return degree(λ), degree(φ)
 }
@@ -332,31 +332,31 @@ func (crs TransverseMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) 
 	s := spheroid(gs, crs.GeodeticDatum)
 	φ := radian(lat)
 	A := (radian(lon) - radian(crs.Lonf)) * math.Cos(φ)
-	east = crs.Scale*crs.N(φ, s)*(A+(1-crs.T(φ)+crs.C(φ, s))*
-		math.Pow(A, 3)/6+(5-18*crs.T(φ)+crs.T(φ)*crs.T(φ)+72*crs.C(φ, s)-58*s.Ei2())*
+	east = crs.Scale*crs._N(φ, s)*(A+(1-crs._T(φ)+crs._C(φ, s))*
+		math.Pow(A, 3)/6+(5-18*crs._T(φ)+crs._T(φ)*crs._T(φ)+72*crs._C(φ, s)-58*s.Ei2())*
 		math.Pow(A, 5)/120) + crs.Eastf
-	north = crs.Scale*(crs.M(φ, s)-crs.M(radian(crs.Latf), s)+crs.N(φ, s)*math.Tan(φ)*
-		(A*A/2+(5-crs.T(φ)+9*crs.C(φ, s)+4*crs.C(φ, s)*crs.C(φ, s))*
-			math.Pow(A, 4)/24+(61-58*crs.T(φ)+crs.T(φ)*crs.T(φ)+600*crs.C(φ, s)-330*s.Ei2())*math.Pow(A, 6)/720)) + crs.Northf
+	north = crs.Scale*(crs._M(φ, s)-crs._M(radian(crs.Latf), s)+crs._N(φ, s)*math.Tan(φ)*
+		(A*A/2+(5-crs._T(φ)+9*crs._C(φ, s)+4*crs._C(φ, s)*crs._C(φ, s))*
+			math.Pow(A, 4)/24+(61-58*crs._T(φ)+crs._T(φ)*crs._T(φ)+600*crs._C(φ, s)-330*s.Ei2())*math.Pow(A, 6)/720)) + crs.Northf
 	return east, north
 }
 
-func (TransverseMercator) M(φ float64, s Spheroid) float64 {
+func (TransverseMercator) _M(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() * ((1-s.E2()/4-3*s.E4()/64-5*s.E6()/256)*φ -
 		(3*s.E2()/8+3*s.E4()/32+45*s.E6()/1024)*math.Sin(2*φ) +
 		(15*s.E4()/256+45*s.E6()/1024)*math.Sin(4*φ) -
 		(35*s.E6()/3072)*math.Sin(6*φ))
 }
 
-func (TransverseMercator) N(φ float64, s Spheroid) float64 {
+func (TransverseMercator) _N(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() / math.Sqrt(1-s.E2()*sin2(φ))
 }
 
-func (TransverseMercator) T(φ float64) float64 {
+func (TransverseMercator) _T(φ float64) float64 {
 	return tan2(φ)
 }
 
-func (TransverseMercator) C(φ float64, s Spheroid) float64 {
+func (TransverseMercator) _C(φ float64, s Spheroid) float64 {
 	return s.Ei2() * cos2(φ)
 }
 
@@ -403,46 +403,46 @@ func (crs LambertConformalConic1SP) FromXYZ(x, y, z float64, gs GeodeticSpheroid
 
 func (crs LambertConformalConic1SP) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
 	s := spheroid(gs, crs.GeodeticDatum)
-	ρi := math.Sqrt(math.Pow(east-crs.Eastf, 2) + math.Pow(crs.ρ(radian(crs.Latf), s)-(north-crs.Northf), 2))
-	if crs.n() < 0 {
+	ρi := math.Sqrt(math.Pow(east-crs.Eastf, 2) + math.Pow(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf), 2))
+	if crs._n() < 0 {
 		ρi = -ρi
 	}
-	ti := math.Pow(ρi/(s.MajorAxis()*crs.Scale*crs.F(s)), 1/crs.n())
+	ti := math.Pow(ρi/(s.MajorAxis()*crs.Scale*crs._F(s)), 1/crs._n())
 	φ := math.Pi/2 - 2*math.Atan(ti)
 	for i := 0; i < 5; i++ {
 		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2))
 	}
-	λ := math.Atan((east-crs.Eastf)/(crs.ρ(radian(crs.Latf), s)-(north-crs.Northf)))/crs.n() + radian(crs.Lonf)
+	λ := math.Atan((east-crs.Eastf)/(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf)))/crs._n() + radian(crs.Lonf)
 	return degree(λ), degree(φ)
 }
 
 func (crs LambertConformalConic1SP) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
 	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs.n() * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs.ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs.ρ(radian(crs.Latf), s) - crs.ρ(radian(lat), s)*math.Cos(θ)
+	θ := crs._n() * (radian(lon) - radian(crs.Lonf))
+	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
+	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
 	return east, north
 }
 
-func (LambertConformalConic1SP) t(φ float64, s Spheroid) float64 {
+func (LambertConformalConic1SP) _t(φ float64, s Spheroid) float64 {
 	return math.Tan(math.Pi/4-φ/2) /
 		math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2)
 }
 
-func (LambertConformalConic1SP) m(φ float64, s Spheroid) float64 {
+func (LambertConformalConic1SP) _m(φ float64, s Spheroid) float64 {
 	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
 }
 
-func (crs LambertConformalConic1SP) n() float64 {
+func (crs LambertConformalConic1SP) _n() float64 {
 	return math.Sin(radian(crs.Latf))
 }
 
-func (crs LambertConformalConic1SP) F(s Spheroid) float64 {
-	return crs.m(radian(crs.Latf), s) / (crs.n() * math.Pow(crs.t(radian(crs.Latf), s), crs.n()))
+func (crs LambertConformalConic1SP) _F(s Spheroid) float64 {
+	return crs._m(radian(crs.Latf), s) / (crs._n() * math.Pow(crs._t(radian(crs.Latf), s), crs._n()))
 }
 
-func (crs LambertConformalConic1SP) ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * crs.F(s) * math.Pow(crs.t(φ, s)*crs.Scale, crs.n())
+func (crs LambertConformalConic1SP) _ρ(φ float64, s Spheroid) float64 {
+	return s.MajorAxis() * crs._F(s) * math.Pow(crs._t(φ, s)*crs.Scale, crs._n())
 }
 
 type LambertConformalConic2SP struct {
@@ -488,50 +488,50 @@ func (crs LambertConformalConic2SP) FromXYZ(x, y, z float64, gs GeodeticSpheroid
 
 func (crs LambertConformalConic2SP) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
 	s := spheroid(gs, crs.GeodeticDatum)
-	ρi := math.Sqrt(math.Pow(east-crs.Eastf, 2) + math.Pow(crs.ρ(radian(crs.Latf), s)-(north-crs.Northf), 2))
-	if crs.n(s) < 0 {
+	ρi := math.Sqrt(math.Pow(east-crs.Eastf, 2) + math.Pow(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf), 2))
+	if crs._n(s) < 0 {
 		ρi = -ρi
 	}
-	ti := math.Pow(ρi/(s.MajorAxis()*crs.F(s)), 1/crs.n(s))
+	ti := math.Pow(ρi/(s.MajorAxis()*crs._F(s)), 1/crs._n(s))
 	φ := math.Pi/2 - 2*math.Atan(ti)
 	for i := 0; i < 5; i++ {
 		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2))
 	}
-	λ := math.Atan((east-crs.Eastf)/(crs.ρ(radian(crs.Latf), s)-(north-crs.Northf)))/crs.n(s) + radian(crs.Lonf)
+	λ := math.Atan((east-crs.Eastf)/(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf)))/crs._n(s) + radian(crs.Lonf)
 	return degree(λ), degree(φ)
 }
 
 func (crs LambertConformalConic2SP) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
 	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs.n(s) * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs.ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs.ρ(radian(crs.Latf), s) - crs.ρ(radian(lat), s)*math.Cos(θ)
+	θ := crs._n(s) * (radian(lon) - radian(crs.Lonf))
+	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
+	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
 	return east, north
 }
 
-func (crs LambertConformalConic2SP) t(φ float64, s Spheroid) float64 {
+func (crs LambertConformalConic2SP) _t(φ float64, s Spheroid) float64 {
 	return math.Tan(math.Pi/4-φ/2) /
 		math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2)
 }
 
-func (crs LambertConformalConic2SP) m(φ float64, s Spheroid) float64 {
+func (crs LambertConformalConic2SP) _m(φ float64, s Spheroid) float64 {
 	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
 }
 
-func (crs LambertConformalConic2SP) n(s Spheroid) float64 {
+func (crs LambertConformalConic2SP) _n(s Spheroid) float64 {
 	if radian(crs.Lat1) == radian(crs.Lat2) {
 		return math.Sin(radian(crs.Lat1))
 	}
-	return (math.Log(crs.m(radian(crs.Lat1), s)) - math.Log(crs.m(radian(crs.Lat2), s))) /
-		(math.Log(crs.t(radian(crs.Lat1), s)) - math.Log(crs.t(radian(crs.Lat2), s)))
+	return (math.Log(crs._m(radian(crs.Lat1), s)) - math.Log(crs._m(radian(crs.Lat2), s))) /
+		(math.Log(crs._t(radian(crs.Lat1), s)) - math.Log(crs._t(radian(crs.Lat2), s)))
 }
 
-func (crs LambertConformalConic2SP) F(s Spheroid) float64 {
-	return crs.m(radian(crs.Lat1), s) / (crs.n(s) * math.Pow(crs.t(radian(crs.Lat1), s), crs.n(s)))
+func (crs LambertConformalConic2SP) _F(s Spheroid) float64 {
+	return crs._m(radian(crs.Lat1), s) / (crs._n(s) * math.Pow(crs._t(radian(crs.Lat1), s), crs._n(s)))
 }
 
-func (crs LambertConformalConic2SP) ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * crs.F(s) * math.Pow(crs.t(φ, s), crs.n(s))
+func (crs LambertConformalConic2SP) _ρ(φ float64, s Spheroid) float64 {
+	return s.MajorAxis() * crs._F(s) * math.Pow(crs._t(φ, s), crs._n(s))
 }
 
 type AlbersEqualAreaConic struct {
@@ -579,8 +579,8 @@ func (crs AlbersEqualAreaConic) ToLonLat(east, north float64, gs GeodeticSpheroi
 	s := spheroid(gs, crs.GeodeticDatum)
 	east -= crs.Eastf
 	north -= crs.Northf
-	ρi := math.Sqrt(east*east + math.Pow(crs.ρ(radian(crs.Latf), s)-north, 2))
-	qi := (crs.C(s) - ρi*ρi*crs.n(s)*crs.n(s)/s.A2()) / crs.n(s)
+	ρi := math.Sqrt(east*east + math.Pow(crs._ρ(radian(crs.Latf), s)-north, 2))
+	qi := (crs._C(s) - ρi*ρi*crs._n(s)*crs._n(s)/s.A2()) / crs._n(s)
 	φ := math.Asin(qi / 2)
 	for i := 0; i < 5; i++ {
 		φ += math.Pow(1-s.E2()*sin2(φ), 2) /
@@ -588,41 +588,41 @@ func (crs AlbersEqualAreaConic) ToLonLat(east, north float64, gs GeodeticSpheroi
 			math.Sin(φ)/(1-s.E2()*sin2(φ)) +
 			1/(2*s.E())*math.Log((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ))))
 	}
-	θ := math.Atan(east / (crs.ρ(radian(crs.Latf), s) - north))
-	return degree(radian(crs.Lonf) + θ/crs.n(s)), degree(φ)
+	θ := math.Atan(east / (crs._ρ(radian(crs.Latf), s) - north))
+	return degree(radian(crs.Lonf) + θ/crs._n(s)), degree(φ)
 }
 
 func (crs AlbersEqualAreaConic) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
 	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs.n(s) * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs.ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs.ρ(radian(crs.Latf), s) - crs.ρ(radian(lat), s)*math.Cos(θ)
+	θ := crs._n(s) * (radian(lon) - radian(crs.Lonf))
+	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
+	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
 	return east, north
 }
 
-func (crs AlbersEqualAreaConic) m(φ float64, s Spheroid) float64 {
+func (crs AlbersEqualAreaConic) _m(φ float64, s Spheroid) float64 {
 	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
 }
 
-func (crs AlbersEqualAreaConic) q(φ float64, s Spheroid) float64 {
+func (crs AlbersEqualAreaConic) _q(φ float64, s Spheroid) float64 {
 	return (1 - s.E2()) * (math.Sin(φ)/(1-s.E2()*sin2(φ)) -
 		(1/(2*s.E()))*math.Log((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ))))
 }
 
-func (crs AlbersEqualAreaConic) n(s Spheroid) float64 {
+func (crs AlbersEqualAreaConic) _n(s Spheroid) float64 {
 	if radian(crs.Lat1) == radian(crs.Lat2) {
 		return math.Sin(radian(crs.Lat1))
 	}
-	return (crs.m(radian(crs.Lat1), s)*crs.m(radian(crs.Lat1), s) - crs.m(radian(crs.Lat2), s)*crs.m(radian(crs.Lat2), s)) /
-		(crs.q(radian(crs.Lat2), s) - crs.q(radian(crs.Lat1), s))
+	return (crs._m(radian(crs.Lat1), s)*crs._m(radian(crs.Lat1), s) - crs._m(radian(crs.Lat2), s)*crs._m(radian(crs.Lat2), s)) /
+		(crs._q(radian(crs.Lat2), s) - crs._q(radian(crs.Lat1), s))
 }
 
-func (crs AlbersEqualAreaConic) C(s Spheroid) float64 {
-	return crs.m(radian(crs.Lat1), s)*crs.m(radian(crs.Lat1), s) + crs.n(s)*crs.q(radian(crs.Lat1), s)
+func (crs AlbersEqualAreaConic) _C(s Spheroid) float64 {
+	return crs._m(radian(crs.Lat1), s)*crs._m(radian(crs.Lat1), s) + crs._n(s)*crs._q(radian(crs.Lat1), s)
 }
 
-func (crs AlbersEqualAreaConic) ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * math.Sqrt(crs.C(s)-crs.n(s)*crs.q(φ, s)) / crs.n(s)
+func (crs AlbersEqualAreaConic) _ρ(φ float64, s Spheroid) float64 {
+	return s.MajorAxis() * math.Sqrt(crs._C(s)-crs._n(s)*crs._q(φ, s)) / crs._n(s)
 }
 
 type EquidistantConic struct {
@@ -670,50 +670,50 @@ func (crs EquidistantConic) ToLonLat(east, north float64, gs GeodeticSpheroid) (
 	s := spheroid(gs, crs.GeodeticDatum)
 	east -= crs.Eastf
 	north -= crs.Northf
-	ρi := math.Sqrt(east*east + math.Pow(crs.ρ(radian(crs.Latf), s)-north, 2))
-	if crs.n(s) < 0 {
+	ρi := math.Sqrt(east*east + math.Pow(crs._ρ(radian(crs.Latf), s)-north, 2))
+	if crs._n(s) < 0 {
 		ρi = -ρi
 	}
-	Mi := s.MajorAxis()*crs.G(s) - ρi
+	Mi := s.MajorAxis()*crs._G(s) - ρi
 	μ := Mi / (s.MajorAxis() * (1 - s.E2()/4 - 3*s.E4()/64 - 5*s.E6()/256))
 	φ := μ + (3*s.Ei()/2-27*s.Ei3()/32)*math.Sin(2*μ) +
 		(21*s.Ei2()/16-55*s.Ei4()/32)*math.Sin(4*μ) +
 		(151*s.Ei3()/96)*math.Sin(6*μ) +
 		(1097*s.Ei4()/512)*math.Sin(8*μ)
-	θ := math.Atan(east / (crs.ρ(radian(crs.Latf), s) - north))
-	return degree((radian(crs.Lonf) + θ/crs.n(s))), degree(φ)
+	θ := math.Atan(east / (crs._ρ(radian(crs.Latf), s) - north))
+	return degree((radian(crs.Lonf) + θ/crs._n(s))), degree(φ)
 }
 
 func (crs EquidistantConic) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
 	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs.n(s) * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs.ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs.ρ(radian(crs.Latf), s) - crs.ρ(radian(lat), s)*math.Cos(θ)
+	θ := crs._n(s) * (radian(lon) - radian(crs.Lonf))
+	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
+	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
 	return east, north
 }
 
-func (crs EquidistantConic) M(φ float64, s Spheroid) float64 {
+func (crs EquidistantConic) _M(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() * ((1-s.E2()/4-3*s.E4()/64-5*s.E6()/256)*φ -
 		(3*s.E2()/8+3*s.E4()/32+45*s.E6()/1024)*math.Sin(2*φ) +
 		(15*s.E4()/256+45*s.E6()/1024)*math.Sin(4*φ) -
 		(35*s.E6()/3072)*math.Sin(6*φ))
 }
 
-func (crs EquidistantConic) m(φ float64, s Spheroid) float64 {
+func (crs EquidistantConic) _m(φ float64, s Spheroid) float64 {
 	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
 }
 
-func (crs EquidistantConic) n(s Spheroid) float64 {
+func (crs EquidistantConic) _n(s Spheroid) float64 {
 	if radian(crs.Lat1) == radian(crs.Lat2) {
 		return math.Sin(radian(crs.Lat1))
 	}
-	return s.MajorAxis() * (crs.m(radian(crs.Lat1), s) - crs.m(radian(crs.Lat2), s)) / (crs.M(radian(crs.Lat2), s) - crs.M(radian(crs.Lat1), s))
+	return s.MajorAxis() * (crs._m(radian(crs.Lat1), s) - crs._m(radian(crs.Lat2), s)) / (crs._M(radian(crs.Lat2), s) - crs._M(radian(crs.Lat1), s))
 }
 
-func (crs EquidistantConic) G(s Spheroid) float64 {
-	return crs.m(radian(crs.Lat1), s)/crs.n(s) + crs.M(radian(crs.Lat1), s)/s.MajorAxis()
+func (crs EquidistantConic) _G(s Spheroid) float64 {
+	return crs._m(radian(crs.Lat1), s)/crs._n(s) + crs._M(radian(crs.Lat1), s)/s.MajorAxis()
 }
 
-func (crs EquidistantConic) ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis()*crs.G(s) - crs.M(φ, s)
+func (crs EquidistantConic) _ρ(φ float64, s Spheroid) float64 {
+	return s.MajorAxis()*crs._G(s) - crs._M(φ, s)
 }
