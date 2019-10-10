@@ -2,7 +2,7 @@ package wgs84
 
 import "math"
 
-// transformation implements the Transformation interface.
+// Helmert implements the Transformation interface.
 type Helmert struct {
 	Tx, Ty, Tz, Rx, Ry, Rz, Ds float64
 }
