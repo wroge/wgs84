@@ -6,7 +6,7 @@ type GeodeticSpheroid interface {
 	InverseFlattening() float64
 }
 
-// Transformation interface is used by Helmert, Datum, ETRS89, LonLat, ...
+// Transformation interface is used by transformation, Datum, ETRS89, LonLat, ...
 type Transformation interface {
 	ToWGS84(x, y, z float64) (x0, y0, z0 float64)
 	FromWGS84(x0, y0, z0 float64) (x, y, z float64)

@@ -68,22 +68,17 @@ func (d ETRS89) Contains(lon, lat float64) bool {
 	return true
 }
 
-// Spheroid returns the GRS80 Spheroid.
-func (d ETRS89) Spheroid() Spheroid {
-	return GRS80()
-}
-
 // MajorAxis is a method for the implementation of the GeodeticSpheroid
 // interface. By default the MajorAxis of WGS84 is returned.
 func (d ETRS89) MajorAxis() float64 {
-	return d.Spheroid().MajorAxis()
+	return GRS80().MajorAxis()
 }
 
 // InverseFlattening is a method for the implementation of the
 // GeodeticSpheroid interface. By default the InverseFlattening of WGS84 is
 // returned.
 func (d ETRS89) InverseFlattening() float64 {
-	return d.Spheroid().InverseFlattening()
+	return GRS80().InverseFlattening()
 }
 
 // ToWGS84 is a method for the implementation of the Transformation
@@ -145,13 +140,7 @@ func (d OSGB36) Contains(lon, lat float64) bool {
 	return true
 }
 
-// Spheroid returns the Airy Spheroid.
-func (d OSGB36) Spheroid() Spheroid {
-	return Airy()
-}
-
-// Helmert returns the OSGB36 to WGS84 Transformation.
-func (d OSGB36) Helmert() Helmert {
+func (d OSGB36) transformation() Helmert {
 	return Helmert{
 		Tx: 446.448,
 		Ty: -125.157,
@@ -166,26 +155,26 @@ func (d OSGB36) Helmert() Helmert {
 // MajorAxis is a method for the implementation of the GeodeticSpheroid
 // interface. By default the MajorAxis of WGS84 is returned.
 func (d OSGB36) MajorAxis() float64 {
-	return d.Spheroid().MajorAxis()
+	return Airy().MajorAxis()
 }
 
 // InverseFlattening is a method for the implementation of the
 // GeodeticSpheroid interface. By default the InverseFlattening of WGS84 is
 // returned.
 func (d OSGB36) InverseFlattening() float64 {
-	return d.Spheroid().InverseFlattening()
+	return Airy().InverseFlattening()
 }
 
 // ToWGS84 is a method for the implementation of the Transformation
 // interface. By default x, y and z are returned.
 func (d OSGB36) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return d.Helmert().ToWGS84(x, y, z)
+	return d.transformation().ToWGS84(x, y, z)
 }
 
 // FromWGS84 is a method for the implementation of the Transformation
 // interface. By default x0, y0 and z0 are returned.
 func (d OSGB36) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return d.Helmert().FromWGS84(x0, y0, z0)
+	return d.transformation().FromWGS84(x0, y0, z0)
 }
 
 // LonLat implements a CoordinateReferenceSystem similar to the EPSG-Code
@@ -229,13 +218,7 @@ func (d DHDN2001) Contains(lon, lat float64) bool {
 	return true
 }
 
-// Spheroid returns the Bessel Spheroid.
-func (d DHDN2001) Spheroid() Spheroid {
-	return Bessel()
-}
-
-// Helmert returns the DHDN2001 to WGS84 Transformation.
-func (d DHDN2001) Helmert() Helmert {
+func (d DHDN2001) transformation() Helmert {
 	return Helmert{
 		Tx: 598.1,
 		Ty: 73.7,
@@ -250,26 +233,26 @@ func (d DHDN2001) Helmert() Helmert {
 // MajorAxis is a method for the implementation of the GeodeticSpheroid
 // interface. By default the MajorAxis of WGS84 is returned.
 func (d DHDN2001) MajorAxis() float64 {
-	return d.Spheroid().MajorAxis()
+	return Bessel().MajorAxis()
 }
 
 // InverseFlattening is a method for the implementation of the
 // GeodeticSpheroid interface. By default the InverseFlattening of WGS84 is
 // returned.
 func (d DHDN2001) InverseFlattening() float64 {
-	return d.Spheroid().InverseFlattening()
+	return Bessel().InverseFlattening()
 }
 
 // ToWGS84 is a method for the implementation of the Transformation
 // interface. By default x, y and z are returned.
 func (d DHDN2001) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return d.Helmert().ToWGS84(x, y, z)
+	return d.transformation().ToWGS84(x, y, z)
 }
 
 // FromWGS84 is a method for the implementation of the Transformation
 // interface. By default x0, y0 and z0 are returned.
 func (d DHDN2001) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return d.Helmert().FromWGS84(x0, y0, z0)
+	return d.transformation().FromWGS84(x0, y0, z0)
 }
 
 // LonLat implements a CoordinateReferenceSystem similar to the
@@ -313,22 +296,17 @@ func (d RGF93) Contains(lon, lat float64) bool {
 	return true
 }
 
-// Spheroid returns the GRS80 Spheroid.
-func (d RGF93) Spheroid() Spheroid {
-	return GRS80()
-}
-
 // MajorAxis is a method for the implementation of the GeodeticSpheroid
 // interface. By default the MajorAxis of WGS84 is returned.
 func (d RGF93) MajorAxis() float64 {
-	return d.Spheroid().MajorAxis()
+	return GRS80().MajorAxis()
 }
 
 // InverseFlattening is a method for the implementation of the
 // GeodeticSpheroid interface. By default the InverseFlattening of WGS84 is
 // returned.
 func (d RGF93) InverseFlattening() float64 {
-	return d.Spheroid().InverseFlattening()
+	return GRS80().InverseFlattening()
 }
 
 // ToWGS84 is a method for the implementation of the Transformation

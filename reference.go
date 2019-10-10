@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+// XYZ is a geocentric CoordinateReferenceSystem which is by default
+// similar to WGS84 and the EPSG-Code 4978.
 type XYZ struct {
 	GeodeticDatum GeodeticDatum
 	Area          Area
@@ -50,6 +52,8 @@ func (crs XYZ) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
 	return x, y, z
 }
 
+// LonLat is a geographic CoordinateReferenceSystem which is by default
+// similar to WGS84 and the EPSG-Code 4326.
 type LonLat struct {
 	GeodeticDatum GeodeticDatum
 	Area          Area
@@ -112,6 +116,7 @@ func (crs LonLat) _N(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() / math.Sqrt(1-s.E2()*math.Pow(math.Sin(φ), 2))
 }
 
+// Projection is a wrapper for projected CoordinateReferenceSystems.
 type Projection struct {
 	GeodeticDatum        GeodeticDatum
 	CoordinateProjection CoordinateProjection
@@ -178,6 +183,8 @@ func (crs Projection) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c flo
 	return a, b, c
 }
 
+// WebMercator is a projected CoordinateReferenceSystem which is by default
+// similar to WGS84 and the EPSG-Code 3857.
 type WebMercator struct {
 	GeodeticDatum GeodeticDatum
 	Area          Area
@@ -246,6 +253,8 @@ func (crs WebMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, 
 	return east, north
 }
 
+// Mercator is a projected CoordinateReferenceSystem. By default the
+// GeodeticDatum is similar to WGS84.
 type Mercator struct {
 	Lonf, Scale, Eastf, Northf float64
 	GeodeticDatum              GeodeticDatum
@@ -322,6 +331,11 @@ func (crs Mercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, nor
 	return east, north
 }
 
+// UTM is a projected CoordinateReferenceSystem. It is a TransverseMercator
+// System with 6 degrees zone width, 0.9996 Scale on the central meridian
+// and 10000000 false northing on the southern hemisphere. It is similar to
+// the EPSG-Codes 32601 - 32660 on the northern hemisphere and 32701 - 32760
+// on the southern hemisphere.
 func UTM(zone float64, northern bool) TransverseMercator {
 	northf := 0.0
 	if !northern {
@@ -342,6 +356,8 @@ func UTM(zone float64, northern bool) TransverseMercator {
 	}
 }
 
+// TransverseMercator is a projected CoordinateReferenceSystem. By default
+// the GeodeticDatum is similar to WGS84.
 type TransverseMercator struct {
 	Lonf, Latf, Scale, Eastf, Northf float64
 	GeodeticDatum                    GeodeticDatum
@@ -450,6 +466,8 @@ func (TransverseMercator) _C(φ float64, s Spheroid) float64 {
 	return s.Ei2() * cos2(φ)
 }
 
+// LambertConformalConic1SP is a projected CoordinateReferenceSystem. By
+// default the GeodeticDatum is similar to WGS84.
 type LambertConformalConic1SP struct {
 	Lonf, Latf, Scale, Eastf, Northf float64
 	GeodeticDatum                    GeodeticDatum
@@ -549,6 +567,8 @@ func (crs LambertConformalConic1SP) _ρ(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() * crs._F(s) * math.Pow(crs._t(φ, s)*crs.Scale, crs._n())
 }
 
+// LambertConformalConic2SP is a projected CoordinateReferenceSystem. By
+// default the GeodeticDatum is similar to WGS84.
 type LambertConformalConic2SP struct {
 	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
 	GeodeticDatum                         GeodeticDatum
@@ -652,6 +672,8 @@ func (crs LambertConformalConic2SP) _ρ(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() * crs._F(s) * math.Pow(crs._t(φ, s), crs._n(s))
 }
 
+// AlbersEqualAreaConic is a projected CoordinateReferenceSystem. By
+// default the GeodeticDatum is similar to WGS84.
 type AlbersEqualAreaConic struct {
 	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
 	GeodeticDatum                         GeodeticDatum
@@ -757,6 +779,8 @@ func (crs AlbersEqualAreaConic) _ρ(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() * math.Sqrt(crs._C(s)-crs._n(s)*crs._q(φ, s)) / crs._n(s)
 }
 
+// EquidistantConic is a projected CoordinateReferenceSystem. By
+// default the GeodeticDatum is similar to WGS84.
 type EquidistantConic struct {
 	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
 	GeodeticDatum                         GeodeticDatum

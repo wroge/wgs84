@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-// EPSG returns a Repository for dealing with EPSG-Codes and
+// EPSG returns a Repository for dealing with several EPSG-Codes and
 // CoordinateReferenceSystems.
 func EPSG() *Repository {
 	codes := map[int]CoordinateReferenceSystem{}
