@@ -23,7 +23,8 @@ codes := wgs84.EPSG().CodesContain(9, 52)
 // [31468 31469 4978 900913 25832 32632 3857 31466 4326 31467 32732]
 ```
 
-[...calculate the EPSG code from unknown coordinates](https://gist.github.com/wroge/e2160c1483a083997accf49009e7b08a)
+[...Calculate EPSG-Code from Unknown Coordinates](https://gist.github.com/wroge/e2160c1483a083997accf49009e7b08a)   
+[...Calculate WebMercator Tile from WGS84 Longitude Latitude](https://gist.github.com/wroge/979869ff59046c4d841248c101472783)
 
 ### Features
 
