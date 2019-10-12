@@ -18,6 +18,10 @@ func EPSG() *Repository {
 	codes[4277] = OSGB36{}.LonLat()
 	codes[4171] = RGF93{}.LonLat()
 	codes[2154] = RGF93{}.FranceLambert()
+	codes[4269] = NAD83{}.LonLat()
+	codes[6355] = NAD83{}.AlabamaEast()
+	codes[6356] = NAD83{}.AlabamaWest()
+	codes[6414] = NAD83{}.CaliforniaAlbers()
 	for i := 1; i < 61; i++ {
 		codes[32600+i] = UTM(float64(i), true)
 		codes[32700+i] = UTM(float64(i), false)
