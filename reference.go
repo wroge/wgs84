@@ -24,7 +24,7 @@ func (crs XYZ) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs XYZ) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs XYZ) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -72,7 +72,7 @@ func (crs LonLat) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs LonLat) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs LonLat) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -136,7 +136,7 @@ func (crs Projection) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs Projection) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs Projection) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -203,7 +203,7 @@ func (crs WebMercator) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs WebMercator) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs WebMercator) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -274,7 +274,7 @@ func (crs Mercator) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs Mercator) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs Mercator) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -383,7 +383,7 @@ func (crs TransverseMercator) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs TransverseMercator) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs TransverseMercator) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -493,7 +493,7 @@ func (crs LambertConformalConic1SP) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs LambertConformalConic1SP) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs LambertConformalConic1SP) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -594,7 +594,7 @@ func (crs LambertConformalConic2SP) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs LambertConformalConic2SP) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs LambertConformalConic2SP) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -699,7 +699,7 @@ func (crs AlbersEqualAreaConic) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs AlbersEqualAreaConic) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs AlbersEqualAreaConic) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
@@ -806,7 +806,7 @@ func (crs EquidistantConic) Contains(lon, lat float64) bool {
 	return true
 }
 
-func (crs EquidistantConic) To(to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
+func (crs EquidistantConic) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
