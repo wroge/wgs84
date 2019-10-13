@@ -5,16 +5,9 @@ package wgs84
 // coordinates from one CoordinateReferenceSystem to another.
 func Transform(from, to CoordinateReferenceSystem) func(a, b, c float64) (a2, b2, c2 float64) {
 	return func(a, b, c float64) (a2, b2, c2 float64) {
-		s := spheroid(from)
-		if from != nil {
-			a, b, c = from.ToXYZ(a, b, c, s)
-			a, b, c = from.ToWGS84(a, b, c)
-		}
-		s = spheroid(to, from)
-		if to != nil {
-			a, b, c = to.FromWGS84(a, b, c)
-			a, b, c = to.FromXYZ(a, b, c, s)
-		}
-		return a, b, c
+		x, y, z := from.ToXYZ(a, b, c, from)
+		x0, y0, z0 := from.ToWGS84(x, y, z)
+		x2, y2, z2 := to.FromWGS84(x0, y0, z0)
+		return to.FromXYZ(x2, y2, z2, to)
 	}
 }

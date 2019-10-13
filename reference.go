@@ -351,6 +351,12 @@ func UTM(zone float64, northern bool) TransverseMercator {
 			if lon < zone*6-186 || lon > zone*6-180 {
 				return false
 			}
+			if northern && lat < 0 {
+				return false
+			}
+			if !northern && lat > 0 {
+				return false
+			}
 			return true
 		}),
 	}

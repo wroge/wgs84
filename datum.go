@@ -251,6 +251,15 @@ func (d DHDN2001) GK(zone float64) TransverseMercator {
 		Scale:         1,
 		Eastf:         zone*1000000 + 500000,
 		Northf:        0,
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < zone*3-1.5 || lon > zone*3+1.5 {
+				return false
+			}
+			if lat < 0 {
+				return false
+			}
+			return true
+		}),
 	}
 }
 
