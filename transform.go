@@ -16,8 +16,14 @@ func Transform(from, to CoordinateReferenceSystem) Func {
 	}
 }
 
+// Func represents a conversion/transformation of coordinates.
+//
+// XYZ coordinates: x, y, z
+// LonLat coordinates: lon, lat, h
+// Projection coordinates: east, north, h
 type Func func(a, b, c float64) (a2, b2, c2 float64)
 
+// Round returns a function with values rounded to a specific precision.
 func (f Func) Round(precision float64) Func {
 	round := func(v float64) float64 {
 		r := math.Round(v*math.Pow(10, precision)) / math.Pow(10, precision)
