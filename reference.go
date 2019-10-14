@@ -18,7 +18,7 @@ func (crs XYZ) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
 	return true
@@ -66,7 +66,7 @@ func (crs LonLat) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
 	return true
@@ -130,7 +130,7 @@ func (crs Projection) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
 	return true
@@ -197,7 +197,7 @@ func (crs WebMercator) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 85.06 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 85.06 {
 		return false
 	}
 	return true
@@ -253,84 +253,6 @@ func (crs WebMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, 
 	return east, north
 }
 
-// Mercator is a projected CoordinateReferenceSystem. By default the
-// GeodeticDatum is similar to WGS84.
-type Mercator struct {
-	Lonf, Scale, Eastf, Northf float64
-	GeodeticDatum              GeodeticDatum
-	Area                       Area
-}
-
-func (crs Mercator) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-func (crs Mercator) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-func (crs Mercator) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-func (crs Mercator) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-func (crs Mercator) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-func (crs Mercator) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-func (crs Mercator) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-func (crs Mercator) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-func (crs Mercator) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	east = (east - crs.Eastf) / crs.Scale
-	north = (north - crs.Northf) / crs.Scale
-	t := math.Exp(-north * s.MajorAxis())
-	φ := math.Pi/2 - 2*math.Atan(t)
-	for i := 0; i < 5; i++ {
-		φ = math.Pi/2 - 2*math.Atan(t*math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2))
-	}
-	return east/s.MajorAxis() + crs.Lonf, degree(φ)
-}
-
-func (crs Mercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	east = crs.Scale * s.MajorAxis() * (radian(lon) - radian(crs.Lonf))
-	north = crs.Scale * s.MajorAxis() / 2 *
-		math.Log(1+math.Sin(radian(lat))/(1-math.Sin(radian(lat)))*
-			math.Pow((1-s.E()*math.Sin(radian(lat)))/(1+s.E()*math.Sin(radian(lat))), math.E))
-	return east, north
-}
-
 // UTM is a projected CoordinateReferenceSystem. It is a TransverseMercator
 // System with 6 degrees zone width, 0.9996 Scale on the central meridian
 // and 10000000 false northing on the southern hemisphere. It is similar to
@@ -342,6 +264,9 @@ func UTM(zone float64, northern bool) TransverseMercator {
 		northf = 10000000
 	}
 	return TransverseMercator{
+		GeodeticDatum: Datum{
+			GeodeticSpheroid: Spheroid{},
+		},
 		Lonf:   zone*6 - 183,
 		Latf:   0,
 		Scale:  0.9996,
@@ -351,10 +276,10 @@ func UTM(zone float64, northern bool) TransverseMercator {
 			if lon < zone*6-186 || lon > zone*6-180 {
 				return false
 			}
-			if northern && lat < 0 {
+			if northern && (lat < 0 || lat > 84) {
 				return false
 			}
-			if !northern && lat > 0 {
+			if !northern && (lat > 0 || lat < -80) {
 				return false
 			}
 			return true
@@ -377,7 +302,7 @@ func (crs TransverseMercator) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
 	return true
@@ -472,107 +397,6 @@ func (TransverseMercator) _C(φ float64, s Spheroid) float64 {
 	return s.Ei2() * cos2(φ)
 }
 
-// LambertConformalConic1SP is a projected CoordinateReferenceSystem. By
-// default the GeodeticDatum is similar to WGS84.
-type LambertConformalConic1SP struct {
-	Lonf, Latf, Scale, Eastf, Northf float64
-	GeodeticDatum                    GeodeticDatum
-	Area                             Area
-}
-
-func (crs LambertConformalConic1SP) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-func (crs LambertConformalConic1SP) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-func (crs LambertConformalConic1SP) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-func (crs LambertConformalConic1SP) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-func (crs LambertConformalConic1SP) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-func (crs LambertConformalConic1SP) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-func (crs LambertConformalConic1SP) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-func (crs LambertConformalConic1SP) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-func (crs LambertConformalConic1SP) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	ρi := math.Sqrt(math.Pow(east-crs.Eastf, 2) + math.Pow(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf), 2))
-	if crs._n() < 0 {
-		ρi = -ρi
-	}
-	ti := math.Pow(ρi/(s.MajorAxis()*crs.Scale*crs._F(s)), 1/crs._n())
-	φ := math.Pi/2 - 2*math.Atan(ti)
-	for i := 0; i < 5; i++ {
-		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2))
-	}
-	λ := math.Atan((east-crs.Eastf)/(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf)))/crs._n() + radian(crs.Lonf)
-	return degree(λ), degree(φ)
-}
-
-func (crs LambertConformalConic1SP) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs._n() * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
-	return east, north
-}
-
-func (LambertConformalConic1SP) _t(φ float64, s Spheroid) float64 {
-	return math.Tan(math.Pi/4-φ/2) /
-		math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2)
-}
-
-func (LambertConformalConic1SP) _m(φ float64, s Spheroid) float64 {
-	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
-}
-
-func (crs LambertConformalConic1SP) _n() float64 {
-	return math.Sin(radian(crs.Latf))
-}
-
-func (crs LambertConformalConic1SP) _F(s Spheroid) float64 {
-	return crs._m(radian(crs.Latf), s) / (crs._n() * math.Pow(crs._t(radian(crs.Latf), s), crs._n()))
-}
-
-func (crs LambertConformalConic1SP) _ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * crs._F(s) * math.Pow(crs._t(φ, s)*crs.Scale, crs._n())
-}
-
 // LambertConformalConic2SP is a projected CoordinateReferenceSystem. By
 // default the GeodeticDatum is similar to WGS84.
 type LambertConformalConic2SP struct {
@@ -588,7 +412,7 @@ func (crs LambertConformalConic2SP) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
 	return true
@@ -693,7 +517,7 @@ func (crs AlbersEqualAreaConic) Contains(lon, lat float64) bool {
 	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
 	return true
@@ -783,113 +607,4 @@ func (crs AlbersEqualAreaConic) _C(s Spheroid) float64 {
 
 func (crs AlbersEqualAreaConic) _ρ(φ float64, s Spheroid) float64 {
 	return s.MajorAxis() * math.Sqrt(crs._C(s)-crs._n(s)*crs._q(φ, s)) / crs._n(s)
-}
-
-// EquidistantConic is a projected CoordinateReferenceSystem. By
-// default the GeodeticDatum is similar to WGS84.
-type EquidistantConic struct {
-	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
-	GeodeticDatum                         GeodeticDatum
-	Area                                  Area
-}
-
-func (crs EquidistantConic) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-func (crs EquidistantConic) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-func (crs EquidistantConic) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-func (crs EquidistantConic) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-func (crs EquidistantConic) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-func (crs EquidistantConic) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-func (crs EquidistantConic) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-func (crs EquidistantConic) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-func (crs EquidistantConic) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	east -= crs.Eastf
-	north -= crs.Northf
-	ρi := math.Sqrt(east*east + math.Pow(crs._ρ(radian(crs.Latf), s)-north, 2))
-	if crs._n(s) < 0 {
-		ρi = -ρi
-	}
-	Mi := s.MajorAxis()*crs._G(s) - ρi
-	μ := Mi / (s.MajorAxis() * (1 - s.E2()/4 - 3*s.E4()/64 - 5*s.E6()/256))
-	φ := μ + (3*s.Ei()/2-27*s.Ei3()/32)*math.Sin(2*μ) +
-		(21*s.Ei2()/16-55*s.Ei4()/32)*math.Sin(4*μ) +
-		(151*s.Ei3()/96)*math.Sin(6*μ) +
-		(1097*s.Ei4()/512)*math.Sin(8*μ)
-	θ := math.Atan(east / (crs._ρ(radian(crs.Latf), s) - north))
-	return degree((radian(crs.Lonf) + θ/crs._n(s))), degree(φ)
-}
-
-func (crs EquidistantConic) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs._n(s) * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
-	return east, north
-}
-
-func (crs EquidistantConic) _M(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * ((1-s.E2()/4-3*s.E4()/64-5*s.E6()/256)*φ -
-		(3*s.E2()/8+3*s.E4()/32+45*s.E6()/1024)*math.Sin(2*φ) +
-		(15*s.E4()/256+45*s.E6()/1024)*math.Sin(4*φ) -
-		(35*s.E6()/3072)*math.Sin(6*φ))
-}
-
-func (crs EquidistantConic) _m(φ float64, s Spheroid) float64 {
-	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
-}
-
-func (crs EquidistantConic) _n(s Spheroid) float64 {
-	if radian(crs.Lat1) == radian(crs.Lat2) {
-		return math.Sin(radian(crs.Lat1))
-	}
-	return s.MajorAxis() * (crs._m(radian(crs.Lat1), s) - crs._m(radian(crs.Lat2), s)) / (crs._M(radian(crs.Lat2), s) - crs._M(radian(crs.Lat1), s))
-}
-
-func (crs EquidistantConic) _G(s Spheroid) float64 {
-	return crs._m(radian(crs.Lat1), s)/crs._n(s) + crs._M(radian(crs.Lat1), s)/s.MajorAxis()
-}
-
-func (crs EquidistantConic) _ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis()*crs._G(s) - crs._M(φ, s)
 }

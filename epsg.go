@@ -75,7 +75,7 @@ func (r *Repository) Codes() []int {
 	return cc
 }
 
-// CodesContain returns all Codes covering a specific WGS84 location.
+// CodesCover returns all Codes covering a specific WGS84 location.
 func (r *Repository) CodesCover(lon, lat float64) []int {
 	r.mutex.Lock()
 	var cc []int
