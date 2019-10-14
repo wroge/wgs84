@@ -17,7 +17,7 @@ func Test(t *testing.T) {
 			var from = 4326
 			var a, b, c = lon, lat, 0.0
 			codes := epsg.CodesCover(lon, lat)
-			if codes == nil || len(codes) == 0 {
+			if len(codes) == 0 {
 				continue
 			}
 			for _, code := range codes {

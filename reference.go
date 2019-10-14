@@ -356,8 +356,10 @@ func (crs TransverseMercator) ToLonLat(east, north float64, gs GeodeticSpheroid)
 		(1097*s.Ei4()/512)*math.Sin(8*μ)
 	R1 := s.MajorAxis() * (1 - s.E2()) / math.Pow(1-s.E2()*sin2(φ1), 3/2)
 	D := east / (crs._N(φ1, s) * crs.Scale)
-	φ := φ1 - (crs._N(φ1, s)*math.Tan(φ1)/R1)*(D*D/2-(5+3*crs._T(φ1)+10*crs._C(φ1, s)-4*crs._C(φ1, s)*crs._C(φ1, s)-9*s.Ei2())*
-		math.Pow(D, 4)/24+(61+90*crs._T(φ1)+298*crs._C(φ1, s)+45*crs._T(φ1)*crs._T(φ1)-252*s.Ei2()-3*crs._C(φ1, s)*crs._C(φ1, s))*
+	φ := φ1 - (crs._N(φ1, s)*math.Tan(φ1)/R1)*(D*D/2-(5+3*crs._T(φ1)+10*
+		crs._C(φ1, s)-4*crs._C(φ1, s)*crs._C(φ1, s)-9*s.Ei2())*
+		math.Pow(D, 4)/24+(61+90*crs._T(φ1)+298*crs._C(φ1, s)+45*crs._T(φ1)*
+		crs._T(φ1)-252*s.Ei2()-3*crs._C(φ1, s)*crs._C(φ1, s))*
 		math.Pow(D, 6)/720)
 	λ := radian(crs.Lonf) + (D-(1+2*crs._T(φ1)+crs._C(φ1, s))*D*D*D/6+(5-2*crs._C(φ1, s)+
 		28*crs._T(φ1)-3*crs._C(φ1, s)*crs._C(φ1, s)+8*s.Ei2()+24*crs._T(φ1)*crs._T(φ1))*
@@ -374,7 +376,8 @@ func (crs TransverseMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) 
 		math.Pow(A, 5)/120) + crs.Eastf
 	north = crs.Scale*(crs._M(φ, s)-crs._M(radian(crs.Latf), s)+crs._N(φ, s)*math.Tan(φ)*
 		(A*A/2+(5-crs._T(φ)+9*crs._C(φ, s)+4*crs._C(φ, s)*crs._C(φ, s))*
-			math.Pow(A, 4)/24+(61-58*crs._T(φ)+crs._T(φ)*crs._T(φ)+600*crs._C(φ, s)-330*s.Ei2())*math.Pow(A, 6)/720)) + crs.Northf
+			math.Pow(A, 4)/24+(61-58*crs._T(φ)+crs._T(φ)*crs._T(φ)+600*
+			crs._C(φ, s)-330*s.Ei2())*math.Pow(A, 6)/720)) + crs.Northf
 	return east, north
 }
 
@@ -597,7 +600,8 @@ func (crs AlbersEqualAreaConic) _n(s Spheroid) float64 {
 	if radian(crs.Lat1) == radian(crs.Lat2) {
 		return math.Sin(radian(crs.Lat1))
 	}
-	return (crs._m(radian(crs.Lat1), s)*crs._m(radian(crs.Lat1), s) - crs._m(radian(crs.Lat2), s)*crs._m(radian(crs.Lat2), s)) /
+	return (crs._m(radian(crs.Lat1), s)*crs._m(radian(crs.Lat1), s) -
+		crs._m(radian(crs.Lat2), s)*crs._m(radian(crs.Lat2), s)) /
 		(crs._q(radian(crs.Lat2), s) - crs._q(radian(crs.Lat1), s))
 }
 
