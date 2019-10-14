@@ -1,6 +1,3 @@
-run:
-  timeout: 2m
-
 linters:
   disable-all: true
   enable:
@@ -8,7 +5,6 @@ linters:
     - deadcode
     - depguard
     - dogsled
-    - dupl
     - errcheck
     - funlen
     - gochecknoinits
@@ -36,3 +32,6 @@ linters:
     - unused
     - varcheck
     - whitespace
+
+service:
+  golangci-lint-version: 1.19.x
