@@ -28,7 +28,7 @@ func Test(t *testing.T) {
 				a, b, c = wgs84.Transform(epsg.Code(from), epsg.Code(code))(a, b, c)
 				from = code
 			}
-			a, b, c = wgs84.Transform(epsg.Code(from), epsg.Code(4326)).Round(3)(a, b, c)
+			a, b, _ = wgs84.Transform(epsg.Code(from), epsg.Code(4326)).Round(3)(a, b, c)
 			if a != lon || b != lat {
 				fmt.Println(from, lon, lat, a, b)
 				panic("Failed")

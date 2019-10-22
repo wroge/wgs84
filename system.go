@@ -4,32 +4,6 @@ import (
 	"math"
 )
 
-type lonLat struct{}
-
-func (c lonLat) ToXYZ(lon, lat, h float64, s Spheroid) (x, y, z float64) {
-	sph := spheroid{a: s.A(), fi: s.Fi()}
-	x = (c._N(radian(lat), sph) + h) * math.Cos(radian(lon)) * math.Cos(radian(lat))
-	y = (c._N(radian(lat), sph) + h) * math.Cos(radian(lat)) * math.Sin(radian(lon))
-	z = (c._N(radian(lat), sph)*math.Pow(sph.A()*(1-sph.f()), 2)/(sph.a2()) + h) * math.Sin(radian(lat))
-	return x, y, z
-}
-
-func (c lonLat) FromXYZ(x, y, z float64, s Spheroid) (lon, lat, h float64) {
-	sph := spheroid{a: s.A(), fi: s.Fi()}
-	sd := math.Sqrt(x*x + y*y)
-	T := math.Atan(z * sph.A() / (sd * sph.b()))
-	B := math.Atan((z + sph.e2()*(sph.a2())/sph.b()*
-		math.Pow(math.Sin(T), 3)) / (sd - sph.e2()*sph.A()*math.Pow(math.Cos(T), 3)))
-	h = sd/math.Cos(B) - c._N(B, sph)
-	lon = degree(math.Atan2(y, x))
-	lat = degree(B)
-	return lon, lat, h
-}
-
-func (c lonLat) _N(φ float64, sph spheroid) float64 {
-	return sph.A() / math.Sqrt(1-sph.e2()*math.Pow(math.Sin(φ), 2))
-}
-
 type webMercator struct{}
 
 func (p webMercator) ToLonLat(east, north float64, s Spheroid) (lon, lat float64) {

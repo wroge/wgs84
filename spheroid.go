@@ -18,10 +18,6 @@ func (s spheroid) a2() float64 {
 	return s.A() * s.A()
 }
 
-func (s spheroid) fi2() float64 {
-	return s.Fi() * s.Fi()
-}
-
 func (s spheroid) f() float64 {
 	return 1 / s.Fi()
 }
