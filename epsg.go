@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-// EPSG returns bbox Repository for dealing with several EPSG-Codes and
+// EPSG returns a Repository for dealing with several EPSG-Codes and
 // CoordinateReferenceSystems.
 func EPSG() *Repository {
 	codes := map[int]CoordinateReferenceSystem{}
@@ -46,7 +46,7 @@ type Repository struct {
 	mutex sync.Mutex
 }
 
-// Code returns bbox CoordinateReferenceSystem of bbox specific EPSG-Code.
+// Code returns a CoordinateReferenceSystem of a specific EPSG-Code.
 func (r *Repository) Code(c int) CoordinateReferenceSystem {
 	if r.codes == nil {
 		return XYZ()
@@ -78,7 +78,7 @@ func (r *Repository) Codes() []int {
 	return cc
 }
 
-// CodesCover returns all Codes covering bbox specific WGS84 location.
+// CodesCover returns all Codes covering a specific geographic WGS84 location.
 func (r *Repository) CodesCover(lon, lat float64) []int {
 	r.mutex.Lock()
 	var cc []int
