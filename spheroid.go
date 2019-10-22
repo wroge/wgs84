@@ -2,130 +2,66 @@ package wgs84
 
 import "math"
 
-// GRS80 Spheroid.
-func GRS80() Spheroid {
-	return Spheroid{
-		A:  6378137,
-		Fi: 298.257222101,
-	}
+type spheroid struct {
+	a, fi float64
 }
 
-// Bessel Spheroid.
-func Bessel() Spheroid {
-	return Spheroid{
-		A:  6377397.155,
-		Fi: 299.1528128,
-	}
+func (s spheroid) A() float64 {
+	return s.a
 }
 
-// Airy Spheroid.
-func Airy() Spheroid {
-	return Spheroid{
-		A:  6377563.396,
-		Fi: 299.3249646,
-	}
+func (s spheroid) Fi() float64 {
+	return s.fi
 }
 
-// Hayford Spheroid.
-func Hayford() Spheroid {
-	return Spheroid{
-		A:  6378388,
-		Fi: 297,
-	}
+func (s spheroid) a2() float64 {
+	return s.A() * s.A()
 }
 
-// Krassowsky Spheroid.
-func Krassowsky() Spheroid {
-	return Spheroid{
-		A:  6378245,
-		Fi: 298.3,
-	}
+func (s spheroid) fi2() float64 {
+	return s.Fi() * s.Fi()
 }
 
-// Spheroid implements the GeodeticSpheroid interface.
-// It has helper methods to simplify the implementation of your own
-// CoordinateReference system, for example through the Projection struct.
-type Spheroid struct {
-	A, Fi float64
+func (s spheroid) f() float64 {
+	return 1 / s.Fi()
 }
 
-// MajorAxis is a method to implement the GeodeticSpheroid interface.
-func (s Spheroid) MajorAxis() float64 {
-	if s == (Spheroid{}) {
-		return 6378137
-	}
-	return s.A
+func (s spheroid) f2() float64 {
+	return s.f() * s.f()
 }
 
-// InverseFlattening is a method to implement the GeodeticSpheroid interface.
-func (s Spheroid) InverseFlattening() float64 {
-	if s == (Spheroid{}) {
-		return 298.257223563
-	}
-	return s.Fi
+func (s spheroid) b() float64 {
+	return s.A() * (1 - s.f())
 }
 
-// A2 is a helper method.
-func (s Spheroid) A2() float64 {
-	return s.MajorAxis() * s.MajorAxis()
+func (s spheroid) e2() float64 {
+	return 2/s.Fi() - s.f2()
 }
 
-// Fi2 is a helper method.
-func (s Spheroid) Fi2() float64 {
-	return s.InverseFlattening() * s.InverseFlattening()
+func (s spheroid) e() float64 {
+	return math.Sqrt(s.e2())
 }
 
-// F is a helper method.
-func (s Spheroid) F() float64 {
-	return 1 / s.InverseFlattening()
+func (s spheroid) e4() float64 {
+	return s.e2() * s.e2()
 }
 
-// F2 is a helper method.
-func (s Spheroid) F2() float64 {
-	return s.F() * s.F()
+func (s spheroid) e6() float64 {
+	return s.e4() * s.e2()
 }
 
-// B is a helper method.
-func (s Spheroid) B() float64 {
-	return s.MajorAxis() * (1 - s.F())
+func (s spheroid) ei() float64 {
+	return (1 - math.Sqrt(1-s.e2())) / (1 + math.Sqrt(1-s.e2()))
 }
 
-// E2 is a helper method.
-func (s Spheroid) E2() float64 {
-	return 2/s.InverseFlattening() - s.F2()
+func (s spheroid) ei2() float64 {
+	return s.ei() * s.ei()
 }
 
-// E is a helper method.
-func (s Spheroid) E() float64 {
-	return math.Sqrt(s.E2())
+func (s spheroid) ei3() float64 {
+	return s.ei2() * s.ei()
 }
 
-// E4 is a helper method.
-func (s Spheroid) E4() float64 {
-	return s.E2() * s.E2()
-}
-
-// E6 is a helper method.
-func (s Spheroid) E6() float64 {
-	return s.E4() * s.E2()
-}
-
-// Ei is a helper method.
-func (s Spheroid) Ei() float64 {
-	return (1 - math.Sqrt(1-s.E2())) / (1 + math.Sqrt(1-s.E2()))
-}
-
-// Ei2 is a helper method.
-func (s Spheroid) Ei2() float64 {
-	return s.Ei() * s.Ei()
-}
-
-// Ei3 is a helper method.
-func (s Spheroid) Ei3() float64 {
-	return s.Ei2() * s.Ei()
-}
-
-// Ei4 is a helper method.
-func (s Spheroid) Ei4() float64 {
-	return s.Ei3() * s.Ei()
+func (s spheroid) ei4() float64 {
+	return s.ei3() * s.ei()
 }

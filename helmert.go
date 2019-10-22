@@ -2,24 +2,19 @@ package wgs84
 
 import "math"
 
-// Helmert implements the Transformation interface.
-type Helmert struct {
-	Tx, Ty, Tz, Rx, Ry, Rz, Ds float64
+type helmert struct {
+	tx, ty, tz, rx, ry, rz, ds float64
 }
 
-// ToWGS84 transforms geocentric coordinates to WGS84 geocentric
-// coordinates.
-func (t Helmert) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return helmert(x, y, z, t.Tx, t.Ty, t.Tz, t.Rx, t.Ry, t.Rz, t.Ds)
+func (t helmert) Forward(x, y, z float64) (x0, y0, z0 float64) {
+	return calcHelmert(x, y, z, t.tx, t.ty, t.tz, t.rx, t.ry, t.rz, t.ds)
 }
 
-// FromWGS84 transforms WGS84 geocentric coordinates to geocentric
-// coordinates.
-func (t Helmert) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return helmert(x0, y0, z0, -t.Tx, -t.Ty, -t.Tz, -t.Rx, -t.Ry, -t.Rz, -t.Ds)
+func (t helmert) Inverse(x0, y0, z0 float64) (x, y, z float64) {
+	return calcHelmert(x0, y0, z0, -t.tx, -t.ty, -t.tz, -t.rx, -t.ry, -t.rz, -t.ds)
 }
 
-func helmert(x, y, z, tx, ty, tz, rx, ry, rz, ds float64) (x0, y0, z0 float64) {
+func calcHelmert(x, y, z, tx, ty, tz, rx, ry, rz, ds float64) (x0, y0, z0 float64) {
 	asec := math.Pi / 648000
 	ppm := 0.000001
 	x0 = (1+ds*ppm)*(x+z*ry*asec-y*rz*asec) + tx

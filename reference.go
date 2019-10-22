@@ -1,735 +1,200 @@
 package wgs84
 
-import (
-	"math"
-)
-
-// XYZ is a geocentric CoordinateReferenceSystem which is by default
-// similar to WGS84 and the EPSG-Code 4978.
-type XYZ struct {
-	GeodeticDatum GeodeticDatum
-	Area          Area
+func XYZ() GeocentricReferenceSystem {
+	return WGS84().XYZ()
 }
 
-// Contains is the implementation of the Area interface.
-func (crs XYZ) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
+func LonLat() GeographicReferenceSystem {
+	return WGS84().LonLat()
 }
 
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs XYZ) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
+func WebMercator() ProjectedReferenceSystem {
+	return WGS84().WebMercator()
 }
 
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs XYZ) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs XYZ) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs XYZ) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs XYZ) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs XYZ) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	return a, b, c
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs XYZ) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	return x, y, z
-}
-
-// LonLat is a geographic CoordinateReferenceSystem which is by default
-// similar to WGS84 and the EPSG-Code 4326.
-type LonLat struct {
-	GeodeticDatum GeodeticDatum
-	Area          Area
-}
-
-// Contains is the implementation of the Area interface.
-func (crs LonLat) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs LonLat) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs LonLat) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs LonLat) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs LonLat) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs LonLat) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs LonLat) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	x = (crs._N(radian(b), s) + c) * math.Cos(radian(a)) * math.Cos(radian(b))
-	y = (crs._N(radian(b), s) + c) * math.Cos(radian(b)) * math.Sin(radian(a))
-	z = (crs._N(radian(b), s)*math.Pow(s.MajorAxis()*(1-s.F()), 2)/(s.A2()) + c) * math.Sin(radian(b))
-	return x, y, z
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs LonLat) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	sd := math.Sqrt(x*x + y*y)
-	T := math.Atan(z * s.MajorAxis() / (sd * s.B()))
-	B := math.Atan((z + s.E2()*(s.A2())/s.B()*
-		math.Pow(math.Sin(T), 3)) / (sd - s.E2()*s.MajorAxis()*math.Pow(math.Cos(T), 3)))
-	c = sd/math.Cos(B) - crs._N(B, s)
-	a = degree(math.Atan2(y, x))
-	b = degree(B)
-	return a, b, c
-}
-
-func (crs LonLat) _N(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() / math.Sqrt(1-s.E2()*math.Pow(math.Sin(φ), 2))
-}
-
-// Projection is a wrapper for projected CoordinateReferenceSystems.
-type Projection struct {
-	GeodeticDatum        GeodeticDatum
-	CoordinateProjection CoordinateProjection
-	Area                 Area
-}
-
-// Contains is the implementation of the Area interface.
-func (crs Projection) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs Projection) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs Projection) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs Projection) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs Projection) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs Projection) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs Projection) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	if crs.CoordinateProjection == nil {
-		return WebMercator{
-			GeodeticDatum: crs.GeodeticDatum,
-		}.ToXYZ(a, b, c, gs)
-	}
-	s := spheroid(gs, crs.GeodeticDatum)
-	a, b = crs.CoordinateProjection.ToLonLat(a, b, s)
-	return LonLat{
-		GeodeticDatum: crs.GeodeticDatum,
-	}.ToXYZ(a, b, c, s)
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs Projection) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	if crs.CoordinateProjection == nil {
-		return WebMercator{
-			GeodeticDatum: crs.GeodeticDatum,
-		}.FromXYZ(x, y, z, gs)
-	}
-	s := spheroid(gs, crs.GeodeticDatum)
-	a, b, c = LonLat{
-		GeodeticDatum: crs.GeodeticDatum,
-	}.FromXYZ(x, y, z, s)
-	a, b = crs.CoordinateProjection.FromLonLat(a, b, s)
-	return a, b, c
-}
-
-// WebMercator is a projected CoordinateReferenceSystem which is by default
-// similar to WGS84 and the EPSG-Code 3857.
-type WebMercator struct {
-	GeodeticDatum GeodeticDatum
-	Area          Area
-}
-
-// Contains is the implementation of the Area interface.
-func (crs WebMercator) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 85.06 {
-		return false
-	}
-	return true
-}
-
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs WebMercator) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs WebMercator) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs WebMercator) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs WebMercator) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs WebMercator) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs WebMercator) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs WebMercator) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-// ToLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs WebMercator) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	lon = degree(east / s.MajorAxis())
-	lat = math.Atan(math.Exp(north/s.MajorAxis()))*degree(1)*2 - 90
-	return lon, lat
-}
-
-// FromLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs WebMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	east = radian(lon) * s.MajorAxis()
-	north = math.Log(math.Tan(radian((90+lat)/2))) * s.MajorAxis()
-	return east, north
-}
-
-// UTM is a projected CoordinateReferenceSystem. It is a TransverseMercator
-// System with 6 degrees zone width, 0.9996 Scale on the central meridian
-// and 10000000 false northing on the southern hemisphere. It is similar to
-// the EPSG-Codes 32601 - 32660 on the northern hemisphere and 32701 - 32760
-// on the southern hemisphere.
-func UTM(zone float64, northern bool) TransverseMercator {
+func UTM(zone float64, northern bool) ProjectedReferenceSystem {
 	northf := 0.0
 	if !northern {
 		northf = 10000000
 	}
-	return TransverseMercator{
-		GeodeticDatum: Datum{
-			GeodeticSpheroid: Spheroid{},
-		},
-		Lonf:   zone*6 - 183,
-		Latf:   0,
-		Scale:  0.9996,
-		Eastf:  500000,
-		Northf: northf,
-		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < zone*6-186 || lon > zone*6-180 {
-				return false
-			}
-			if northern && (lat < 0 || lat > 84) {
-				return false
-			}
-			if !northern && (lat > 0 || lat < -80) {
-				return false
-			}
-			return true
-		}),
-	}
+	crs := WGS84().TransverseMercator(zone*6-183, 0, 0.9996, 500000, northf)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		if lon < zone*6-186 || lon > zone*6-180 {
+			return false
+		}
+		if northern && (lat < 0 || lat > 84) {
+			return false
+		}
+		if !northern && (lat > 0 || lat < -80) {
+			return false
+		}
+		return true
+	})
+	return crs
 }
 
-// TransverseMercator is a projected CoordinateReferenceSystem. By default
-// the GeodeticDatum is similar to WGS84.
-type TransverseMercator struct {
-	Lonf, Latf, Scale, Eastf, Northf float64
-	GeodeticDatum                    GeodeticDatum
-	Area                             Area
+func ETRS89UTM(zone float64) ProjectedReferenceSystem {
+	crs := ETRS89().TransverseMercator(zone*6-183, 0, 0.9996, 500000, 0)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		if lon < zone*6-186 || lon > zone*6-180 {
+			return false
+		}
+		if lat < 0 || lat > 84 {
+			return false
+		}
+		return true
+	})
+	return crs
 }
 
-// Contains is the implementation of the Area interface.
-func (crs TransverseMercator) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
+func OSGB36NationalGrid() ProjectedReferenceSystem {
+	return OSGB36().TransverseMercator(-2, 49, 0.9996012717, 400000, -100000)
+}
+
+func DHDN2001GK(zone float64) ProjectedReferenceSystem {
+	crs := DHDN2001().TransverseMercator(zone*3, 0, 1, zone*1000000+500000, 0)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		if lon < zone*3-1.5 || lon > zone*3+1.5 {
+			return false
+		}
+		if lat < 0 || lat > 84 {
+			return false
+		}
+		return true
+	})
+	return crs
+}
+
+func RGF93CC(lat float64) ProjectedReferenceSystem {
+	return RGF93().LambertConformalConic2SP(3, lat, lat-0.75, lat+0.75, 1700000, 2200000+(lat-43)*1000000)
+}
+
+func RGF93FranceLambert() ProjectedReferenceSystem {
+	return RGF93().LambertConformalConic2SP(3, 46.5, 49, 44, 700000, 6600000)
+}
+
+func NAD83AlabamaEast() ProjectedReferenceSystem {
+	crs := NAD83().TransverseMercator(-85.83333333333333, 30.5, 0.99996, 200000, 0)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		if lon < -86.79 || lon > -84.89 || lat < 30.99 || lat > 35.0 {
+			return false
+		}
+		return true
+	})
+	return crs
+}
+
+func NAD83AlabamaWest() ProjectedReferenceSystem {
+	crs := NAD83().TransverseMercator(-87.5, 30, 0.999933333, 600000, 0)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		if lon < -88.48 || lon > -86.3 || lat < 30.14 || lat > 35.02 {
+			return false
+		}
+		return true
+	})
+	return crs
+}
+
+func NAD83CaliforniaAlbers() ProjectedReferenceSystem {
+	crs := NAD83().AlbersEqualAreaConic(34, 40.5, 0, -120, 0, -4000000)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		if lon < -124.45 || lon > -114.12 || lat < 32.53 || lat > 42.01 {
+			return false
+		}
+		return true
+	})
+	return crs
+}
+
+type GeocentricReferenceSystem struct {
+	Datum Datum
+}
+
+func (crs GeocentricReferenceSystem) Contains(lon, lat float64) bool {
+	return crs.Datum.Contains(lon, lat)
+}
+
+func (crs GeocentricReferenceSystem) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
+	return crs.Datum.Forward(x, y, z)
+}
+
+func (crs GeocentricReferenceSystem) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
+	return crs.Datum.Inverse(x0, y0, z0)
+}
+
+func (crs GeocentricReferenceSystem) To(to CoordinateReferenceSystem) Func {
+	return Transform(crs, to)
+}
+
+type GeographicReferenceSystem struct {
+	Datum Datum
+}
+
+func (crs GeographicReferenceSystem) Contains(lon, lat float64) bool {
+	return crs.Datum.Contains(lon, lat)
+}
+
+func (crs GeographicReferenceSystem) ToWGS84(lon, lat, h float64) (x0, y0, z0 float64) {
+	x, y, z := lonLatToXYZ(lon, lat, h, crs.Datum.A(), crs.Datum.Fi())
+	return crs.Datum.Forward(x, y, z)
+}
+
+func (crs GeographicReferenceSystem) FromWGS84(x0, y0, z0 float64) (lon, lat, h float64) {
+	x, y, z := crs.Datum.Inverse(x0, y0, z0)
+	return xyzToLonLat(x, y, z, crs.Datum.A(), crs.Datum.Fi())
+}
+
+func (crs GeographicReferenceSystem) To(to CoordinateReferenceSystem) Func {
+	return Transform(crs, to)
+}
+
+type ProjectedReferenceSystem struct {
+	Datum      Datum
+	Projection Projection
+	Area       Area
+}
+
+func (crs ProjectedReferenceSystem) Contains(lon, lat float64) bool {
+	if !crs.Datum.Contains(lon, lat) {
 		return false
 	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
+	if crs.Area != nil {
+		return crs.Area.Contains(lon, lat)
 	}
 	return true
 }
 
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs TransverseMercator) To(to CoordinateReferenceSystem) Func {
+func (crs ProjectedReferenceSystem) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
+	if crs.Projection == nil {
+		return crs.Datum.WebMercator().ToWGS84(east, north, h)
+	}
+	lon, lat := crs.Projection.ToLonLat(east, north, crs.Datum)
+	x, y, z := lonLatToXYZ(lon, lat, h, crs.Datum.A(), crs.Datum.Fi())
+	return crs.Datum.Forward(x, y, z)
+}
+
+func (crs ProjectedReferenceSystem) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
+	if crs.Projection == nil {
+		return crs.Datum.WebMercator().FromWGS84(x0, y0, z0)
+	}
+	x, y, z := crs.Datum.Inverse(x0, y0, z0)
+	lon, lat, h := xyzToLonLat(x, y, z, crs.Datum.A(), crs.Datum.Fi())
+	east, north = crs.Projection.FromLonLat(lon, lat, crs.Datum)
+	return east, north, h
+}
+
+func (crs ProjectedReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs TransverseMercator) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs TransverseMercator) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs TransverseMercator) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs TransverseMercator) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs TransverseMercator) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs TransverseMercator) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-// ToLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs TransverseMercator) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	east -= crs.Eastf
-	north -= crs.Northf
-	Mi := crs._M(radian(crs.Latf), s) + north/crs.Scale
-	μ := Mi / (s.MajorAxis() * (1 - s.E2()/4 - 3*s.E4()/64 - 5*s.E6()/256))
-	φ1 := μ + (3*s.Ei()/2-27*s.Ei3()/32)*math.Sin(2*μ) +
-		(21*s.Ei2()/16-55*s.Ei4()/32)*math.Sin(4*μ) +
-		(151*s.Ei3()/96)*math.Sin(6*μ) +
-		(1097*s.Ei4()/512)*math.Sin(8*μ)
-	R1 := s.MajorAxis() * (1 - s.E2()) / math.Pow(1-s.E2()*sin2(φ1), 3/2)
-	D := east / (crs._N(φ1, s) * crs.Scale)
-	φ := φ1 - (crs._N(φ1, s)*math.Tan(φ1)/R1)*(D*D/2-(5+3*crs._T(φ1)+10*
-		crs._C(φ1, s)-4*crs._C(φ1, s)*crs._C(φ1, s)-9*s.Ei2())*
-		math.Pow(D, 4)/24+(61+90*crs._T(φ1)+298*crs._C(φ1, s)+45*crs._T(φ1)*
-		crs._T(φ1)-252*s.Ei2()-3*crs._C(φ1, s)*crs._C(φ1, s))*
-		math.Pow(D, 6)/720)
-	λ := radian(crs.Lonf) + (D-(1+2*crs._T(φ1)+crs._C(φ1, s))*D*D*D/6+(5-2*crs._C(φ1, s)+
-		28*crs._T(φ1)-3*crs._C(φ1, s)*crs._C(φ1, s)+8*s.Ei2()+24*crs._T(φ1)*crs._T(φ1))*
-		math.Pow(D, 5)/120)/math.Cos(φ1)
-	return degree(λ), degree(φ)
-}
-
-// FromLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs TransverseMercator) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	φ := radian(lat)
-	A := (radian(lon) - radian(crs.Lonf)) * math.Cos(φ)
-	east = crs.Scale*crs._N(φ, s)*(A+(1-crs._T(φ)+crs._C(φ, s))*
-		math.Pow(A, 3)/6+(5-18*crs._T(φ)+crs._T(φ)*crs._T(φ)+72*crs._C(φ, s)-58*s.Ei2())*
-		math.Pow(A, 5)/120) + crs.Eastf
-	north = crs.Scale*(crs._M(φ, s)-crs._M(radian(crs.Latf), s)+crs._N(φ, s)*math.Tan(φ)*
-		(A*A/2+(5-crs._T(φ)+9*crs._C(φ, s)+4*crs._C(φ, s)*crs._C(φ, s))*
-			math.Pow(A, 4)/24+(61-58*crs._T(φ)+crs._T(φ)*crs._T(φ)+600*
-			crs._C(φ, s)-330*s.Ei2())*math.Pow(A, 6)/720)) + crs.Northf
-	return east, north
-}
-
-func (TransverseMercator) _M(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * ((1-s.E2()/4-3*s.E4()/64-5*s.E6()/256)*φ -
-		(3*s.E2()/8+3*s.E4()/32+45*s.E6()/1024)*math.Sin(2*φ) +
-		(15*s.E4()/256+45*s.E6()/1024)*math.Sin(4*φ) -
-		(35*s.E6()/3072)*math.Sin(6*φ))
-}
-
-func (TransverseMercator) _N(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() / math.Sqrt(1-s.E2()*sin2(φ))
-}
-
-func (TransverseMercator) _T(φ float64) float64 {
-	return tan2(φ)
-}
-
-func (TransverseMercator) _C(φ float64, s Spheroid) float64 {
-	return s.Ei2() * cos2(φ)
-}
-
-// LambertConformalConic2SP is a projected CoordinateReferenceSystem. By
-// default the GeodeticDatum is similar to WGS84.
-type LambertConformalConic2SP struct {
-	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
-	GeodeticDatum                         GeodeticDatum
-	Area                                  Area
-}
-
-// Contains is the implementation of the Area interface.
-func (crs LambertConformalConic2SP) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
+func Transform(from, to CoordinateReferenceSystem) Func {
+	return func(a, b, c float64) (a2, b2, c2 float64) {
+		if from != nil {
+			a, b, c = from.ToWGS84(a, b, c)
+		}
+		if to != nil {
+			a, b, c = to.FromWGS84(a, b, c)
+		}
+		return a, b, c
 	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs LambertConformalConic2SP) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs LambertConformalConic2SP) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs LambertConformalConic2SP) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs LambertConformalConic2SP) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs LambertConformalConic2SP) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs LambertConformalConic2SP) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs LambertConformalConic2SP) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-// ToLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs LambertConformalConic2SP) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	ρi := math.Sqrt(math.Pow(east-crs.Eastf, 2) + math.Pow(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf), 2))
-	if crs._n(s) < 0 {
-		ρi = -ρi
-	}
-	ti := math.Pow(ρi/(s.MajorAxis()*crs._F(s)), 1/crs._n(s))
-	φ := math.Pi/2 - 2*math.Atan(ti)
-	for i := 0; i < 5; i++ {
-		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2))
-	}
-	λ := math.Atan((east-crs.Eastf)/(crs._ρ(radian(crs.Latf), s)-(north-crs.Northf)))/crs._n(s) + radian(crs.Lonf)
-	return degree(λ), degree(φ)
-}
-
-// FromLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs LambertConformalConic2SP) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs._n(s) * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
-	return east, north
-}
-
-func (crs LambertConformalConic2SP) _t(φ float64, s Spheroid) float64 {
-	return math.Tan(math.Pi/4-φ/2) /
-		math.Pow((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ)), s.E()/2)
-}
-
-func (crs LambertConformalConic2SP) _m(φ float64, s Spheroid) float64 {
-	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
-}
-
-func (crs LambertConformalConic2SP) _n(s Spheroid) float64 {
-	if radian(crs.Lat1) == radian(crs.Lat2) {
-		return math.Sin(radian(crs.Lat1))
-	}
-	return (math.Log(crs._m(radian(crs.Lat1), s)) - math.Log(crs._m(radian(crs.Lat2), s))) /
-		(math.Log(crs._t(radian(crs.Lat1), s)) - math.Log(crs._t(radian(crs.Lat2), s)))
-}
-
-func (crs LambertConformalConic2SP) _F(s Spheroid) float64 {
-	return crs._m(radian(crs.Lat1), s) / (crs._n(s) * math.Pow(crs._t(radian(crs.Lat1), s), crs._n(s)))
-}
-
-func (crs LambertConformalConic2SP) _ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * crs._F(s) * math.Pow(crs._t(φ, s), crs._n(s))
-}
-
-// AlbersEqualAreaConic is a projected CoordinateReferenceSystem. By
-// default the GeodeticDatum is similar to WGS84.
-type AlbersEqualAreaConic struct {
-	Lonf, Latf, Lat1, Lat2, Eastf, Northf float64
-	GeodeticDatum                         GeodeticDatum
-	Area                                  Area
-}
-
-// Contains is the implementation of the Area interface.
-func (crs AlbersEqualAreaConic) Contains(lon, lat float64) bool {
-	if crs.Area != nil && !crs.Area.Contains(lon, lat) {
-		return false
-	}
-	if crs.GeodeticDatum != nil && !crs.GeodeticDatum.Contains(lon, lat) {
-		return false
-	}
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	return true
-}
-
-// To transforms coordinates from one CoordinateReferenceSystem to
-// another.
-func (crs AlbersEqualAreaConic) To(to CoordinateReferenceSystem) Func {
-	return Transform(crs, to)
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs AlbersEqualAreaConic) MajorAxis() float64 {
-	return spheroid(crs.GeodeticDatum).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (crs AlbersEqualAreaConic) InverseFlattening() float64 {
-	return spheroid(crs.GeodeticDatum).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs AlbersEqualAreaConic) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(crs.GeodeticDatum, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (crs AlbersEqualAreaConic) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(crs.GeodeticDatum, x0, y0, z0)
-}
-
-// ToXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs AlbersEqualAreaConic) ToXYZ(a, b, c float64, gs GeodeticSpheroid) (x, y, z float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.ToXYZ(a, b, c, s)
-}
-
-// FromXYZ is a method for the implementation of the CoordinateSystem
-// interface.
-func (crs AlbersEqualAreaConic) FromXYZ(x, y, z float64, gs GeodeticSpheroid) (a, b, c float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	return Projection{
-		GeodeticDatum:        crs.GeodeticDatum,
-		CoordinateProjection: crs,
-	}.FromXYZ(x, y, z, s)
-}
-
-// ToLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs AlbersEqualAreaConic) ToLonLat(east, north float64, gs GeodeticSpheroid) (lon, lat float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	east -= crs.Eastf
-	north -= crs.Northf
-	ρi := math.Sqrt(east*east + math.Pow(crs._ρ(radian(crs.Latf), s)-north, 2))
-	qi := (crs._C(s) - ρi*ρi*crs._n(s)*crs._n(s)/s.A2()) / crs._n(s)
-	φ := math.Asin(qi / 2)
-	for i := 0; i < 5; i++ {
-		φ += math.Pow(1-s.E2()*sin2(φ), 2) /
-			(2 * math.Cos(φ)) * (qi/(1-s.E2()) -
-			math.Sin(φ)/(1-s.E2()*sin2(φ)) +
-			1/(2*s.E())*math.Log((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ))))
-	}
-	θ := math.Atan(east / (crs._ρ(radian(crs.Latf), s) - north))
-	return degree(radian(crs.Lonf) + θ/crs._n(s)), degree(φ)
-}
-
-// FromLonLat is a method for the implementation of the CoordinateProjection
-// interface.
-func (crs AlbersEqualAreaConic) FromLonLat(lon, lat float64, gs GeodeticSpheroid) (east, north float64) {
-	s := spheroid(gs, crs.GeodeticDatum)
-	θ := crs._n(s) * (radian(lon) - radian(crs.Lonf))
-	east = crs.Eastf + crs._ρ(radian(lat), s)*math.Sin(θ)
-	north = crs.Northf + crs._ρ(radian(crs.Latf), s) - crs._ρ(radian(lat), s)*math.Cos(θ)
-	return east, north
-}
-
-func (crs AlbersEqualAreaConic) _m(φ float64, s Spheroid) float64 {
-	return math.Cos(φ) / math.Sqrt(1-s.E2()*sin2(φ))
-}
-
-func (crs AlbersEqualAreaConic) _q(φ float64, s Spheroid) float64 {
-	return (1 - s.E2()) * (math.Sin(φ)/(1-s.E2()*sin2(φ)) -
-		(1/(2*s.E()))*math.Log((1-s.E()*math.Sin(φ))/(1+s.E()*math.Sin(φ))))
-}
-
-func (crs AlbersEqualAreaConic) _n(s Spheroid) float64 {
-	if radian(crs.Lat1) == radian(crs.Lat2) {
-		return math.Sin(radian(crs.Lat1))
-	}
-	return (crs._m(radian(crs.Lat1), s)*crs._m(radian(crs.Lat1), s) -
-		crs._m(radian(crs.Lat2), s)*crs._m(radian(crs.Lat2), s)) /
-		(crs._q(radian(crs.Lat2), s) - crs._q(radian(crs.Lat1), s))
-}
-
-func (crs AlbersEqualAreaConic) _C(s Spheroid) float64 {
-	return crs._m(radian(crs.Lat1), s)*crs._m(radian(crs.Lat1), s) + crs._n(s)*crs._q(radian(crs.Lat1), s)
-}
-
-func (crs AlbersEqualAreaConic) _ρ(φ float64, s Spheroid) float64 {
-	return s.MajorAxis() * math.Sqrt(crs._C(s)-crs._n(s)*crs._q(φ, s)) / crs._n(s)
 }

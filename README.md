@@ -14,15 +14,15 @@ go get github.com/wroge/wgs84
 
 ### Usage
 ```go
-east, north, h := wgs84.LonLat{}.To(wgs84.ETRS89{}.UTM(32)).Round(2)(9, 52, 0)
+east, north, h := wgs84.LonLat().To(wgs84.ETRS89UTM(32)).Round(2)(9, 52, 0)
 // 500000 5.76103821e+06 0
 
-lon, lat, h := wgs84.ETRS89{}.UTM(32).To(wgs84.EPSG().Code(4326)).Round(3)(500150, 5761200, 0)
+lon, lat, h := wgs84.ETRS89UTM(32).To(wgs84.EPSG().Code(4326)).Round(3)(500150, 5761200, 0)
 // 9.002 52.001 0
 
 // EPSG-Codes covering the coordinate {longitude: 9, latitude: 52}:
 codes := wgs84.EPSG().CodesCover(9, 52)
-// [4326 25832 900913 4258 4314 4978 32632 3857 31467]
+// [25832 4314 32632 4978 4258 31467 4326 3857 900913]
 ```
 
 [...Calculate EPSG-Code from Unknown Coordinates](https://gist.github.com/wroge/e2160c1483a083997accf49009e7b08a)   

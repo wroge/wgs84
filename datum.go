@@ -4,435 +4,229 @@ import (
 	"math"
 )
 
-// Datum provides the GeodeticDatum interface with customizable parameters.
+func Helmert(a, fi, tx, ty, tz, rx, ry, rz, ds float64) Datum {
+	return Datum{
+		Spheroid: spheroid{a: a, fi: fi},
+		Transformation: helmert{
+			tx: tx,
+			ty: ty,
+			tz: tz,
+			rx: rx,
+			ry: ry,
+			rz: rz,
+			ds: ds,
+		},
+	}
+}
+
+func WGS84() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6378137,
+			fi: 298.257223563,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
+func ETRS89() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6378137,
+			fi: 298.257222101,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < -16.1 || lon > 40.18 || lat < 32.88 || lat > 84.17 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
+func OSGB36() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6377563.396,
+			fi: 299.3249646,
+		},
+		Transformation: helmert{
+			tx: 446.448,
+			ty: -125.157,
+			tz: 542.06,
+			rx: 0.15,
+			ry: 0.247,
+			rz: 0.842,
+			ds: -20.489,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < -8.82 || lon > 1.92 || lat < 49.79 || lat > 60.94 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
+func DHDN2001() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6377397.155,
+			fi: 299.1528128,
+		},
+		Transformation: helmert{
+			tx: 598.1,
+			ty: 73.7,
+			tz: 418.2,
+			rx: 0.202,
+			ry: 0.045,
+			rz: -2.455,
+			ds: 6.7,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < 5.87 || lon > 13.84 || lat < 47.27 || lat > 55.09 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
+func RGF93() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6378137,
+			fi: 298.257222101,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < -9.86 || lon > 10.38 || lat < 41.15 || lat > 51.56 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
+func NAD83() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6378137,
+			fi: 298.257222101,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < -172.54 || lon > -47.74 || lat < 23.81 || lat > 86.46 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
 type Datum struct {
-	GeodeticSpheroid GeodeticSpheroid
-	Transformation   Transformation
-	Area             Area
+	Spheroid       Spheroid
+	Transformation Transformation
+	Area           Area
 }
 
-// Contains is the implementation of the Area interface.
-//
-// By default Contains is true between -180 to 180 degrees longitude and
-// -90 and 90 degrees latitude. The Area kann be limited by Datum.Area.
 func (d Datum) Contains(lon, lat float64) bool {
-	if d.Area != nil && !d.Area.Contains(lon, lat) {
+	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
 		return false
 	}
-	if math.Abs(lat) > 180 || math.Abs(lat) > 90 {
-		return false
+	if d.Area != nil {
+		return d.Area.Contains(lon, lat)
 	}
 	return true
 }
 
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface. By default the MajorAxis of WGS84 is returned.
-func (d Datum) MajorAxis() float64 {
-	return spheroid(d.GeodeticSpheroid).MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the
-// GeodeticSpheroid interface. By default the InverseFlattening of WGS84 is
-// returned.
-func (d Datum) InverseFlattening() float64 {
-	return spheroid(d.GeodeticSpheroid).InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface. By default x, y and z are returned.
-func (d Datum) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return toWGS84(d.Transformation, x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface. By default x0, y0 and z0 are returned.
-func (d Datum) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return fromWGS84(d.Transformation, x0, y0, z0)
-}
-
-// ETRS89 provides the GeodeticDatum interface for the European Terrestrial
-// Reference System 1989.
-type ETRS89 struct{}
-
-// Contains is the implementation of the Area interface.
-func (d ETRS89) Contains(lon, lat float64) bool {
-	if lon < -16.1 || lon > 40.18 || lat < 32.88 || lat > 84.17 {
-		return false
+func (d Datum) A() float64 {
+	if d.Spheroid == nil {
+		return 6378137
 	}
-	return true
+	return d.Spheroid.A()
 }
 
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (d ETRS89) MajorAxis() float64 {
-	return GRS80().MajorAxis()
+func (d Datum) Fi() float64 {
+	if d.Spheroid == nil {
+		return 298.257223563
+	}
+	return d.Spheroid.Fi()
 }
 
-// InverseFlattening is a method for the implementation of the
-// GeodeticSpheroid interface.
-func (d ETRS89) InverseFlattening() float64 {
-	return GRS80().InverseFlattening()
+func (d Datum) Forward(x, y, z float64) (x0, y0, z0 float64) {
+	if d.Transformation == nil {
+		return x, y, z
+	}
+	return d.Transformation.Forward(x, y, z)
 }
 
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d ETRS89) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return x, y, z
+func (d Datum) Inverse(x0, y0, z0 float64) (x, y, z float64) {
+	if d.Transformation == nil {
+		return x0, y0, z0
+	}
+	return d.Transformation.Inverse(x0, y0, z0)
 }
 
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d ETRS89) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return x0, y0, z0
-}
-
-// LonLat implements a CoordinateReferenceSystem similar to the EPSG-Code
-// 4258.
-func (d ETRS89) LonLat() LonLat {
-	return LonLat{
-		GeodeticDatum: d,
+func (d Datum) XYZ() GeocentricReferenceSystem {
+	return GeocentricReferenceSystem{
+		Datum: d,
 	}
 }
 
-// UTM implements CoordinateReferenceSystems similar to the EPSG-Codes
-// 25828 - 25838.
-func (d ETRS89) UTM(zone float64) TransverseMercator {
-	return TransverseMercator{
-		GeodeticDatum: d,
-		Lonf:          zone*6 - 183,
-		Latf:          0,
-		Scale:         0.9996,
-		Eastf:         500000,
-		Northf:        0,
-		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < zone*6-186 || lon > zone*6-180 {
-				return false
-			}
-			return true
-		}),
+func (d Datum) LonLat() GeographicReferenceSystem {
+	return GeographicReferenceSystem{
+		Datum: d,
 	}
 }
 
-// OSGB36 provides the GeodeticDatum interface for the Ordnance Survey Great
-// Britain 1936 Datum.
-type OSGB36 struct{}
-
-// Contains is the implementation of the Area interface.
-//
-// By default Contains is true between -180 to 180 degrees longitude and
-// -90 and 90 degrees latitude. The Area kann be limited by OSGB36.Area.
-func (d OSGB36) Contains(lon, lat float64) bool {
-	if lon < -8.82 || lon > 1.92 || lat < 49.79 || lat > 60.94 {
-		return false
-	}
-	return true
-}
-
-func (d OSGB36) transformation() Helmert {
-	return Helmert{
-		Tx: 446.448,
-		Ty: -125.157,
-		Tz: 542.06,
-		Rx: 0.15,
-		Ry: 0.247,
-		Rz: 0.842,
-		Ds: -20.489,
+func (d Datum) WebMercator() ProjectedReferenceSystem {
+	return ProjectedReferenceSystem{
+		Datum:      d,
+		Projection: webMercator{},
 	}
 }
 
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (d OSGB36) MajorAxis() float64 {
-	return Airy().MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the
-// GeodeticSpheroid interface.
-func (d OSGB36) InverseFlattening() float64 {
-	return Airy().InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d OSGB36) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return d.transformation().ToWGS84(x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d OSGB36) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return d.transformation().FromWGS84(x0, y0, z0)
-}
-
-// LonLat implements a CoordinateReferenceSystem similar to the EPSG-Code
-// 4277.
-func (d OSGB36) LonLat() LonLat {
-	return LonLat{
-		GeodeticDatum: d,
+func (d Datum) TransverseMercator(lonf, latf, scale, eastf, northf float64) ProjectedReferenceSystem {
+	return ProjectedReferenceSystem{
+		Datum: d,
+		Projection: transverseMercator{
+			lonf:   lonf,
+			latf:   latf,
+			scale:  scale,
+			eastf:  eastf,
+			northf: northf,
+		},
 	}
 }
 
-// NationalGrid implements a CoordinateReferenceSystem similar to the
-// EPSG-Code 27700.
-func (d OSGB36) NationalGrid() TransverseMercator {
-	return TransverseMercator{
-		GeodeticDatum: d,
-		Lonf:          -2,
-		Latf:          49,
-		Scale:         0.9996012717,
-		Eastf:         400000,
-		Northf:        -100000,
+func (d Datum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf float64) ProjectedReferenceSystem {
+	return ProjectedReferenceSystem{
+		Datum: d,
+		Projection: lambertConformalConic2SP{
+			lonf:   lonf,
+			latf:   latf,
+			lat1:   lat1,
+			lat2:   lat2,
+			eastf:  eastf,
+			northf: northf,
+		},
 	}
 }
 
-// DHDN2001 provides the GeodeticDatum interface for the "Deutsche
-// Hauptdreiecksnetz" 2001 Datum in Germany.
-type DHDN2001 struct{}
-
-// Contains is the implementation of the Area interface.
-func (d DHDN2001) Contains(lon, lat float64) bool {
-	if lon < 5.87 || lon > 13.84 || lat < 47.27 || lat > 55.09 {
-		return false
-	}
-	return true
-}
-
-func (d DHDN2001) transformation() Helmert {
-	return Helmert{
-		Tx: 598.1,
-		Ty: 73.7,
-		Tz: 418.2,
-		Rx: 0.202,
-		Ry: 0.045,
-		Rz: -2.455,
-		Ds: 6.7,
-	}
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (d DHDN2001) MajorAxis() float64 {
-	return Bessel().MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the
-// GeodeticSpheroid interface.
-func (d DHDN2001) InverseFlattening() float64 {
-	return Bessel().InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d DHDN2001) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return d.transformation().ToWGS84(x, y, z)
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d DHDN2001) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return d.transformation().FromWGS84(x0, y0, z0)
-}
-
-// LonLat implements a CoordinateReferenceSystem similar to the
-// EPSG-Code 4314.
-func (d DHDN2001) LonLat() LonLat {
-	return LonLat{
-		GeodeticDatum: d,
-	}
-}
-
-// GK implements CoordinateReferenceSystems similar to the EPSG-Codes
-// 31466- 31469.
-func (d DHDN2001) GK(zone float64) TransverseMercator {
-	return TransverseMercator{
-		GeodeticDatum: d,
-		Lonf:          zone * 3,
-		Latf:          0,
-		Scale:         1,
-		Eastf:         zone*1000000 + 500000,
-		Northf:        0,
-		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < zone*3-1.5 || lon > zone*3+1.5 {
-				return false
-			}
-			if lat < 0 {
-				return false
-			}
-			return true
-		}),
-	}
-}
-
-// RGF93 provides the GeodeticDatum interface for the "Réseau géodésique
-// français" 1993 Datum in France.
-type RGF93 struct{}
-
-// Contains is the implementation of the Area interface.
-func (d RGF93) Contains(lon, lat float64) bool {
-	if lon < -9.86 || lon > 10.38 || lat < 41.15 || lat > 51.56 {
-		return false
-	}
-	return true
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (d RGF93) MajorAxis() float64 {
-	return GRS80().MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the
-// GeodeticSpheroid interface.
-func (d RGF93) InverseFlattening() float64 {
-	return GRS80().InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d RGF93) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return x, y, z
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d RGF93) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return x0, y0, z0
-}
-
-// LonLat implements a CoordinateReferenceSystem similar to the
-// EPSG-Code 4314.
-func (d RGF93) LonLat() LonLat {
-	return LonLat{
-		GeodeticDatum: d,
-	}
-}
-
-// CC implements CoordinateReferenceSystems similar to the EPSG-Codes
-// 3942- 3950.
-func (d RGF93) CC(lat float64) LambertConformalConic2SP {
-	return LambertConformalConic2SP{
-		GeodeticDatum: d,
-		Lonf:          3,
-		Latf:          lat,
-		Lat1:          lat - 0.75,
-		Lat2:          lat + 0.75,
-		Eastf:         1700000,
-		Northf:        2200000 + (lat-43)*1000000,
-	}
-}
-
-// FranceLambert implements a CoordinateReferenceSystem similar to the
-// EPSG-Code 2154.
-func (d RGF93) FranceLambert() LambertConformalConic2SP {
-	return LambertConformalConic2SP{
-		GeodeticDatum: d,
-		Lonf:          3,
-		Latf:          46.5,
-		Lat1:          49,
-		Lat2:          44,
-		Eastf:         700000,
-		Northf:        6600000,
-	}
-}
-
-// NAD83 provides the GeodeticDatum interface for the North American Datum
-// 1983.
-type NAD83 struct{}
-
-// Contains is the implementation of the Area interface.
-func (d NAD83) Contains(lon, lat float64) bool {
-	if lon < -172.54 || lon > -47.74 || lat < 23.81 || lat > 86.46 {
-		return false
-	}
-	return true
-}
-
-// MajorAxis is a method for the implementation of the GeodeticSpheroid
-// interface.
-func (d NAD83) MajorAxis() float64 {
-	return GRS80().MajorAxis()
-}
-
-// InverseFlattening is a method for the implementation of the
-// GeodeticSpheroid interface.
-func (d NAD83) InverseFlattening() float64 {
-	return GRS80().InverseFlattening()
-}
-
-// ToWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d NAD83) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
-	return x, y, z
-}
-
-// FromWGS84 is a method for the implementation of the Transformation
-// interface.
-func (d NAD83) FromWGS84(x0, y0, z0 float64) (x, y, z float64) {
-	return x0, y0, z0
-}
-
-// LonLat implements a CoordinateReferenceSystem similar to the EPSG-Code
-// 4269.
-func (d NAD83) LonLat() LonLat {
-	return LonLat{
-		GeodeticDatum: d,
-	}
-}
-
-// AlabamaEast implements a CoordinateReferenceSystem similar to the EPSG-Code
-// 6355.
-func (d NAD83) AlabamaEast() TransverseMercator {
-	return TransverseMercator{
-		GeodeticDatum: d,
-		Latf:          30.5,
-		Lonf:          -85.83333333333333,
-		Scale:         0.99996,
-		Eastf:         200000,
-		Northf:        0,
-		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -86.79 || lon > -84.89 || lat < 30.99 || lat > 35.0 {
-				return false
-			}
-			return true
-		}),
-	}
-}
-
-// AlabamaWest implements a CoordinateReferenceSystem similar to the EPSG-Code
-// 6356.
-func (d NAD83) AlabamaWest() TransverseMercator {
-	return TransverseMercator{
-		GeodeticDatum: d,
-		Latf:          30,
-		Lonf:          -87.5,
-		Scale:         0.999933333,
-		Eastf:         600000,
-		Northf:        0,
-		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -88.48 || lon > -86.3 || lat < 30.14 || lat > 35.02 {
-				return false
-			}
-			return true
-		}),
-	}
-}
-
-// CaliforniaAlbers implements a CoordinateReferenceSystem similar to the EPSG-Code
-// 6414.
-func (d NAD83) CaliforniaAlbers() AlbersEqualAreaConic {
-	return AlbersEqualAreaConic{
-		GeodeticDatum: d,
-		Lat1:          34,
-		Lat2:          40.5,
-		Latf:          0,
-		Lonf:          -120,
-		Eastf:         0,
-		Northf:        -4000000,
-		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -124.45 || lon > -114.12 || lat < 32.53 || lat > 42.01 {
-				return false
-			}
-			return true
-		}),
+func (d Datum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float64) ProjectedReferenceSystem {
+	return ProjectedReferenceSystem{
+		Datum: d,
+		Projection: albersEqualAreaConic{
+			lonf:   lonf,
+			latf:   latf,
+			lat1:   lat1,
+			lat2:   lat2,
+			eastf:  eastf,
+			northf: northf,
+		},
 	}
 }
