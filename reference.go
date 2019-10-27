@@ -155,6 +155,12 @@ func (crs GeocentricReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
+// SafeTo provides the transformation to another CoordinateReferenceSystem
+// with errors.
+func (crs GeocentricReferenceSystem) SafeTo(to CoordinateReferenceSystem) SafeFunc {
+	return SafeTransform(crs, to)
+}
+
 // GeographicReferenceSystem represents a geographic Coordinate Reference System.
 type GeographicReferenceSystem struct {
 	Datum Datum
@@ -180,6 +186,12 @@ func (crs GeographicReferenceSystem) FromWGS84(x0, y0, z0 float64) (lon, lat, h 
 // To provides the transformation to another CoordinateReferenceSystem.
 func (crs GeographicReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
+}
+
+// SafeTo provides the transformation to another CoordinateReferenceSystem
+// with errors.
+func (crs GeographicReferenceSystem) SafeTo(to CoordinateReferenceSystem) SafeFunc {
+	return SafeTransform(crs, to)
 }
 
 // ProjectedReferenceSystem represents a projected Coordinate Reference System.
@@ -226,6 +238,12 @@ func (crs ProjectedReferenceSystem) To(to CoordinateReferenceSystem) Func {
 	return Transform(crs, to)
 }
 
+// SafeTo provides the transformation to another CoordinateReferenceSystem
+// with errors.
+func (crs ProjectedReferenceSystem) SafeTo(to CoordinateReferenceSystem) SafeFunc {
+	return SafeTransform(crs, to)
+}
+
 // Transform provides a transformation between CoordinateReferenceSystems.
 func Transform(from, to CoordinateReferenceSystem) Func {
 	return func(a, b, c float64) (a2, b2, c2 float64) {
@@ -236,5 +254,42 @@ func Transform(from, to CoordinateReferenceSystem) Func {
 			a, b, c = to.FromWGS84(a, b, c)
 		}
 		return a, b, c
+	}
+}
+
+type Error int
+
+func (err Error) Error() string {
+	if err == NoCoordinateReferenceSystem {
+		return "not specified"
+	}
+	if err == OutOfBounds {
+		return "coordinate is out of bounds"
+	}
+	return "unknown"
+}
+
+const (
+	NoCoordinateReferenceSystem = Error(100)
+	OutOfBounds                 = Error(200)
+)
+
+func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
+	return func(a, b, c float64) (a2, b2, c2 float64, err error) {
+		if from != nil {
+			a, b, c = from.ToWGS84(a, b, c)
+		} else {
+			err = NoCoordinateReferenceSystem
+		}
+		lon, lat, _ := xyzToLonLat(a, b, c, 6378137, 298.257223563)
+		if !from.Contains(lon, lat) || !to.Contains(lon, lat) {
+			err = OutOfBounds
+		}
+		if to != nil {
+			a, b, c = to.FromWGS84(a, b, c)
+		} else {
+			err = NoCoordinateReferenceSystem
+		}
+		return a, b, c, err
 	}
 }

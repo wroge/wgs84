@@ -90,3 +90,14 @@ func (r *Repository) CodesCover(lon, lat float64) []int {
 	r.mutex.Unlock()
 	return cc
 }
+
+// Transform transforms coordinates from one EPSG-Code to another.
+func (r *Repository) Transform(from, to int) Func {
+	return Transform(r.Code(from), r.Code(to))
+}
+
+// SafeTransform transforms coordinates from one EPSG-Code to another
+// with errors.
+func (r *Repository) SafeTransform(from, to int) SafeFunc {
+	return SafeTransform(r.Code(from), r.Code(to))
+}
