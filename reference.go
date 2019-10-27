@@ -257,9 +257,9 @@ func Transform(from, to CoordinateReferenceSystem) Func {
 	}
 }
 
-type Error int
+type warning int
 
-func (err Error) Error() string {
+func (err warning) Error() string {
 	if err == NoCoordinateReferenceSystem {
 		return "not specified"
 	}
@@ -270,12 +270,16 @@ func (err Error) Error() string {
 }
 
 const (
-	NoCoordinateReferenceSystem = Error(100)
-	OutOfBounds                 = Error(200)
+	// NoCoordinateReferenceSystem is a nil CoordinateReferenceSystem warning
+	NoCoordinateReferenceSystem = warning(100)
+	// OutOfBounds is a transformation out of the Area interface boundings.
+	OutOfBounds = warning(200)
 )
 
+// Transform provides a transformation between CoordinateReferenceSystems
+// with errors.
 func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
-	return func(a, b, c float64) (a2, b2, c2 float64, err error) {
+	return func(a, b, c float64) (a2, b2, c2 float64, err warning) {
 		if from != nil {
 			a, b, c = from.ToWGS84(a, b, c)
 		} else {

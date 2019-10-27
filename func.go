@@ -24,11 +24,11 @@ func (f Func) Round(precision float64) Func {
 
 // SafeFunc is returned by the SafeTo methods of the CoordinateReferenceSystem's
 // in this package and the SafeTransform function.
-type SafeFunc func(a, b, c float64) (a2, b2, c2 float64, err error)
+type SafeFunc func(a, b, c float64) (a2, b2, c2 float64, err warning)
 
 // Round can round the resulting values to a specific precision.
 func (f SafeFunc) Round(precision float64) SafeFunc {
-	return func(a, b, c float64) (a2, b2, c2 float64, err error) {
+	return func(a, b, c float64) (a2, b2, c2 float64, err warning) {
 		a, b, c, err = f(a, b, c)
 		return round(a, precision), round(b, precision), round(c, precision), err
 	}
