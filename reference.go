@@ -276,7 +276,7 @@ const (
 	OutOfBounds = warning(200)
 )
 
-// Transform provides a transformation between CoordinateReferenceSystems
+// SafeTransform provides a transformation between CoordinateReferenceSystems
 // with errors.
 func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
 	return func(a, b, c float64) (a2, b2, c2 float64, err warning) {
