@@ -1,5 +1,7 @@
 package wgs84
 
+import "errors"
+
 // XYZ is a geocentric Coordinate Reference System similar to
 // https://epsg.io/4978
 func XYZ() GeocentricReferenceSystem {
@@ -257,23 +259,11 @@ func Transform(from, to CoordinateReferenceSystem) Func {
 	}
 }
 
-type warning int
-
-func (err warning) Error() string {
-	if err == NoCoordinateReferenceSystem {
-		return "not specified"
-	}
-	if err == OutOfBounds {
-		return "coordinate is out of bounds"
-	}
-	return "unknown"
-}
-
-const (
+var (
 	// NoCoordinateReferenceSystem is a nil CoordinateReferenceSystem warning
-	NoCoordinateReferenceSystem = warning(100)
+	NoCoordinateReferenceSystem = errors.New("not specified")
 	// OutOfBounds is a transformation out of the Area interface boundings.
-	OutOfBounds = warning(200)
+	OutOfBounds = errors.New("coordinate is out of bounds")
 )
 
 // SafeTransform provides a transformation between CoordinateReferenceSystems
