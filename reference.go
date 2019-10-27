@@ -279,7 +279,7 @@ const (
 // SafeTransform provides a transformation between CoordinateReferenceSystems
 // with errors.
 func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
-	return func(a, b, c float64) (a2, b2, c2 float64, err warning) {
+	return func(a, b, c float64) (a2, b2, c2 float64, err error) {
 		if from != nil {
 			a, b, c = from.ToWGS84(a, b, c)
 		} else {
