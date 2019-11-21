@@ -95,6 +95,38 @@ func OSGB36() Datum {
 	}
 }
 
+// MGI provides a Datum similar to the Militar-Geographische Institut.
+//
+// It's based on the Bessel Spheroid and a 7-parameter-Helmert-Transformation
+// with the parameters: 577.326,90.129,463.919,5.137,1.474,5.297,2.4232.
+//
+// https://epsg.io/1618
+//
+// It is used in Austria.
+func MGI() Datum {
+	return Datum{
+		Spheroid: spheroid{
+			a:  6377397.155,
+			fi: 299.1528128,
+		},
+		Transformation: helmert{
+			tx: 577.326,
+			ty: 90.129,
+			tz: 463.919,
+			rx: 5.137,
+			ry: 1.474,
+			rz: 5.297,
+			ds: 2.4232,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			if lon < 9.53 || lon > 17.17 || lat < 46.4 || lat > 49.02 {
+				return false
+			}
+			return true
+		}),
+	}
+}
+
 // DHDN2001 provides a Datum similar to the Deutsches Hauptdreiecksnetz 2001.
 //
 // It's based on the Bessel Spheroid and a 7-parameter-Helmert-Transformation

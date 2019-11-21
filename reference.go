@@ -59,6 +59,54 @@ func ETRS89UTM(zone float64) ProjectedReferenceSystem {
 	return crs
 }
 
+// ETRS89AustriaLambert represents projected Coordinate Reference System's similar to
+// https://epsg.io/3416
+func ETRS89AustriaLambert() ProjectedReferenceSystem {
+	return ETRS89().LambertConformalConic2SP(13.33333333333333, 47.5, 49, 46, 400000, 400000)
+}
+
+// MGIAustriaLambert represents projected Coordinate Reference System's similar to
+// https://epsg.io/31287
+func MGIAustriaLambert() ProjectedReferenceSystem {
+	return MGI().LambertConformalConic2SP(13.33333333333333, 47.5, 49, 46, 400000, 400000)
+}
+
+// MGIAustriaM28 represents projected Coordinate Reference System's similar to
+// https://epsg.io/31284
+func MGIAustriaM28() ProjectedReferenceSystem {
+	return MGI().TransverseMercator(10.33333333333333, 0, 1, 150000, 0)
+}
+
+// MGIAustriaM31 represents projected Coordinate Reference System's similar to
+// https://epsg.io/31285
+func MGIAustriaM31() ProjectedReferenceSystem {
+	return MGI().TransverseMercator(13.33333333333333, 0, 1, 450000, 0)
+}
+
+// MGIAustriaM34 represents projected Coordinate Reference System's similar to
+// https://epsg.io/31286
+func MGIAustriaM34() ProjectedReferenceSystem {
+	return MGI().TransverseMercator(16.33333333333333, 0, 1, 750000, 0)
+}
+
+// MGIAustriaGKM28 represents projected Coordinate Reference System's similar to
+// https://epsg.io/31257
+func MGIAustriaGKM28() ProjectedReferenceSystem {
+	return MGI().TransverseMercator(10.33333333333333, 0, 1, 150000, -5000000)
+}
+
+// MGIAustriaGKM31 represents projected Coordinate Reference System's similar to
+// https://epsg.io/31258
+func MGIAustriaGKM31() ProjectedReferenceSystem {
+	return MGI().TransverseMercator(13.33333333333333, 0, 1, 450000, -5000000)
+}
+
+// MGIAustriaGKM34 represents projected Coordinate Reference System's similar to
+// https://epsg.io/31259
+func MGIAustriaGKM34() ProjectedReferenceSystem {
+	return MGI().TransverseMercator(16.33333333333333, 0, 1, 750000, -5000000)
+}
+
 // OSGB36NationalGrid is a projected Coordinate Reference System similar to
 // https://epsg.io/27700
 func OSGB36NationalGrid() ProjectedReferenceSystem {

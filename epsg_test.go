@@ -28,8 +28,8 @@ func Test(t *testing.T) {
 				a, b, c = wgs84.Transform(epsg.Code(from), epsg.Code(code))(a, b, c)
 				from = code
 			}
-			a2, b2, _ := epsg.Transform(from, 4326).Round(3)(a, b, c)
-			a, b, _, err := epsg.SafeTransform(from, 4326).Round(3)(a, b, c)
+			a2, b2, _ := epsg.Transform(from, 4326).Round(2)(a, b, c)
+			a, b, _, err := epsg.SafeTransform(from, 4326).Round(2)(a, b, c)
 			if a != lon || b != lat || err != nil || a2 != a || b2 != b {
 				fmt.Println(from, lon, lat, a, b)
 				panic("Failed")
