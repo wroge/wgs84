@@ -41,4 +41,4 @@ codes := epsg.CodesCover(9, 52)
 - Transverse Mercator (UTM)
 - EPSG-Code Coverage
 - ...
-- Easily expandable through simple interfaces
+- Easily expandable through simple [Interfaces](https://github.com/wroge/wgs84/blob/master/interface.go)
