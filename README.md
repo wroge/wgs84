@@ -1,5 +1,5 @@
 [![Build Status](https://img.shields.io/travis/wroge/wgs84/master?style=flat-square)](https://travis-ci.org/wroge/wgs84)
-[![GoDoc](https://img.shields.io/badge/pkg-go.dev-007D9C.svg?style=flat-square)](https://pkg.go.dev/github.com/wroge/wgs84)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/wroge/wgs84)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84?style=flat-square)](https://goreportcard.com/report/github.com/wroge/wgs84)
 [![GolangCI](https://golangci.com/badges/github.com/wroge/wgs84.svg)](https://golangci.com/r/github.com/wroge/wgs84)
 [![Codecov](https://img.shields.io/codecov/c/gh/wroge/wgs84?style=flat-square)](https://codecov.io/gh/wroge/wgs84)
