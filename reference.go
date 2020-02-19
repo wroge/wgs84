@@ -2,6 +2,18 @@ package wgs84
 
 import "errors"
 
+// To provides the transformation of WGS84 geographic coordinates to another
+// Coordinate Reference System.
+func To(to CoordinateReferenceSystem) Func {
+	return LonLat().To(to)
+}
+
+// To provides the transformation of coordinates from a Coordinate Reference
+// System to WGS84 geographic coordinates.
+func From(from CoordinateReferenceSystem) Func {
+	return LonLat().From(from)
+}
+
 // XYZ is a geocentric Coordinate Reference System similar to
 // https://epsg.io/4978
 func XYZ() GeocentricReferenceSystem {
@@ -48,10 +60,7 @@ func UTM(zone float64, northern bool) ProjectedReferenceSystem {
 func ETRS89UTM(zone float64) ProjectedReferenceSystem {
 	crs := ETRS89().TransverseMercator(zone*6-183, 0, 0.9996, 500000, 0)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < zone*6-186 || lon > zone*6-180 {
-			return false
-		}
-		if lat < 0 || lat > 84 {
+		if lon < zone*6-186 || lon > zone*6-180 || lat < 0 || lat > 84 {
 			return false
 		}
 		return true
@@ -118,10 +127,7 @@ func OSGB36NationalGrid() ProjectedReferenceSystem {
 func DHDN2001GK(zone float64) ProjectedReferenceSystem {
 	crs := DHDN2001().TransverseMercator(zone*3, 0, 1, zone*1000000+500000, 0)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < zone*3-1.5 || lon > zone*3+1.5 {
-			return false
-		}
-		if lat < 0 || lat > 84 {
+		if lon < zone*3-1.5 || lon > zone*3+1.5 || lat < 0 || lat > 84 {
 			return false
 		}
 		return true
@@ -211,6 +217,17 @@ func (crs GeocentricReferenceSystem) SafeTo(to CoordinateReferenceSystem) SafeFu
 	return SafeTransform(crs, to)
 }
 
+// From provides the transformation from another CoordinateReferenceSystem.
+func (crs GeocentricReferenceSystem) From(from CoordinateReferenceSystem) Func {
+	return Transform(from, crs)
+}
+
+// SafeTo provides the transformation from another CoordinateReferenceSystem
+// with errors.
+func (crs GeocentricReferenceSystem) SafeFrom(from CoordinateReferenceSystem) SafeFunc {
+	return SafeTransform(from, crs)
+}
+
 // GeographicReferenceSystem represents a geographic Coordinate Reference System.
 type GeographicReferenceSystem struct {
 	Datum Datum
@@ -242,6 +259,17 @@ func (crs GeographicReferenceSystem) To(to CoordinateReferenceSystem) Func {
 // with errors.
 func (crs GeographicReferenceSystem) SafeTo(to CoordinateReferenceSystem) SafeFunc {
 	return SafeTransform(crs, to)
+}
+
+// From provides the transformation from another CoordinateReferenceSystem.
+func (crs GeographicReferenceSystem) From(from CoordinateReferenceSystem) Func {
+	return Transform(from, crs)
+}
+
+// SafeTo provides the transformation from another CoordinateReferenceSystem
+// with errors.
+func (crs GeographicReferenceSystem) SafeFrom(from CoordinateReferenceSystem) SafeFunc {
+	return SafeTransform(from, crs)
 }
 
 // ProjectedReferenceSystem represents a projected Coordinate Reference System.
@@ -292,6 +320,17 @@ func (crs ProjectedReferenceSystem) To(to CoordinateReferenceSystem) Func {
 // with errors.
 func (crs ProjectedReferenceSystem) SafeTo(to CoordinateReferenceSystem) SafeFunc {
 	return SafeTransform(crs, to)
+}
+
+// From provides the transformation from another CoordinateReferenceSystem.
+func (crs ProjectedReferenceSystem) From(from CoordinateReferenceSystem) Func {
+	return Transform(from, crs)
+}
+
+// SafeTo provides the transformation from another CoordinateReferenceSystem
+// with errors.
+func (crs ProjectedReferenceSystem) SafeFrom(from CoordinateReferenceSystem) SafeFunc {
+	return SafeTransform(from, crs)
 }
 
 // Transform provides a transformation between CoordinateReferenceSystems.

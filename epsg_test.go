@@ -10,8 +10,6 @@ import (
 func Test(t *testing.T) {
 	epsg := wgs84.EPSG()
 	epsg.Add(1110, nil)
-	epsg.Add(1111, wgs84.GeocentricReferenceSystem{})
-	epsg.Add(1112, wgs84.GeographicReferenceSystem{})
 	p := wgs84.ProjectedReferenceSystem{}
 	p.Area = wgs84.AreaFunc(nil)
 	epsg.Add(1113, p)
@@ -32,8 +30,18 @@ func Test(t *testing.T) {
 			a, b, _, err := epsg.SafeTransform(from, 4326).Round(2)(a, b, c)
 			if a != lon || b != lat || err != nil || a2 != a || b2 != b {
 				fmt.Println(from, lon, lat, a, b)
-				panic("Failed")
+				t.Fatal("Failed")
 			}
 		}
+	}
+}
+
+func Test2(t *testing.T) {
+	east, north, h := wgs84.To(wgs84.WebMercator())(9, 52, 0)
+	lon, lat, h := wgs84.From(wgs84.WebMercator()).Round(1)(east, north, h)
+	if lon != 9 ||
+		lat != 52 ||
+		h != 0 {
+		t.Fatal("Failed (2)")
 	}
 }

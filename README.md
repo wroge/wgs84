@@ -18,6 +18,9 @@ go get github.com/wroge/wgs84
 east, north, h := wgs84.LonLat().To(wgs84.ETRS89UTM(32)).Round(2)(9, 52, 0)
 // 500000 5.76103821e+06 0
 
+east, north, h := wgs84.To(wgs84.WebMercator())(9, 52, 0)
+// 1.0018754171394621e+06 6.800125454397305e+06 -9.313225746154785e-10
+
 epsg := wgs84.EPSG()
 
 lon, lat, h := wgs84.ETRS89UTM(32).To(epsg.Code(4326)).Round(3)(500150, 5761200, 0)
