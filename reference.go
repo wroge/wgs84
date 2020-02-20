@@ -347,10 +347,10 @@ func Transform(from, to CoordinateReferenceSystem) Func {
 }
 
 var (
-	// NoCoordinateReferenceSystem is a nil CoordinateReferenceSystem warning
-	NoCoordinateReferenceSystem = errors.New("not specified")
-	// OutOfBounds is a transformation out of the Area interface boundings.
-	OutOfBounds = errors.New("coordinate is out of bounds")
+	// ErrNoCoordinateReferenceSystem is a nil CoordinateReferenceSystem warning
+	ErrNoCoordinateReferenceSystem = errors.New("crs not specified")
+	// ErrOutOfBounds is a transformation out of the Area interface boundings.
+	ErrOutOfBounds = errors.New("coordinate is out of bounds")
 )
 
 // SafeTransform provides a transformation between CoordinateReferenceSystems
@@ -360,16 +360,16 @@ func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
 		if from != nil {
 			a, b, c = from.ToWGS84(a, b, c)
 		} else {
-			err = NoCoordinateReferenceSystem
+			err = ErrNoCoordinateReferenceSystem
 		}
 		lon, lat, _ := xyzToLonLat(a, b, c, 6378137, 298.257223563)
 		if !from.Contains(lon, lat) || !to.Contains(lon, lat) {
-			err = OutOfBounds
+			err = ErrOutOfBounds
 		}
 		if to != nil {
 			a, b, c = to.FromWGS84(a, b, c)
 		} else {
-			err = NoCoordinateReferenceSystem
+			err = ErrNoCoordinateReferenceSystem
 		}
 		return a, b, c, err
 	}
