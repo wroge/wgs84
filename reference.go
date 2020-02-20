@@ -8,7 +8,7 @@ func To(to CoordinateReferenceSystem) Func {
 	return LonLat().To(to)
 }
 
-// To provides the transformation of coordinates from a Coordinate Reference
+// From provides the transformation of coordinates from a Coordinate Reference
 // System to WGS84 geographic coordinates.
 func From(from CoordinateReferenceSystem) Func {
 	return LonLat().From(from)
@@ -222,7 +222,7 @@ func (crs GeocentricReferenceSystem) From(from CoordinateReferenceSystem) Func {
 	return Transform(from, crs)
 }
 
-// SafeTo provides the transformation from another CoordinateReferenceSystem
+// SafeFrom provides the transformation from another CoordinateReferenceSystem
 // with errors.
 func (crs GeocentricReferenceSystem) SafeFrom(from CoordinateReferenceSystem) SafeFunc {
 	return SafeTransform(from, crs)
@@ -266,7 +266,7 @@ func (crs GeographicReferenceSystem) From(from CoordinateReferenceSystem) Func {
 	return Transform(from, crs)
 }
 
-// SafeTo provides the transformation from another CoordinateReferenceSystem
+// SafeFrom provides the transformation from another CoordinateReferenceSystem
 // with errors.
 func (crs GeographicReferenceSystem) SafeFrom(from CoordinateReferenceSystem) SafeFunc {
 	return SafeTransform(from, crs)
@@ -327,7 +327,7 @@ func (crs ProjectedReferenceSystem) From(from CoordinateReferenceSystem) Func {
 	return Transform(from, crs)
 }
 
-// SafeTo provides the transformation from another CoordinateReferenceSystem
+// SafeFrom provides the transformation from another CoordinateReferenceSystem
 // with errors.
 func (crs ProjectedReferenceSystem) SafeFrom(from CoordinateReferenceSystem) SafeFunc {
 	return SafeTransform(from, crs)
