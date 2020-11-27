@@ -78,7 +78,7 @@ func (r *Repository) Add(c int, crs CoordinateReferenceSystem) {
 // Codes returns all available codes.
 func (r *Repository) Codes() []int {
 	r.mutex.Lock()
-	cc := []int{}
+	var cc []int
 	for c := range r.codes {
 		cc = append(cc, c)
 	}
