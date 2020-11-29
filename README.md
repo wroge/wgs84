@@ -1,7 +1,7 @@
-[![Build Status](https://img.shields.io/travis/wroge/wgs84/master?style=flat-square)](https://travis-ci.org/wroge/wgs84)
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/wroge/wgs84)
-[![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84?style=flat-square)](https://goreportcard.com/report/github.com/wroge/wgs84)
-![golangci-lint](https://github.com/wroge/wgs84/workflows/golangci-lint/badge.svg?style=flat-square)
+[![Build Status](https://img.shields.io/travis/wroge/wgs84/master)](https://travis-ci.org/wroge/wgs84)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84)
+[![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84)](https://goreportcard.com/report/github.com/wroge/wgs84)
+![golangci-lint](https://github.com/wroge/wgs84/workflows/golangci-lint/badge.svg)
 [![Codecov](https://img.shields.io/codecov/c/gh/wroge/wgs84)](https://codecov.io/gh/wroge/wgs84)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/wroge/wgs84.svg?style=social)](https://github.com/wroge/wgs84/tags)
 
