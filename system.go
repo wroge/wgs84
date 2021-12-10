@@ -196,7 +196,8 @@ func (p lambertAzimuthalEqualArea) ToLonLat(east, north float64, s Spheroid) (lo
 
 	rho := math.Sqrt(math.Pow((east-p.eastf)/p._D(sph), 2) + math.Pow(p._D(sph)*(north-p.northf), 2))
 	C := 2 * math.Asin(rho/(2*p._Rq(sph)))
-	betaI := math.Asin((math.Cos(C) * math.Sin(p._beta0(sph))) + (p._D(sph) * (north - p.northf) * math.Sin(C) * math.Cos(p._beta0(sph)) / rho))
+	betaI := math.Asin((math.Cos(C) * math.Sin(p._beta0(sph))) +
+		(p._D(sph) * (north - p.northf) * math.Sin(C) * math.Cos(p._beta0(sph)) / rho))
 
 	if p.latf < 0 {
 		betaI *= -1
@@ -213,12 +214,6 @@ func (p lambertAzimuthalEqualArea) ToLonLat(east, north float64, s Spheroid) (lo
 		((761 * math.Pow(sph.e(), 6.0) / 45360.0) *
 			math.Sin(6*betaI))
 
-	ndiff := north - p.northf
-
-	if lat > 0 {
-		ndiff *= -1
-	}
-
 	lon = p.lonf +
 		degree(math.Atan2((east-p.eastf)*math.Sin(C),
 			(p._D(sph)*rho*
@@ -232,23 +227,26 @@ func (p lambertAzimuthalEqualArea) FromLonLat(lon, lat float64, s Spheroid) (eas
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 
 	beta := math.Asin(p._q(lat, sph) / p._qp(sph))
-	B := p._Rq(sph) * math.Sqrt(2/(1+math.Sin(p._beta0(sph))*math.Sin(beta)+math.Cos(p._beta0(sph))*math.Cos(beta)*math.Cos(radian(lon-p.lonf))))
+	B := p._Rq(sph) * math.Sqrt(2/(1+math.Sin(p._beta0(sph))*math.Sin(beta)+
+		math.Cos(p._beta0(sph))*math.Cos(beta)*math.Cos(radian(lon-p.lonf))))
 	return (p.eastf + B*p._D(sph)*math.Cos(beta)*math.Sin(radian(lon-p.lonf))),
-		(p.northf + B/p._D(sph)*(math.Cos(p._beta0(sph))*math.Sin(beta)-math.Sin(p._beta0(sph))*math.Cos(beta)*math.Cos(radian(lon-p.lonf))))
+		(p.northf + B/p._D(sph)*(math.Cos(p._beta0(sph))*math.Sin(beta)-
+			math.Sin(p._beta0(sph))*math.Cos(beta)*math.Cos(radian(lon-p.lonf))))
 }
 
 func (p lambertAzimuthalEqualArea) _q(lat float64, sph spheroid) float64 {
 	return (1 - sph.e2()) *
-		((math.Sin(radian(lat)) / (1 - sph.e2()*sin2(radian(lat)))) - ((1 / (2 * sph.e())) * math.Log((1-sph.e()*math.Sin(radian(lat)))/(1+sph.e()*math.Sin(radian(lat))))))
+		((math.Sin(radian(lat)) / (1 - sph.e2()*sin2(radian(lat)))) -
+			((1 / (2 * sph.e())) * math.Log((1-sph.e()*math.Sin(radian(lat)))/(1+sph.e()*math.Sin(radian(lat))))))
 }
 
 func (p lambertAzimuthalEqualArea) _qp(sph spheroid) float64 {
 	return (1 - sph.e2()) * ((1 / (1 - sph.e2())) - ((1 / (2 * sph.e())) * math.Log((1-sph.e())/(1+sph.e()))))
-
 }
 
 func (p lambertAzimuthalEqualArea) _q0(sph spheroid) float64 {
-	return (1 - sph.e2()) * ((math.Sin(radian(p.latf)) / (1 - sph.e2()*sin2(radian(p.latf)))) - ((1 / (2 * sph.e())) * math.Log((1-sph.e()*math.Sin(radian(p.latf)))/(1+sph.e()*math.Sin(radian(p.latf))))))
+	return (1 - sph.e2()) * ((math.Sin(radian(p.latf)) / (1 - sph.e2()*sin2(radian(p.latf)))) -
+		((1 / (2 * sph.e())) * math.Log((1-sph.e()*math.Sin(radian(p.latf)))/(1+sph.e()*math.Sin(radian(p.latf))))))
 }
 
 func (p lambertAzimuthalEqualArea) _beta0(sph spheroid) float64 {
@@ -260,5 +258,6 @@ func (p lambertAzimuthalEqualArea) _Rq(sph spheroid) float64 {
 }
 
 func (p lambertAzimuthalEqualArea) _D(sph spheroid) float64 {
-	return sph.A() * (math.Cos(radian(p.latf)) / math.Sqrt(1-sph.e2()*math.Pow(math.Sin(radian(p.latf)), 2))) / (p._Rq(sph) * math.Cos(p._beta0(sph)))
+	return sph.A() * (math.Cos(radian(p.latf)) / math.Sqrt(1-sph.e2()*math.Pow(math.Sin(radian(p.latf)), 2))) /
+		(p._Rq(sph) * math.Cos(p._beta0(sph)))
 }
