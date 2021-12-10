@@ -1,6 +1,8 @@
 package wgs84
 
-import "errors"
+import (
+	"errors"
+)
 
 // To provides the transformation of WGS84 geographic coordinates to another
 // Coordinate Reference System.
@@ -72,6 +74,10 @@ func ETRS89UTM(zone float64) ProjectedReferenceSystem {
 // https://epsg.io/3416
 func ETRS89AustriaLambert() ProjectedReferenceSystem {
 	return ETRS89().LambertConformalConic2SP(13.33333333333333, 47.5, 49, 46, 400000, 400000)
+}
+
+func ETRS89LambertAzimuthalEqualArea() ProjectedReferenceSystem {
+	return ETRS89().LambertAzimuthalEqualArea(10, 52, 4321000, 3210000)
 }
 
 // MGIAustriaLambert represents projected Coordinate Reference System's similar to

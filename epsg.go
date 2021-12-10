@@ -14,6 +14,7 @@ func EPSG() *Repository {
 	codes[900913] = WebMercator()
 	codes[4258] = ETRS89().LonLat()
 	codes[3416] = ETRS89AustriaLambert()
+	codes[3035] = ETRS89LambertAzimuthalEqualArea()
 	codes[31287] = MGIAustriaLambert()
 	codes[31284] = MGIAustriaM28()
 	codes[31285] = MGIAustriaM31()

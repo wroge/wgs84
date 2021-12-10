@@ -338,3 +338,15 @@ func (d Datum) AlbersEqualAreaConic(lonf, latf, lat1, lat2, eastf, northf float6
 		},
 	}
 }
+
+func (d Datum) LambertAzimuthalEqualArea(lonf, latf, eastf, northf float64) ProjectedReferenceSystem {
+	return ProjectedReferenceSystem{
+		Datum: d,
+		Projection: lambertAzimuthalEqualArea{
+			latf:   latf,
+			lonf:   lonf,
+			eastf:  eastf,
+			northf: northf,
+		},
+	}
+}
