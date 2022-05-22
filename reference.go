@@ -43,16 +43,10 @@ func UTM(zone float64, northern bool) ProjectedReferenceSystem {
 	}
 	crs := WGS84().TransverseMercator(zone*6-183, 0, 0.9996, 500000, northf)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < zone*6-186 || lon > zone*6-180 {
-			return false
+		if northern {
+			return lon >= zone*6-186 && lon <= zone*6-180 && lat >= 0 && lat <= 84
 		}
-		if northern && (lat < 0 || lat > 84) {
-			return false
-		}
-		if !northern && (lat > 0 || lat < -80) {
-			return false
-		}
-		return true
+		return lon >= zone*6-186 && lon <= zone*6-180 && lat <= 0 && lat >= -80
 	})
 	return crs
 }
@@ -62,10 +56,7 @@ func UTM(zone float64, northern bool) ProjectedReferenceSystem {
 func ETRS89UTM(zone float64) ProjectedReferenceSystem {
 	crs := ETRS89().TransverseMercator(zone*6-183, 0, 0.9996, 500000, 0)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < zone*6-186 || lon > zone*6-180 || lat < 0 || lat > 84 {
-			return false
-		}
-		return true
+		return lon >= zone*6-186 && lon <= zone*6-180 && lat >= 0 && lat <= 84
 	})
 	return crs
 }
@@ -362,21 +353,18 @@ var (
 // SafeTransform provides a transformation between CoordinateReferenceSystems
 // with errors.
 func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
-	return func(a, b, c float64) (a2, b2, c2 float64, err error) {
-		if from != nil {
-			a, b, c = from.ToWGS84(a, b, c)
-		} else {
-			err = ErrNoCoordinateReferenceSystem
+	return func(a, b, c float64) (float64, float64, float64, error) {
+		if from == nil || to == nil {
+			return 0, 0, 0, ErrNoCoordinateReferenceSystem
 		}
+
+		a, b, c = from.ToWGS84(a, b, c)
 		lon, lat, _ := xyzToLonLat(a, b, c, 6378137, 298.257223563)
 		if !from.Contains(lon, lat) || !to.Contains(lon, lat) {
-			err = ErrOutOfBounds
+			return 0, 0, 0, ErrOutOfBounds
 		}
-		if to != nil {
-			a, b, c = to.FromWGS84(a, b, c)
-		} else {
-			err = ErrNoCoordinateReferenceSystem
-		}
-		return a, b, c, err
+
+		a, b, c = to.FromWGS84(a, b, c)
+		return a, b, c, nil
 	}
 }

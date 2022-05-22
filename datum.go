@@ -34,10 +34,7 @@ func WGS84() Datum {
 			fi: 298.257223563,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-				return false
-			}
-			return true
+			return math.Abs(lon) <= 180 && math.Abs(lat) <= 90
 		}),
 	}
 }
@@ -55,10 +52,7 @@ func ETRS89() Datum {
 			fi: 298.257222101,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -16.1 || lon > 40.18 || lat < 32.88 || lat > 84.17 {
-				return false
-			}
-			return true
+			return lon >= -16.1 && lon <= 40.18 && lat >= 32.88 && lat <= 84.17
 		}),
 	}
 }
@@ -87,10 +81,7 @@ func OSGB36() Datum {
 			ds: -20.489,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -8.82 || lon > 1.92 || lat < 49.79 || lat > 60.94 {
-				return false
-			}
-			return true
+			return lon >= -8.82 && lon <= 1.92 && lat >= 49.79 && lat <= 60.94
 		}),
 	}
 }
@@ -119,10 +110,7 @@ func MGI() Datum {
 			ds: 2.4232,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < 9.53 || lon > 17.17 || lat < 46.4 || lat > 49.02 {
-				return false
-			}
-			return true
+			return lon >= 9.53 && lon <= 17.17 && lat >= 46.4 && lat <= 49.02
 		}),
 	}
 }
@@ -151,10 +139,7 @@ func DHDN2001() Datum {
 			ds: 6.7,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < 5.87 || lon > 13.84 || lat < 47.27 || lat > 55.09 {
-				return false
-			}
-			return true
+			return lon >= 5.87 && lon <= 13.84 && lat >= 47.27 && lat <= 55.09
 		}),
 	}
 }
@@ -171,10 +156,7 @@ func RGF93() Datum {
 			fi: 298.257222101,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -9.86 || lon > 10.38 || lat < 41.15 || lat > 51.56 {
-				return false
-			}
-			return true
+			return lon >= -9.86 && lon <= 10.38 && lat >= 41.15 && lat <= 51.56
 		}),
 	}
 }
@@ -191,10 +173,7 @@ func NAD83() Datum {
 			fi: 298.257222101,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
-			if lon < -172.54 || lon > -47.74 || lat < 23.81 || lat > 86.46 {
-				return false
-			}
-			return true
+			return lon >= -172.54 && lon <= -47.74 && lat >= 23.81 && lat <= 86.46
 		}),
 	}
 }
@@ -216,13 +195,7 @@ type Datum struct {
 //
 // Returns true if nil.
 func (d Datum) Contains(lon, lat float64) bool {
-	if math.Abs(lon) > 180 || math.Abs(lat) > 90 {
-		return false
-	}
-	if d.Area != nil {
-		return d.Area.Contains(lon, lat)
-	}
-	return true
+	return math.Abs(lon) <= 180 && math.Abs(lat) <= 90 && d.Area != nil && d.Area.Contains(lon, lat)
 }
 
 // A is one implementation of the Spheroid interface.
