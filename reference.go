@@ -124,10 +124,7 @@ func OSGB36NationalGrid() ProjectedReferenceSystem {
 func DHDN2001GK(zone float64) ProjectedReferenceSystem {
 	crs := DHDN2001().TransverseMercator(zone*3, 0, 1, zone*1000000+500000, 0)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < zone*3-1.5 || lon > zone*3+1.5 || lat < 0 || lat > 84 {
-			return false
-		}
-		return true
+		return lon >= zone*3-1.5 && lon <= zone*3+1.5 && lat >= 0 && lat <= 84
 	})
 	return crs
 }
@@ -149,10 +146,7 @@ func RGF93FranceLambert() ProjectedReferenceSystem {
 func NAD83AlabamaEast() ProjectedReferenceSystem {
 	crs := NAD83().TransverseMercator(-85.83333333333333, 30.5, 0.99996, 200000, 0)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < -86.79 || lon > -84.89 || lat < 30.99 || lat > 35.0 {
-			return false
-		}
-		return true
+		return lon >= -86.79 && lon <= -84.89 && lat >= 30.99 && lat <= 35.0
 	})
 	return crs
 }
@@ -162,10 +156,7 @@ func NAD83AlabamaEast() ProjectedReferenceSystem {
 func NAD83AlabamaWest() ProjectedReferenceSystem {
 	crs := NAD83().TransverseMercator(-87.5, 30, 0.999933333, 600000, 0)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < -88.48 || lon > -86.3 || lat < 30.14 || lat > 35.02 {
-			return false
-		}
-		return true
+		return lon >= -88.48 && lon <= -86.3 && lat >= 30.14 && lat <= 35.02
 	})
 	return crs
 }
@@ -175,10 +166,7 @@ func NAD83AlabamaWest() ProjectedReferenceSystem {
 func NAD83CaliforniaAlbers() ProjectedReferenceSystem {
 	crs := NAD83().AlbersEqualAreaConic(34, 40.5, 0, -120, 0, -4000000)
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
-		if lon < -124.45 || lon > -114.12 || lat < 32.53 || lat > 42.01 {
-			return false
-		}
-		return true
+		return lon >= -124.45 && lon <= -114.12 && lat >= 32.53 && lat <= 42.01
 	})
 	return crs
 }
@@ -278,13 +266,7 @@ type ProjectedReferenceSystem struct {
 
 // Contains method is the implementation of the Area interface.
 func (crs ProjectedReferenceSystem) Contains(lon, lat float64) bool {
-	if !crs.Datum.Contains(lon, lat) {
-		return false
-	}
-	if crs.Area != nil {
-		return crs.Area.Contains(lon, lat)
-	}
-	return true
+	return crs.Datum.Contains(lon, lat) && (crs.Area == nil || crs.Area.Contains(lon, lat))
 }
 
 // ToWGS84 method is one method of the CoordinateReferenceSystem interface.
