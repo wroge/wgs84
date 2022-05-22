@@ -34,4 +34,4 @@ linters:
     - whitespace
 
 service:
-  golangci-lint-version: 1.27.x
+  golangci-lint-version: 1.45.x
