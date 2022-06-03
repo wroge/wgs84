@@ -1,10 +1,9 @@
 language: go
 
-go:
-  1.12.x
+go: 1.18.x
 
 before_install:
-  - go get -t -v ./...
+  - go mod tidy
 
 script:
   - go test -race -coverprofile=coverage.txt -covermode=atomic
