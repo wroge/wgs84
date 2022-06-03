@@ -17,7 +17,7 @@ func Test(t *testing.T) {
 	}
 
 	epsg.Add(1113, p)
-	epsg.Add(1114, wgs84.Helmert(6378137, 298.257223563, 0, 0, 0, 0, 0, 0, 0).LonLat())
+	epsg.Add(1114, wgs84.Helmert(wgs84.A, wgs84.Fi, 0, 0, 0, 0, 0, 0, 0).LonLat())
 
 	for lon := -185.0; lon < 185; lon += 1.5 {
 		for lat := -95.0; lat < 95; lat += 1.5 {

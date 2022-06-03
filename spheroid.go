@@ -61,3 +61,48 @@ func (s spheroid) ei3() float64 {
 func (s spheroid) ei4() float64 {
 	return s.ei3() * s.ei()
 }
+
+const (
+	A  = 6378137
+	Fi = 298.257223563
+)
+
+type GRS80 struct{}
+
+func (GRS80) A() float64 {
+	return 6378137
+}
+
+func (GRS80) Fi() float64 {
+	return 298.257222101
+}
+
+type Airy struct{}
+
+func (Airy) A() float64 {
+	return 6377563.396
+}
+
+func (Airy) Fi() float64 {
+	return 299.3249646
+}
+
+type Bessel struct{}
+
+func (Bessel) A() float64 {
+	return 6377397.155
+}
+
+func (Bessel) Fi() float64 {
+	return 299.1528128
+}
+
+type Clarke1866 struct{}
+
+func (Clarke1866) A() float64 {
+	return 6378206.4
+}
+
+func (Clarke1866) Fi() float64 {
+	return 294.9786982139006
+}

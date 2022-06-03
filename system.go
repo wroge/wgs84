@@ -91,7 +91,7 @@ type lambertConformalConic2SP struct {
 func (p lambertConformalConic2SP) ToLonLat(east, north float64, s Spheroid) (lon, lat float64) {
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 
-	ρi := math.Sqrt(math.Pow(east-p.eastf, 2) + math.Pow(p._ρ(radian(p.latf), sph)-(north-p.northf), 2))
+	ρi := math.Sqrt(math.Pow(east-p.eastf, 2) + math.Pow(p._rho(radian(p.latf), sph)-(north-p.northf), 2))
 	if p._n(sph) < 0 {
 		ρi = -ρi
 	}
@@ -103,7 +103,7 @@ func (p lambertConformalConic2SP) ToLonLat(east, north float64, s Spheroid) (lon
 		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-sph.e()*math.Sin(φ))/(1+sph.e()*math.Sin(φ)), sph.e()/2))
 	}
 
-	λ := math.Atan((east-p.eastf)/(p._ρ(radian(p.latf), sph)-(north-p.northf)))/p._n(sph) + radian(p.lonf)
+	λ := math.Atan((east-p.eastf)/(p._rho(radian(p.latf), sph)-(north-p.northf)))/p._n(sph) + radian(p.lonf)
 
 	return degree(λ), degree(φ)
 }
@@ -111,8 +111,8 @@ func (p lambertConformalConic2SP) ToLonLat(east, north float64, s Spheroid) (lon
 func (p lambertConformalConic2SP) FromLonLat(lon, lat float64, s Spheroid) (east, north float64) {
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 	θ := p._n(sph) * (radian(lon) - radian(p.lonf))
-	east = p.eastf + p._ρ(radian(lat), sph)*math.Sin(θ)
-	north = p.northf + p._ρ(radian(p.latf), sph) - p._ρ(radian(lat), sph)*math.Cos(θ)
+	east = p.eastf + p._rho(radian(lat), sph)*math.Sin(θ)
+	north = p.northf + p._rho(radian(p.latf), sph) - p._rho(radian(lat), sph)*math.Cos(θ)
 
 	return east, north
 }
@@ -139,7 +139,7 @@ func (p lambertConformalConic2SP) _F(sph spheroid) float64 {
 	return p._m(radian(p.lat1), sph) / (p._n(sph) * math.Pow(p._t(radian(p.lat1), sph), p._n(sph)))
 }
 
-func (p lambertConformalConic2SP) _ρ(φ float64, sph spheroid) float64 {
+func (p lambertConformalConic2SP) _rho(φ float64, sph spheroid) float64 {
 	return sph.A() * p._F(sph) * math.Pow(p._t(φ, sph), p._n(sph))
 }
 

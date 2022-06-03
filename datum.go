@@ -30,8 +30,8 @@ func Helmert(a, fi, tx, ty, tz, rx, ry, rz, ds float64) Datum {
 func WGS84() Datum {
 	return Datum{
 		Spheroid: spheroid{
-			a:  6378137,
-			fi: 298.257223563,
+			a:  A,
+			fi: Fi,
 		},
 		Area: AreaFunc(func(lon, lat float64) bool {
 			return math.Abs(lon) <= 180 && math.Abs(lat) <= 90
@@ -47,10 +47,7 @@ func WGS84() Datum {
 // It is used in Europe.
 func ETRS89() Datum {
 	return Datum{
-		Spheroid: spheroid{
-			a:  6378137,
-			fi: 298.257222101,
-		},
+		Spheroid: GRS80{},
 		Area: AreaFunc(func(lon, lat float64) bool {
 			return lon >= -16.1 && lon <= 40.18 && lat >= 32.88 && lat <= 84.17
 		}),
@@ -67,10 +64,7 @@ func ETRS89() Datum {
 // It is used in Great Britain.
 func OSGB36() Datum {
 	return Datum{
-		Spheroid: spheroid{
-			a:  6377563.396,
-			fi: 299.3249646,
-		},
+		Spheroid: Airy{},
 		Transformation: helmert{
 			tx: 446.448,
 			ty: -125.157,
@@ -96,10 +90,7 @@ func OSGB36() Datum {
 // It is used in Austria.
 func MGI() Datum {
 	return Datum{
-		Spheroid: spheroid{
-			a:  6377397.155,
-			fi: 299.1528128,
-		},
+		Spheroid: Bessel{},
 		Transformation: helmert{
 			tx: 577.326,
 			ty: 90.129,
@@ -125,10 +116,7 @@ func MGI() Datum {
 // It is used in Germay.
 func DHDN2001() Datum {
 	return Datum{
-		Spheroid: spheroid{
-			a:  6377397.155,
-			fi: 299.1528128,
-		},
+		Spheroid: Bessel{},
 		Transformation: helmert{
 			tx: 598.1,
 			ty: 73.7,
@@ -151,10 +139,7 @@ func DHDN2001() Datum {
 // It is used in France.
 func RGF93() Datum {
 	return Datum{
-		Spheroid: spheroid{
-			a:  6378137,
-			fi: 298.257222101,
-		},
+		Spheroid: GRS80{},
 		Area: AreaFunc(func(lon, lat float64) bool {
 			return lon >= -9.86 && lon <= 10.38 && lat >= 41.15 && lat <= 51.56
 		}),
@@ -168,10 +153,7 @@ func RGF93() Datum {
 // It is used in North-America.
 func NAD83() Datum {
 	return Datum{
-		Spheroid: spheroid{
-			a:  6378137,
-			fi: 298.257222101,
-		},
+		Spheroid: GRS80{},
 		Area: AreaFunc(func(lon, lat float64) bool {
 			return lon >= -172.54 && lon <= -47.74 && lat >= 23.81 && lat <= 86.46
 		}),
@@ -205,7 +187,7 @@ func (d Datum) Contains(lon, lat float64) bool {
 // If nil it returns the major axis of the WGS84 Spheroid.
 func (d Datum) A() float64 {
 	if d.Spheroid == nil {
-		return 6378137
+		return A
 	}
 
 	return d.Spheroid.A()
@@ -218,7 +200,7 @@ func (d Datum) A() float64 {
 // If nil it returns the inverse flattening of the WGS84 Spheroid.
 func (d Datum) Fi() float64 {
 	if d.Spheroid == nil {
-		return 298.257223563
+		return Fi
 	}
 
 	return d.Spheroid.Fi()

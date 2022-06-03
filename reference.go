@@ -359,7 +359,7 @@ func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
 
 		a, b, c = from.ToWGS84(a, b, c)
 
-		lon, lat, _ := xyzToLonLat(a, b, c, 6378137, 298.257223563)
+		lon, lat, _ := xyzToLonLat(a, b, c, A, Fi)
 		if !from.Contains(lon, lat) || !to.Contains(lon, lat) {
 			return 0, 0, 0, ErrOutOfBounds
 		}
