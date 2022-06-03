@@ -12,8 +12,9 @@ func Test(t *testing.T) {
 	epsg := wgs84.EPSG()
 	epsg.Add(1110, nil)
 
-	p := wgs84.ProjectedReferenceSystem{}
-	p.Area = wgs84.AreaFunc(nil)
+	p := wgs84.ProjectedReferenceSystem{
+		Area: wgs84.AreaFunc(nil),
+	}
 
 	epsg.Add(1113, p)
 	epsg.Add(1114, wgs84.Helmert(6378137, 298.257223563, 0, 0, 0, 0, 0, 0, 0).LonLat())
