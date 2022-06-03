@@ -20,5 +20,6 @@ func calcHelmert(x, y, z, tx, ty, tz, rx, ry, rz, ds float64) (x0, y0, z0 float6
 	x0 = (1+ds*ppm)*(x+z*ry*asec-y*rz*asec) + tx
 	y0 = (1+ds*ppm)*(y+x*rz*asec-z*rx*asec) + ty
 	z0 = (1+ds*ppm)*(z+y*rx*asec-x*ry*asec) + tz
+
 	return
 }

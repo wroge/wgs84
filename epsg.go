@@ -7,43 +7,49 @@ import (
 // EPSG returns a Repository for dealing with several EPSG-Codes and
 // CoordinateReferenceSystems.
 func EPSG() *Repository {
-	codes := map[int]CoordinateReferenceSystem{}
-	codes[4326] = LonLat()
-	codes[4978] = XYZ()
-	codes[3857] = WebMercator()
-	codes[900913] = WebMercator()
-	codes[4258] = ETRS89().LonLat()
-	codes[3416] = ETRS89AustriaLambert()
-	codes[3035] = ETRS89LambertAzimuthalEqualArea()
-	codes[31287] = MGIAustriaLambert()
-	codes[31284] = MGIAustriaM28()
-	codes[31285] = MGIAustriaM31()
-	codes[31286] = MGIAustriaM34()
-	codes[31257] = MGIAustriaGKM28()
-	codes[31258] = MGIAustriaGKM31()
-	codes[31259] = MGIAustriaGKM34()
-	codes[4314] = DHDN2001().LonLat()
-	codes[27700] = OSGB36NationalGrid()
-	codes[4277] = OSGB36().LonLat()
-	codes[4171] = RGF93().LonLat()
-	codes[2154] = RGF93FranceLambert()
-	codes[4269] = NAD83().LonLat()
-	codes[6355] = NAD83AlabamaEast()
-	codes[6356] = NAD83AlabamaWest()
-	codes[6414] = NAD83CaliforniaAlbers()
+	codes := map[int]CoordinateReferenceSystem{
+		4326:   LonLat(),
+		4978:   XYZ(),
+		3857:   WebMercator(),
+		900913: WebMercator(),
+		4258:   ETRS89().LonLat(),
+		3416:   ETRS89AustriaLambert(),
+		3035:   ETRS89LambertAzimuthalEqualArea(),
+		31287:  MGIAustriaLambert(),
+		31284:  MGIAustriaM28(),
+		31285:  MGIAustriaM31(),
+		31286:  MGIAustriaM34(),
+		31257:  MGIAustriaGKM28(),
+		31258:  MGIAustriaGKM31(),
+		31259:  MGIAustriaGKM34(),
+		4314:   DHDN2001().LonLat(),
+		27700:  OSGB36NationalGrid(),
+		4277:   OSGB36().LonLat(),
+		4171:   RGF93().LonLat(),
+		2154:   RGF93FranceLambert(),
+		4269:   NAD83().LonLat(),
+		6355:   NAD83AlabamaEast(),
+		6356:   NAD83AlabamaWest(),
+		6414:   NAD83CaliforniaAlbers(),
+	}
+
 	for i := 1; i < 61; i++ {
 		codes[32600+i] = UTM(float64(i), true)
 		codes[32700+i] = UTM(float64(i), false)
 	}
+
 	for i := 42; i < 51; i++ {
 		codes[3900+i] = RGF93CC(float64(i))
 	}
+
 	for i := 2; i < 6; i++ {
 		codes[31464+i] = DHDN2001GK(float64(i))
 	}
+
 	for i := 28; i < 39; i++ {
 		codes[25800+i] = ETRS89UTM(float64(i))
 	}
+
 	return &Repository{
 		codes: codes,
 	}
@@ -60,6 +66,7 @@ func (r *Repository) Code(c int) CoordinateReferenceSystem {
 	if r.codes == nil {
 		return XYZ()
 	}
+
 	return r.codes[c]
 }
 
@@ -68,9 +75,11 @@ func (r *Repository) Add(c int, crs CoordinateReferenceSystem) {
 	if crs == nil {
 		return
 	}
+
 	if r.codes == nil {
 		r.codes = map[int]CoordinateReferenceSystem{}
 	}
+
 	r.mutex.Lock()
 	r.codes[c] = crs
 	r.mutex.Unlock()
@@ -79,24 +88,34 @@ func (r *Repository) Add(c int, crs CoordinateReferenceSystem) {
 // Codes returns all available codes.
 func (r *Repository) Codes() []int {
 	r.mutex.Lock()
-	var cc []int
+
+	cc := make([]int, len(r.codes))
+	n := 0
+
 	for c := range r.codes {
-		cc = append(cc, c)
+		cc[n] = c
+		n++
 	}
+
 	r.mutex.Unlock()
+
 	return cc
 }
 
 // CodesCover returns all Codes covering a specific geographic WGS84 location.
 func (r *Repository) CodesCover(lon, lat float64) []int {
 	r.mutex.Lock()
+
 	var cc []int
+
 	for c, crs := range r.codes {
 		if crs.Contains(lon, lat) {
 			cc = append(cc, c)
 		}
 	}
+
 	r.mutex.Unlock()
+
 	return cc
 }
 

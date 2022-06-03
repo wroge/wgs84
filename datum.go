@@ -207,6 +207,7 @@ func (d Datum) A() float64 {
 	if d.Spheroid == nil {
 		return 6378137
 	}
+
 	return d.Spheroid.A()
 }
 
@@ -219,6 +220,7 @@ func (d Datum) Fi() float64 {
 	if d.Spheroid == nil {
 		return 298.257223563
 	}
+
 	return d.Spheroid.Fi()
 }
 
@@ -231,6 +233,7 @@ func (d Datum) Forward(x, y, z float64) (x0, y0, z0 float64) {
 	if d.Transformation == nil {
 		return x, y, z
 	}
+
 	return d.Transformation.Forward(x, y, z)
 }
 
@@ -243,6 +246,7 @@ func (d Datum) Inverse(x0, y0, z0 float64) (x, y, z float64) {
 	if d.Transformation == nil {
 		return x0, y0, z0
 	}
+
 	return d.Transformation.Inverse(x0, y0, z0)
 }
 

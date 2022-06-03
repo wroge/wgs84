@@ -10,6 +10,7 @@ func (p webMercator) ToLonLat(east, north float64, s Spheroid) (lon, lat float64
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 	lon = degree(east / sph.A())
 	lat = math.Atan(math.Exp(north/sph.A()))*degree(1)*2 - 90
+
 	return lon, lat
 }
 
@@ -17,6 +18,7 @@ func (p webMercator) FromLonLat(lon, lat float64, s Spheroid) (east, north float
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 	east = radian(lon) * sph.A()
 	north = math.Log(math.Tan(radian((90+lat)/2))) * sph.A()
+
 	return east, north
 }
 
@@ -44,6 +46,7 @@ func (p transverseMercator) ToLonLat(east, north float64, s Spheroid) (lon, lat 
 	λ := radian(p.lonf) + (D-(1+2*p._T(φ1)+p._C(φ1, sph))*D*D*D/6+(5-2*p._C(φ1, sph)+
 		28*p._T(φ1)-3*p._C(φ1, sph)*p._C(φ1, sph)+8*sph.ei2()+24*p._T(φ1)*p._T(φ1))*
 		math.Pow(D, 5)/120)/math.Cos(φ1)
+
 	return degree(λ), degree(φ)
 }
 
@@ -58,6 +61,7 @@ func (p transverseMercator) FromLonLat(lon, lat float64, s Spheroid) (east, nort
 		(A*A/2+(5-p._T(φ)+9*p._C(φ, sph)+4*p._C(φ, sph)*p._C(φ, sph))*
 			math.Pow(A, 4)/24+(61-58*p._T(φ)+p._T(φ)*p._T(φ)+600*
 			p._C(φ, sph)-330*sph.ei2())*math.Pow(A, 6)/720)) + p.northf
+
 	return east, north
 }
 
@@ -86,16 +90,21 @@ type lambertConformalConic2SP struct {
 
 func (p lambertConformalConic2SP) ToLonLat(east, north float64, s Spheroid) (lon, lat float64) {
 	sph := spheroid{a: s.A(), fi: s.Fi()}
+
 	ρi := math.Sqrt(math.Pow(east-p.eastf, 2) + math.Pow(p._ρ(radian(p.latf), sph)-(north-p.northf), 2))
 	if p._n(sph) < 0 {
 		ρi = -ρi
 	}
+
 	ti := math.Pow(ρi/(sph.A()*p._F(sph)), 1/p._n(sph))
+
 	φ := math.Pi/2 - 2*math.Atan(ti)
 	for i := 0; i < 5; i++ {
 		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-sph.e()*math.Sin(φ))/(1+sph.e()*math.Sin(φ)), sph.e()/2))
 	}
+
 	λ := math.Atan((east-p.eastf)/(p._ρ(radian(p.latf), sph)-(north-p.northf)))/p._n(sph) + radian(p.lonf)
+
 	return degree(λ), degree(φ)
 }
 
@@ -104,6 +113,7 @@ func (p lambertConformalConic2SP) FromLonLat(lon, lat float64, s Spheroid) (east
 	θ := p._n(sph) * (radian(lon) - radian(p.lonf))
 	east = p.eastf + p._ρ(radian(lat), sph)*math.Sin(θ)
 	north = p.northf + p._ρ(radian(p.latf), sph) - p._ρ(radian(lat), sph)*math.Cos(θ)
+
 	return east, north
 }
 
@@ -120,6 +130,7 @@ func (p lambertConformalConic2SP) _n(sph spheroid) float64 {
 	if radian(p.lat1) == radian(p.lat2) {
 		return math.Sin(radian(p.lat1))
 	}
+
 	return (math.Log(p._m(radian(p.lat1), sph)) - math.Log(p._m(radian(p.lat2), sph))) /
 		(math.Log(p._t(radian(p.lat1), sph)) - math.Log(p._t(radian(p.lat2), sph)))
 }
@@ -140,24 +151,28 @@ func (p albersEqualAreaConic) ToLonLat(east, north float64, s Spheroid) (lon, la
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 	east -= p.eastf
 	north -= p.northf
-	ρi := math.Sqrt(east*east + math.Pow(p._ρ(radian(p.latf), sph)-north, 2))
+	ρi := math.Sqrt(east*east + math.Pow(p._rho(radian(p.latf), sph)-north, 2))
 	qi := (p._C(sph) - ρi*ρi*p._n(sph)*p._n(sph)/sph.a2()) / p._n(sph)
 	φ := math.Asin(qi / 2)
+
 	for i := 0; i < 5; i++ {
 		φ += math.Pow(1-sph.e2()*sin2(φ), 2) /
 			(2 * math.Cos(φ)) * (qi/(1-sph.e2()) -
 			math.Sin(φ)/(1-sph.e2()*sin2(φ)) +
 			1/(2*sph.e())*math.Log((1-sph.e()*math.Sin(φ))/(1+sph.e()*math.Sin(φ))))
 	}
-	θ := math.Atan(east / (p._ρ(radian(p.latf), sph) - north))
+
+	θ := math.Atan(east / (p._rho(radian(p.latf), sph) - north))
+
 	return degree(radian(p.lonf) + θ/p._n(sph)), degree(φ)
 }
 
 func (p albersEqualAreaConic) FromLonLat(lon, lat float64, s Spheroid) (east, north float64) {
 	sph := spheroid{a: s.A(), fi: s.Fi()}
 	θ := p._n(sph) * (radian(lon) - radian(p.lonf))
-	east = p.eastf + p._ρ(radian(lat), sph)*math.Sin(θ)
-	north = p.northf + p._ρ(radian(p.latf), sph) - p._ρ(radian(lat), sph)*math.Cos(θ)
+	east = p.eastf + p._rho(radian(lat), sph)*math.Sin(θ)
+	north = p.northf + p._rho(radian(p.latf), sph) - p._rho(radian(lat), sph)*math.Cos(θ)
+
 	return east, north
 }
 
@@ -174,6 +189,7 @@ func (p albersEqualAreaConic) _n(sph spheroid) float64 {
 	if radian(p.lat1) == radian(p.lat2) {
 		return math.Sin(radian(p.lat1))
 	}
+
 	return (p._m(radian(p.lat1), sph)*p._m(radian(p.lat1), sph) -
 		p._m(radian(p.lat2), sph)*p._m(radian(p.lat2), sph)) /
 		(p._q(radian(p.lat2), sph) - p._q(radian(p.lat1), sph))
@@ -183,7 +199,7 @@ func (p albersEqualAreaConic) _C(sph spheroid) float64 {
 	return p._m(radian(p.lat1), sph)*p._m(radian(p.lat1), sph) + p._n(sph)*p._q(radian(p.lat1), sph)
 }
 
-func (p albersEqualAreaConic) _ρ(φ float64, sph spheroid) float64 {
+func (p albersEqualAreaConic) _rho(φ float64, sph spheroid) float64 {
 	return sph.A() * math.Sqrt(p._C(sph)-p._n(sph)*p._q(φ, sph)) / p._n(sph)
 }
 
@@ -229,6 +245,7 @@ func (p lambertAzimuthalEqualArea) FromLonLat(lon, lat float64, s Spheroid) (eas
 	beta := math.Asin(p._q(lat, sph) / p._qp(sph))
 	B := p._Rq(sph) * math.Sqrt(2/(1+math.Sin(p._beta0(sph))*math.Sin(beta)+
 		math.Cos(p._beta0(sph))*math.Cos(beta)*math.Cos(radian(lon-p.lonf))))
+
 	return (p.eastf + B*p._D(sph)*math.Cos(beta)*math.Sin(radian(lon-p.lonf))),
 		(p.northf + B/p._D(sph)*(math.Cos(p._beta0(sph))*math.Sin(beta)-
 			math.Sin(p._beta0(sph))*math.Cos(beta)*math.Cos(radian(lon-p.lonf))))

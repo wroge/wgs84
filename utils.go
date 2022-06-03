@@ -27,6 +27,7 @@ func lonLatToXYZ(lon, lat, h, a, fi float64) (x, y, z float64) {
 	x = (_N(radian(lat), s) + h) * math.Cos(radian(lon)) * math.Cos(radian(lat))
 	y = (_N(radian(lat), s) + h) * math.Cos(radian(lat)) * math.Sin(radian(lon))
 	z = (_N(radian(lat), s)*math.Pow(s.A()*(1-s.f()), 2)/(s.a2()) + h) * math.Sin(radian(lat))
+
 	return x, y, z
 }
 
@@ -39,6 +40,7 @@ func xyzToLonLat(x, y, z, a, fi float64) (lon, lat, h float64) {
 	h = sd/math.Cos(B) - _N(B, s)
 	lon = degree(math.Atan2(y, x))
 	lat = degree(B)
+
 	return lon, lat, h
 }
 

@@ -41,13 +41,17 @@ func UTM(zone float64, northern bool) ProjectedReferenceSystem {
 	if !northern {
 		northf = 10000000
 	}
+
 	crs := WGS84().TransverseMercator(zone*6-183, 0, 0.9996, 500000, northf)
+
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
 		if northern {
 			return lon >= zone*6-186 && lon <= zone*6-180 && lat >= 0 && lat <= 84
 		}
+
 		return lon >= zone*6-186 && lon <= zone*6-180 && lat <= 0 && lat >= -80
 	})
+
 	return crs
 }
 
@@ -58,6 +62,7 @@ func ETRS89UTM(zone float64) ProjectedReferenceSystem {
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
 		return lon >= zone*6-186 && lon <= zone*6-180 && lat >= 0 && lat <= 84
 	})
+
 	return crs
 }
 
@@ -126,6 +131,7 @@ func DHDN2001GK(zone float64) ProjectedReferenceSystem {
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
 		return lon >= zone*3-1.5 && lon <= zone*3+1.5 && lat >= 0 && lat <= 84
 	})
+
 	return crs
 }
 
@@ -148,6 +154,7 @@ func NAD83AlabamaEast() ProjectedReferenceSystem {
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
 		return lon >= -86.79 && lon <= -84.89 && lat >= 30.99 && lat <= 35.0
 	})
+
 	return crs
 }
 
@@ -158,6 +165,7 @@ func NAD83AlabamaWest() ProjectedReferenceSystem {
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
 		return lon >= -88.48 && lon <= -86.3 && lat >= 30.14 && lat <= 35.02
 	})
+
 	return crs
 }
 
@@ -168,6 +176,7 @@ func NAD83CaliforniaAlbers() ProjectedReferenceSystem {
 	crs.Area = AreaFunc(func(lon, lat float64) bool {
 		return lon >= -124.45 && lon <= -114.12 && lat >= 32.53 && lat <= 42.01
 	})
+
 	return crs
 }
 
@@ -226,12 +235,14 @@ func (crs GeographicReferenceSystem) Contains(lon, lat float64) bool {
 // ToWGS84 method is one method of the CoordinateReferenceSystem interface.
 func (crs GeographicReferenceSystem) ToWGS84(lon, lat, h float64) (x0, y0, z0 float64) {
 	x, y, z := lonLatToXYZ(lon, lat, h, crs.Datum.A(), crs.Datum.Fi())
+
 	return crs.Datum.Forward(x, y, z)
 }
 
 // FromWGS84 method is one method of the CoordinateReferenceSystem interface.
 func (crs GeographicReferenceSystem) FromWGS84(x0, y0, z0 float64) (lon, lat, h float64) {
 	x, y, z := crs.Datum.Inverse(x0, y0, z0)
+
 	return xyzToLonLat(x, y, z, crs.Datum.A(), crs.Datum.Fi())
 }
 
@@ -274,8 +285,10 @@ func (crs ProjectedReferenceSystem) ToWGS84(east, north, h float64) (x0, y0, z0 
 	if crs.Projection == nil {
 		return crs.Datum.WebMercator().ToWGS84(east, north, h)
 	}
+
 	lon, lat := crs.Projection.ToLonLat(east, north, crs.Datum)
 	x, y, z := lonLatToXYZ(lon, lat, h, crs.Datum.A(), crs.Datum.Fi())
+
 	return crs.Datum.Forward(x, y, z)
 }
 
@@ -284,9 +297,11 @@ func (crs ProjectedReferenceSystem) FromWGS84(x0, y0, z0 float64) (east, north, 
 	if crs.Projection == nil {
 		return crs.Datum.WebMercator().FromWGS84(x0, y0, z0)
 	}
+
 	x, y, z := crs.Datum.Inverse(x0, y0, z0)
 	lon, lat, h := xyzToLonLat(x, y, z, crs.Datum.A(), crs.Datum.Fi())
 	east, north = crs.Projection.FromLonLat(lon, lat, crs.Datum)
+
 	return east, north, h
 }
 
@@ -318,15 +333,17 @@ func Transform(from, to CoordinateReferenceSystem) Func {
 		if from != nil {
 			a, b, c = from.ToWGS84(a, b, c)
 		}
+
 		if to != nil {
 			a, b, c = to.FromWGS84(a, b, c)
 		}
+
 		return a, b, c
 	}
 }
 
 var (
-	// ErrNoCoordinateReferenceSystem is a nil CoordinateReferenceSystem warning
+	// ErrNoCoordinateReferenceSystem is a nil CoordinateReferenceSystem warning.
 	ErrNoCoordinateReferenceSystem = errors.New("crs not specified")
 	// ErrOutOfBounds is a transformation out of the Area interface boundings.
 	ErrOutOfBounds = errors.New("coordinate is out of bounds")
@@ -341,12 +358,14 @@ func SafeTransform(from, to CoordinateReferenceSystem) SafeFunc {
 		}
 
 		a, b, c = from.ToWGS84(a, b, c)
+
 		lon, lat, _ := xyzToLonLat(a, b, c, 6378137, 298.257223563)
 		if !from.Contains(lon, lat) || !to.Contains(lon, lat) {
 			return 0, 0, 0, ErrOutOfBounds
 		}
 
 		a, b, c = to.FromWGS84(a, b, c)
+
 		return a, b, c, nil
 	}
 }

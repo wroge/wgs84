@@ -11,6 +11,7 @@ func round(v, precision float64) float64 {
 	if r == -0 {
 		return 0
 	}
+
 	return r
 }
 
@@ -18,6 +19,7 @@ func round(v, precision float64) float64 {
 func (f Func) Round(precision float64) Func {
 	return func(a, b, c float64) (a2, b2, c2 float64) {
 		a, b, c = f(a, b, c)
+
 		return round(a, precision), round(b, precision), round(c, precision)
 	}
 }
@@ -30,6 +32,7 @@ type SafeFunc func(a, b, c float64) (a2, b2, c2 float64, err error)
 func (f SafeFunc) Round(precision float64) SafeFunc {
 	return func(a, b, c float64) (a2, b2, c2 float64, err error) {
 		a, b, c, err = f(a, b, c)
+
 		return round(a, precision), round(b, precision), round(c, precision), err
 	}
 }
