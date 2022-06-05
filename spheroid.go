@@ -63,46 +63,61 @@ func (s spheroid) ei4() float64 {
 }
 
 const (
-	A  = 6378137
+	// A is the major axis from the WGS84 spheroid.
+	A = 6378137
+
+	// A is the inverse flattening from the WGS84 spheroid.
 	Fi = 298.257223563
 )
 
+// GRS80 is a spheroid used by several geodetic datums.
 type GRS80 struct{}
 
+// A returns the major axis of the spheroid.
 func (GRS80) A() float64 {
 	return 6378137
 }
 
+// Fi returns the inverse Flattening of the spheroid.
 func (GRS80) Fi() float64 {
 	return 298.257222101
 }
 
+// Airy is a spheroid used by several geodetic datums.
 type Airy struct{}
 
+// A returns the major axis of the spheroid.
 func (Airy) A() float64 {
 	return 6377563.396
 }
 
+// Fi returns the inverse Flattening of the spheroid.
 func (Airy) Fi() float64 {
 	return 299.3249646
 }
 
+// Bessel is a spheroid used by several geodetic datums.
 type Bessel struct{}
 
+// A returns the major axis of the spheroid.
 func (Bessel) A() float64 {
 	return 6377397.155
 }
 
+// Fi returns the inverse Flattening of the spheroid.
 func (Bessel) Fi() float64 {
 	return 299.1528128
 }
 
+// Clarke1866 is a spheroid used by several geodetic datums.
 type Clarke1866 struct{}
 
+// A returns the major axis of the spheroid.
 func (Clarke1866) A() float64 {
 	return 6378206.4
 }
 
+// Fi returns the inverse Flattening of the spheroid.
 func (Clarke1866) Fi() float64 {
 	return 294.9786982139006
 }

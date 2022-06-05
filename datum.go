@@ -180,9 +180,7 @@ func (d Datum) Contains(lon, lat float64) bool {
 	return math.Abs(lon) <= 180 && math.Abs(lat) <= 90 && d.Area != nil && d.Area.Contains(lon, lat)
 }
 
-// A is one implementation of the Spheroid interface.
-//
-// Returns the major axis of the implemented Spheroid.
+// A returns the major axis of the implemented Spheroid.
 //
 // If nil it returns the major axis of the WGS84 Spheroid.
 func (d Datum) A() float64 {
@@ -193,9 +191,7 @@ func (d Datum) A() float64 {
 	return d.Spheroid.A()
 }
 
-// Fi is one implementation of the Spheroid interface.
-//
-// Returns the inverse flattening of the implemented Spheroid.
+// Fi returns the inverse flattening of the implemented Spheroid.
 //
 // If nil it returns the inverse flattening of the WGS84 Spheroid.
 func (d Datum) Fi() float64 {
@@ -206,9 +202,7 @@ func (d Datum) Fi() float64 {
 	return d.Spheroid.Fi()
 }
 
-// Forward is one implementation of the Tranformation interface.
-//
-// Returns the Forward transformation of the implemented Transformation.
+// Forward transforms geocentric coordinates to WGS84.
 //
 // Returns x, y, z if nil.
 func (d Datum) Forward(x, y, z float64) (x0, y0, z0 float64) {
@@ -219,9 +213,7 @@ func (d Datum) Forward(x, y, z float64) (x0, y0, z0 float64) {
 	return d.Transformation.Forward(x, y, z)
 }
 
-// Inverse is one implementation of the Tranformation interface.
-//
-// Returns the Inverse transformation of the implemented Transformation.
+// Inverse transforms geocentric coordinates from WGS84.
 //
 // Returns x0, y0, z0 if nil.
 func (d Datum) Inverse(x0, y0, z0 float64) (x, y, z float64) {
