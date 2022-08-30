@@ -5,6 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84)](https://goreportcard.com/report/github.com/wroge/wgs84)
 ![golangci-lint](https://github.com/wroge/wgs84/workflows/golangci-lint/badge.svg)
 [![Codecov](https://img.shields.io/codecov/c/gh/wroge/wgs84)](https://codecov.io/gh/wroge/wgs84)
+[![tippin.me](https://badgen.net/badge/%E2%9A%A1%EF%B8%8Ftippin.me/@_wroge/F0918E)](https://tippin.me/@_wroge)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/wroge/wgs84.svg?style=social)](https://github.com/wroge/wgs84/tags)
 
 A *zero-dependency* Go package for coordinate transformations.
