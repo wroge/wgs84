@@ -1,3 +1,4 @@
+//nolint:nonamedreturns,varnamelen,gomnd,asciicheck
 package wgs84
 
 import "math"

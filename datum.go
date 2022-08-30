@@ -1,3 +1,4 @@
+//nolint:varnamelen,nonamedreturns,gomnd,exhaustivestruct,exhaustruct
 package wgs84
 
 import (

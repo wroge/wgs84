@@ -1,3 +1,4 @@
+//nolint:varnamelen,nonamedreturns,gomnd
 package wgs84
 
 import (

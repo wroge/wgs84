@@ -1,3 +1,4 @@
+//nolint:nonamedreturns,gomnd
 package wgs84
 
 import "math"
