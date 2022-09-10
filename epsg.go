@@ -1,4 +1,4 @@
-//nolint:varnamelen,ireturn,exhaustivestruct,exhaustruct
+//nolint:varnamelen,ireturn,exhaustivestruct,exhaustruct,nonamedreturns
 package wgs84
 
 import (
@@ -65,10 +65,19 @@ type Repository struct {
 // Code returns a CoordinateReferenceSystem of a specific EPSG-Code.
 func (r *Repository) Code(c int) CoordinateReferenceSystem {
 	if r.codes == nil {
-		return XYZ()
+		return nil
 	}
 
 	return r.codes[c]
+}
+
+// Code returns a CoordinateReferenceSystem of a specific EPSG-Code.
+func (r *Repository) SafeCode(c int) (CoordinateReferenceSystem, error) {
+	if r.codes == nil {
+		return nil, ErrNoCoordinateReferenceSystem
+	}
+
+	return r.codes[c], nil
 }
 
 // Add an EPSG-Code to the Repository.
@@ -128,5 +137,19 @@ func (r *Repository) Transform(from, to int) Func {
 // SafeTransform transforms coordinates from one EPSG-Code to another
 // with errors.
 func (r *Repository) SafeTransform(from, to int) SafeFunc {
-	return SafeTransform(r.Code(from), r.Code(to))
+	f, err := r.SafeCode(from)
+	if err != nil {
+		return func(_, _, _ float64) (_, _, _ float64, err error) {
+			return 0, 0, 0, err
+		}
+	}
+
+	t, err := r.SafeCode(to)
+	if err != nil {
+		return func(_, _, _ float64) (_, _, _ float64, err error) {
+			return 0, 0, 0, err
+		}
+	}
+
+	return SafeTransform(f, t)
 }

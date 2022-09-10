@@ -1,4 +1,4 @@
-//nolint:varnamelen,nonamedreturns,gomnd,asciicheck
+//nolint:varnamelen,nonamedreturns,gomnd,asciicheck,nosnakecase
 package wgs84
 
 import (
