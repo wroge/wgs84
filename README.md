@@ -33,10 +33,10 @@ codes := epsg.CodesCover(9, 52)
 // [25832 4314 32632 4978 4258 31467 4326 3857 900913]
 ```
 
-[...Calculate EPSG-Code from Unknown Coordinates](https://gist.github.com/wroge/e2160c1483a083997accf49009e7b08a)
-[...Calculate WebMercator Tile from WGS84 Longitude Latitude](https://gist.github.com/wroge/979869ff59046c4d841248c101472783)
-[...Transformation between OSGB36 NationalGrid and WGS84 Geographic Coordinates](https://gist.github.com/wroge/b7cd3c9dda9973b7085a10b09360ea00)
-[...Adding a CoordinateReferenceSystem (MGI AustriaLambert) to the EPSG-Repository](https://gist.github.com/wroge/844743b2756dcb47077eacbf2f129b92)
+- [Calculate EPSG-Code from Unknown Coordinates](https://gist.github.com/wroge/e2160c1483a083997accf49009e7b08a)
+- [Calculate WebMercator Tile from WGS84 Longitude Latitude](https://gist.github.com/wroge/979869ff59046c4d841248c101472783)
+- [Transformation between OSGB36 NationalGrid and WGS84 Geographic Coordinates](https://gist.github.com/wroge/b7cd3c9dda9973b7085a10b09360ea00)
+- [Adding a CoordinateReferenceSystem (MGI AustriaLambert) to the EPSG-Repository](https://gist.github.com/wroge/844743b2756dcb47077eacbf2f129b92)
 
 ## Features
 
