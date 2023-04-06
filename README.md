@@ -1,6 +1,5 @@
 # wgs84
 
-[![Build Status](https://img.shields.io/travis/wroge/wgs84/master)](https://travis-ci.org/wroge/wgs84)
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84)](https://goreportcard.com/report/github.com/wroge/wgs84)
 ![golangci-lint](https://github.com/wroge/wgs84/workflows/golangci-lint/badge.svg)
