@@ -1,4 +1,11 @@
-# wgs84
+# maseology/wgs84
+
+forked here to add additional projections:
+- [EPSG:3161](https://epsg.io/3161) NAD83 / Ontario MNR Lambert
+
+
+
+## Original Readme:
 
 [![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84)
 [![Go Report Card](https://goreportcard.com/badge/github.com/wroge/wgs84)](https://goreportcard.com/report/github.com/wroge/wgs84)

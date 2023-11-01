@@ -181,6 +181,12 @@ func NAD83CaliforniaAlbers() ProjectedReferenceSystem {
 	return crs
 }
 
+// NAD83OntarioMNRlambert is a projected Coordinate Reference System similar to
+// https://epsg.io/3161
+func NAD83OntarioMNRlambert() ProjectedReferenceSystem {
+	return NAD83().LambertConformalConic2SP(-85, 0, 44.5, 53.5, 930000, 6430000)
+}
+
 // GeocentricReferenceSystem represents a geocentric Coordinate Reference System.
 type GeocentricReferenceSystem struct {
 	Datum Datum
