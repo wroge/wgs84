@@ -24,7 +24,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 	switch code {
 	case 2154:
 		return Projected{
-			Geographic: RGF93,
+			Geographic: EPSG(4171).(Geographic),
 			Projection: LambertConformalConic2SP{
 				LatitudeOfOrigin:  46.5,
 				CentralMeridian:   3,
@@ -36,7 +36,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 3035:
 		return Projected{
-			Geographic: ETRS89,
+			Geographic: EPSG(4258).(Geographic),
 			Projection: LambertAzimuthalEqualArea{
 				LatitudeOfCenter:  52,
 				LongitudeOfCenter: 10,
@@ -46,7 +46,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 3161:
 		return Projected{
-			Geographic: NAD83,
+			Geographic: EPSG(4269).(Geographic),
 			Projection: LambertConformalConic2SP{
 				LatitudeOfOrigin:  0,
 				CentralMeridian:   -85,
@@ -58,7 +58,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 3416:
 		return Projected{
-			Geographic: ETRS89,
+			Geographic: EPSG(4258).(Geographic),
 			Projection: LambertConformalConic2SP{
 				CentralMeridian:   13.33333333333333,
 				LatitudeOfOrigin:  47.5,
@@ -70,33 +70,78 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 3875:
 		return Projected{
-			Geographic: WGS84,
+			Geographic: EPSG(4326).(Geographic),
 			Projection: WebMercator{},
 		}
+	case 4156:
+		return Geographic{
+			Spheroid: Bessel1841,
+			Geocentric: Helmert{
+				Tx: 589,
+				Ty: 76,
+				Tz: 480,
+			},
+		}
 	case 4171:
-		return RGF93
+		return Geographic{
+			Spheroid: GRS80,
+		}
 	case 4258:
-		return ETRS89
+		return Geographic{
+			Spheroid: GRS80,
+		}
 	case 4269:
-		return NAD83
+		return Geographic{
+			Spheroid: GRS80,
+		}
 	case 4277:
-		return OSGB36
+		return Geographic{
+			Spheroid: Airy1830,
+			Geocentric: Helmert{
+				Tx: 446.448,
+				Ty: -125.157,
+				Tz: 542.06,
+				Rx: 0.15,
+				Ry: 0.247,
+				Rz: 0.842,
+				Ds: -20.489,
+			},
+		}
+	case 4312:
+		return Geographic{
+			Spheroid: Bessel1841,
+			Geocentric: Helmert{
+				Tx: 577.326,
+				Ty: 90.129,
+				Tz: 463.919,
+				Rx: 5.137,
+				Ry: 1.474,
+				Rz: 5.297,
+				Ds: 2.4232,
+			},
+		}
 	case 4314:
-		return DHDN2001
+		return Geographic{
+			Spheroid: Bessel1841,
+			Geocentric: Helmert{
+				Tx: 598.1,
+				Ty: 73.7,
+				Tz: 418.2,
+				Rx: 0.202,
+				Ry: 0.045,
+				Rz: -2.455,
+				Ds: 6.7,
+			},
+		}
 	case 4326:
-		return WGS84
+		return Geographic{
+			Spheroid: WGS84,
+		}
 	case 4978:
 		return root{}
 	case 5514:
 		return Projected{
-			Geographic: Geographic{
-				Geocentric: Helmert{
-					Tx: 589,
-					Ty: 76,
-					Tz: 480,
-				},
-				Spheroid: Bessel,
-			},
+			Geographic: EPSG(4156).(Geographic),
 			Projection: Krovak{
 				LatitudeOfCenter:       49.5,
 				LongitudeOfCenter:      24.8333333333333,
@@ -107,7 +152,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 6355:
 		return Projected{
-			Geographic: NAD83,
+			Geographic: EPSG(4269).(Geographic),
 			Projection: TransverseMercator{
 				LatitudeOfOrigin: 30.5,
 				CentralMeridian:  -85.8333333333333,
@@ -118,7 +163,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 6356:
 		return Projected{
-			Geographic: NAD83,
+			Geographic: EPSG(4269).(Geographic),
 			Projection: TransverseMercator{
 				LatitudeOfOrigin: 30,
 				CentralMeridian:  -87.5,
@@ -129,7 +174,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 6414:
 		return Projected{
-			Geographic: NAD83,
+			Geographic: EPSG(4269).(Geographic),
 			Projection: AlbersConicEqualArea{
 				LatitudeOfCenter:  0,
 				LongitudeOfCenter: -120,
@@ -141,7 +186,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 27700:
 		return Projected{
-			Geographic: OSGB36,
+			Geographic: EPSG(4277).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  -2,
 				LatitudeOfOrigin: 49,
@@ -152,7 +197,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31257:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  10.33333333333333,
 				LatitudeOfOrigin: 0,
@@ -163,7 +208,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31258:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  13.33333333333333,
 				LatitudeOfOrigin: 0,
@@ -174,7 +219,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31259:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  16.33333333333333,
 				LatitudeOfOrigin: 0,
@@ -185,7 +230,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31284:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  10.33333333333333,
 				LatitudeOfOrigin: 0,
@@ -196,7 +241,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31285:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  13.33333333333333,
 				LatitudeOfOrigin: 0,
@@ -207,7 +252,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31286:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  16.33333333333333,
 				LatitudeOfOrigin: 0,
@@ -218,7 +263,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		}
 	case 31287:
 		return Projected{
-			Geographic: MGI,
+			Geographic: EPSG(4312).(Geographic),
 			Projection: LambertConformalConic2SP{
 				CentralMeridian:   13.33333333333333,
 				LatitudeOfOrigin:  47.5,
@@ -236,7 +281,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		lat := float64(code - 3900)
 
 		return Projected{
-			Geographic: RGF93,
+			Geographic: EPSG(4171).(Geographic),
 			Projection: LambertConformalConic2SP{
 				LatitudeOfOrigin:  lat,
 				CentralMeridian:   3,
@@ -252,7 +297,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		zone := float64(code - 25800)
 
 		return Projected{
-			Geographic: ETRS89,
+			Geographic: EPSG(4258).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  zone*6 - 183,
 				LatitudeOfOrigin: 0,
@@ -267,7 +312,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		zone := float64(code - 31464)
 
 		return Projected{
-			Geographic: DHDN2001,
+			Geographic: EPSG(4314).(Geographic),
 			Projection: TransverseMercator{
 				LatitudeOfOrigin: 0,
 				CentralMeridian:  zone * 3,
@@ -282,7 +327,7 @@ func EPSG(code int) CoordinateReferenceSystem {
 		zone := float64(code - 32600)
 
 		return Projected{
-			Geographic: WGS84,
+			Geographic: EPSG(4326).(Geographic),
 			Projection: TransverseMercator{
 				LatitudeOfOrigin: 0,
 				CentralMeridian:  zone*6 - 183,
@@ -295,8 +340,9 @@ func EPSG(code int) CoordinateReferenceSystem {
 
 	if code > 32700 && code < 32761 {
 		zone := code - 32700
+
 		return Projected{
-			Geographic: WGS84,
+			Geographic: EPSG(4326).(Geographic),
 			Projection: TransverseMercator{
 				CentralMeridian:  float64(zone)*6 - 183,
 				LatitudeOfOrigin: 0,

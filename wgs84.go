@@ -5,59 +5,11 @@ import (
 )
 
 var (
+	WGS84      = NewSpheroid(6378137, 298.257223563)
 	GRS80      = NewSpheroid(6378137, 298.257222101)
 	Airy1830   = NewSpheroid(6377563.396, 299.3249646)
-	Bessel     = NewSpheroid(6377397.155, 299.1528128)
+	Bessel1841 = NewSpheroid(6377397.155, 299.1528128)
 	Clarke1866 = NewSpheroid(6378206.4, 294.9786982139006)
-
-	WGS84 = Geographic{
-		Spheroid: NewSpheroid(6378137, 298.257223563),
-	}
-	ETRS89 = Geographic{
-		Spheroid: GRS80,
-	}
-	NAD83 = Geographic{
-		Spheroid: GRS80,
-	}
-	RGF93 = Geographic{
-		Spheroid: GRS80,
-	}
-	DHDN2001 = Geographic{
-		Spheroid: Bessel,
-		Geocentric: Helmert{
-			Tx: 598.1,
-			Ty: 73.7,
-			Tz: 418.2,
-			Rx: 0.202,
-			Ry: 0.045,
-			Rz: -2.455,
-			Ds: 6.7,
-		},
-	}
-	OSGB36 = Geographic{
-		Spheroid: Airy1830,
-		Geocentric: Helmert{
-			Tx: 446.448,
-			Ty: -125.157,
-			Tz: 542.06,
-			Rx: 0.15,
-			Ry: 0.247,
-			Rz: 0.842,
-			Ds: -20.489,
-		},
-	}
-	MGI = Geographic{
-		Spheroid: Bessel,
-		Geocentric: Helmert{
-			Tx: 577.326,
-			Ty: 90.129,
-			Tz: 463.919,
-			Rx: 5.137,
-			Ry: 1.474,
-			Rz: 5.297,
-			Ds: 2.4232,
-		},
-	}
 )
 
 type CoordinateReferenceSystem interface {

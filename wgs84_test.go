@@ -83,7 +83,7 @@ func TestProjections(t *testing.T) {
 			Projection: wgs84.WebMercator{},
 			Lat:        toDeg(24, 22, 54.433),
 			Lon:        -toDeg(100, 20, 0),
-			Spheroid:   wgs84.WGS84.Spheroid,
+			Spheroid:   wgs84.EPSG(4326).(wgs84.Geographic).Spheroid,
 			East:       -11169055.58,
 			North:      2800000.00,
 		},
@@ -100,7 +100,7 @@ func TestProjections(t *testing.T) {
 			},
 			Lat:      toDeg(50, 12, 32.442),
 			Lon:      toDeg(16, 50, 59.179) + toDeg(17, 40, 0),
-			Spheroid: wgs84.Bessel,
+			Spheroid: wgs84.Bessel1841,
 			East:     -568991.00,
 			North:    -1050538.64,
 		},
@@ -117,8 +117,4 @@ func TestProjections(t *testing.T) {
 			t.Fatal(each.Name+" ToGeographic", lon, lat, each.Lon, each.Lat)
 		}
 	}
-}
-
-func toDeg(deg, min, sec float64) float64 {
-	return deg + min/60 + sec/3600
 }
