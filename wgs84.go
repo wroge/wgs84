@@ -65,6 +65,22 @@ type CoordinateReferenceSystem interface {
 	FromWGS84(x0, y0, z0 float64) (x, y, z float64)
 }
 
+func Transform(from, to CoordinateReferenceSystem) TransformFunc {
+	return func(a, b, c float64) (a2 float64, b2 float64, c2 float64) {
+		if from != nil {
+			a, b, c = from.ToWGS84(a, b, c)
+		}
+
+		if to == nil {
+			return a, b, c
+		}
+
+		return to.FromWGS84(a, b, c)
+	}
+}
+
+type TransformFunc func(a, b, c float64) (a2, b2, c2 float64)
+
 type Projection interface {
 	ToGeographic(east, north float64, s Spheroid) (lon, lat float64)
 	FromGeographic(lon, lat float64, s Spheroid) (east, north float64)
