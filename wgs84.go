@@ -61,8 +61,55 @@ var (
 )
 
 type CoordinateReferenceSystem interface {
-	ToWGS84(a, b, c float64) (x0, y0, z0 float64)
-	FromWGS84(x0, y0, z0 float64) (a, b, c float64)
+	ToWGS84(x, y, z float64) (x0, y0, z0 float64)
+	FromWGS84(x0, y0, z0 float64) (x, y, z float64)
+}
+
+type Projection interface {
+	ToGeographic(east, north float64, s Spheroid) (lon, lat float64)
+	FromGeographic(lon, lat float64, s Spheroid) (east, north float64)
+}
+
+type Geographic struct {
+	Geocentric CoordinateReferenceSystem
+	Spheroid   Spheroid
+}
+
+func (g Geographic) ToWGS84(lon, lat, h float64) (x0, y0, z0 float64) {
+	x, y, z := g.Spheroid.ToGeocentric(lon, lat, h)
+
+	if g.Geocentric == nil {
+		return x, y, z
+	}
+
+	return g.Geocentric.ToWGS84(x, y, z)
+}
+
+func (g Geographic) FromWGS84(x0, y0, z0 float64) (a, b, c float64) {
+	if g.Geocentric != nil {
+		x0, y0, z0 = g.Geocentric.FromWGS84(x0, y0, z0)
+	}
+
+	return g.Spheroid.FromGeocentric(x0, y0, z0)
+}
+
+type Projected struct {
+	Geographic Geographic
+	Projection Projection
+}
+
+func (p Projected) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
+	lon, lat := p.Projection.ToGeographic(east, north, p.Geographic.Spheroid)
+
+	return p.Geographic.ToWGS84(lon, lat, h)
+}
+
+func (p Projected) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
+	lon, lat, h := p.Geographic.FromWGS84(x0, y0, z0)
+
+	east, north = p.Projection.FromGeographic(lon, lat, p.Geographic.Spheroid)
+
+	return east, north, h
 }
 
 type root struct{}
@@ -73,12 +120,6 @@ func (root) ToWGS84(a, b, c float64) (x0, y0, z0 float64) {
 
 func (root) FromWGS84(x0, y0, z0 float64) (a, b, c float64) {
 	return x0, y0, z0
-}
-
-func Transform(from, to CoordinateReferenceSystem, a, b, c float64) (d, e, f float64) {
-	x0, y0, z0 := from.ToWGS84(a, b, c)
-
-	return to.FromWGS84(x0, y0, z0)
 }
 
 type Helmert struct {
@@ -106,100 +147,9 @@ func calcHelmert(x, y, z, Tx, Ty, Tz, Rx, Ry, Rz, Ds float64) (x0, y0, z0 float6
 	return
 }
 
-type Geographic struct {
-	Geocentric CoordinateReferenceSystem
-	Spheroid   Spheroid
-}
+type WebMercator struct{}
 
-func (g Geographic) ToWGS84(lon, lat, h float64) (x0, y0, z0 float64) {
-	x, y, z := g.ToGeocentric(lon, lat, h)
-
-	if g.Geocentric == nil {
-		return x, y, z
-	}
-
-	return g.Geocentric.ToWGS84(x, y, z)
-}
-
-func (g Geographic) FromWGS84(x0, y0, z0 float64) (lon, lat, h float64) {
-	if g.Geocentric != nil {
-		x0, y0, z0 = g.Geocentric.FromWGS84(x0, y0, z0)
-	}
-
-	return g.FromGeocentric(x0, y0, z0)
-}
-
-func (g Geographic) ToGeocentric(lon, lat, h float64) (x, y, z float64) {
-	s := g.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
-	n := g.Spheroid.A / math.Sqrt(1-g.Spheroid.E2*math.Pow(math.Sin(radian(lat)), 2))
-
-	x = (n + h) * math.Cos(radian(lon)) * math.Cos(radian(lat))
-	y = (n + h) * math.Cos(radian(lat)) * math.Sin(radian(lon))
-	z = (n*math.Pow(s.A*(1-s.F), 2)/(s.A2) + h) * math.Sin(radian(lat))
-
-	return x, y, z
-}
-
-func (g Geographic) FromGeocentric(x, y, z float64) (lon, lat, h float64) {
-	s := g.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
-	sd := math.Sqrt(x*x + y*y)
-	T := math.Atan(z * s.A / (sd * s.B))
-	B := math.Atan((z + s.E2*(s.A2)/s.B*
-		math.Pow(math.Sin(T), 3)) / (sd - s.E2*s.A*math.Pow(math.Cos(T), 3)))
-	n := g.Spheroid.A / math.Sqrt(1-g.Spheroid.E2*math.Pow(math.Sin(B), 2))
-	h = sd/math.Cos(B) - n
-	lon = degree(math.Atan2(y, x))
-	lat = degree(B)
-
-	return lon, lat, h
-}
-
-type WebMercator struct {
-	Geographic Geographic
-}
-
-func (p WebMercator) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToWGS84(lon, lat, h)
-}
-
-func (p WebMercator) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromWGS84(x0, y0, z0)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p WebMercator) ToGeocentric(east, north, h float64) (x, y, z float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToGeocentric(lon, lat, h)
-}
-
-func (p WebMercator) FromGeocentric(x0, y0, z0 float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromGeocentric(x0, y0, z0)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p WebMercator) ToGeographic(east, north float64) (lon, lat float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p WebMercator) ToGeographic(east, north float64, s Spheroid) (lon, lat float64) {
 	D := (-north) / s.A
 	phi := math.Pi/2 - 2*math.Atan(math.Pow(math.E, D))
 	lambda := east / s.A
@@ -207,12 +157,7 @@ func (p WebMercator) ToGeographic(east, north float64) (lon, lat float64) {
 	return degree(lambda), degree(phi)
 }
 
-func (p WebMercator) FromGeographic(lon, lat float64) (east, north float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p WebMercator) FromGeographic(lon, lat float64, s Spheroid) (east, north float64) {
 	lambda := radian(lon)
 	phi := radian(lat)
 
@@ -228,43 +173,9 @@ type TransverseMercator struct {
 	ScaleFactor      float64
 	FalseEasting     float64
 	FalseNorthing    float64
-	Geographic       Geographic
 }
 
-func (p TransverseMercator) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToWGS84(lon, lat, h)
-}
-
-func (p TransverseMercator) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromWGS84(x0, y0, z0)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p TransverseMercator) ToGeocentric(east, north, h float64) (x, y, z float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToGeocentric(lon, lat, h)
-}
-
-func (p TransverseMercator) FromGeocentric(x, y, z float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromGeocentric(x, y, z)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p TransverseMercator) ToGeographic(east, north float64) (lon, lat float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p TransverseMercator) ToGeographic(east, north float64, s Spheroid) (lon, lat float64) {
 	phi0 := radian(p.LatitudeOfOrigin)
 	lambda0 := radian(p.CentralMeridian)
 
@@ -335,12 +246,7 @@ func (p TransverseMercator) ToGeographic(east, north float64) (lon, lat float64)
 	return degree(lambda), degree(phi)
 }
 
-func (p TransverseMercator) FromGeographic(lon, lat float64) (east, north float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p TransverseMercator) FromGeographic(lon, lat float64, s Spheroid) (east, north float64) {
 	phi := radian(lat)
 	phi0 := radian(p.LatitudeOfOrigin)
 	lambda := radian(lon)
@@ -407,43 +313,9 @@ type LambertConformalConic2SP struct {
 	StandardParallel2 float64
 	FalseEasting      float64
 	FalseNorthing     float64
-	Geographic        Geographic
 }
 
-func (p LambertConformalConic2SP) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToWGS84(lon, lat, h)
-}
-
-func (p LambertConformalConic2SP) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromWGS84(x0, y0, z0)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p LambertConformalConic2SP) ToGeocentric(east, north, h float64) (x, y, z float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToGeocentric(lon, lat, h)
-}
-
-func (p LambertConformalConic2SP) FromGeocentric(x, y, z float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromGeocentric(x, y, z)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p LambertConformalConic2SP) ToGeographic(east, north float64) (lon, lat float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p LambertConformalConic2SP) ToGeographic(east, north float64, s Spheroid) (lon, lat float64) {
 	phif := radian(p.LatitudeOfOrigin)
 	phi1 := radian(p.StandardParallel1)
 	phi2 := radian(p.StandardParallel2)
@@ -485,12 +357,7 @@ func (p LambertConformalConic2SP) ToGeographic(east, north float64) (lon, lat fl
 	return degree(lambda), degree(phi)
 }
 
-func (p LambertConformalConic2SP) FromGeographic(lon, lat float64) (east, north float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p LambertConformalConic2SP) FromGeographic(lon, lat float64, s Spheroid) (east, north float64) {
 	phi := radian(lat)
 	phif := radian(p.LatitudeOfOrigin)
 	phi1 := radian(p.StandardParallel1)
@@ -525,43 +392,9 @@ type AlbersConicEqualArea struct {
 	StandardParallel2 float64
 	FalseEasting      float64
 	FalseNorthing     float64
-	Geographic        Geographic
 }
 
-func (p AlbersConicEqualArea) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToWGS84(lon, lat, h)
-}
-
-func (p AlbersConicEqualArea) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromWGS84(x0, y0, z0)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p AlbersConicEqualArea) ToGeocentric(east, north, h float64) (x, y, z float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToGeocentric(lon, lat, h)
-}
-
-func (p AlbersConicEqualArea) FromGeocentric(x, y, z float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromGeocentric(x, y, z)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p AlbersConicEqualArea) ToGeographic(east, north float64) (lon, lat float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p AlbersConicEqualArea) ToGeographic(east, north float64, s Spheroid) (lon, lat float64) {
 	lambdaf := radian(p.LongitudeOfCenter)
 	phif := radian(p.LatitudeOfCenter)
 	phi1 := radian(p.StandardParallel1)
@@ -596,12 +429,7 @@ func (p AlbersConicEqualArea) ToGeographic(east, north float64) (lon, lat float6
 	return degree(lambda), degree(phi)
 }
 
-func (p AlbersConicEqualArea) FromGeographic(lon, lat float64) (east, north float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p AlbersConicEqualArea) FromGeographic(lon, lat float64, s Spheroid) (east, north float64) {
 	lambda := radian(lon)
 	lambdaf := radian(p.LongitudeOfCenter)
 	phi := radian(lat)
@@ -636,43 +464,9 @@ type LambertAzimuthalEqualArea struct {
 	LongitudeOfCenter float64
 	FalseEasting      float64
 	FalseNorthing     float64
-	Geographic        Geographic
 }
 
-func (p LambertAzimuthalEqualArea) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToWGS84(lon, lat, h)
-}
-
-func (p LambertAzimuthalEqualArea) FromWGS84(x0, y0, z0 float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromWGS84(x0, y0, z0)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p LambertAzimuthalEqualArea) ToGeocentric(east, north, h float64) (x, y, z float64) {
-	lon, lat := p.ToGeographic(east, north)
-
-	return p.Geographic.ToGeocentric(lon, lat, h)
-}
-
-func (p LambertAzimuthalEqualArea) FromGeocentric(x, y, z float64) (east, north, h float64) {
-	lon, lat, h := p.Geographic.FromGeocentric(x, y, z)
-
-	east, north = p.FromGeographic(lon, lat)
-
-	return east, north, h
-}
-
-func (p LambertAzimuthalEqualArea) ToGeographic(east, north float64) (lon, lat float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p LambertAzimuthalEqualArea) ToGeographic(east, north float64, s Spheroid) (lon, lat float64) {
 	phi0 := radian(p.LatitudeOfCenter)
 	lambda0 := radian(p.LongitudeOfCenter)
 
@@ -681,26 +475,21 @@ func (p LambertAzimuthalEqualArea) ToGeographic(east, north float64) (lon, lat f
 
 	beta0 := math.Asin(q0 / qp)
 	rq := s.A * math.Sqrt(qp/2)
-	d := s.A * (math.Cos(phi0) / math.Sqrt(1-s.E2*sin2(phi0))) / (rq * math.Cos(beta0))
+	g := s.A * (math.Cos(phi0) / math.Sqrt(1-s.E2*sin2(phi0))) / (rq * math.Cos(beta0))
 
-	rho := math.Sqrt(math.Pow((east-p.FalseEasting)/d, 2) + math.Pow(d*(north-p.FalseNorthing), 2))
+	rho := math.Sqrt(math.Pow((east-p.FalseEasting)/g, 2) + math.Pow(g*(north-p.FalseNorthing), 2))
 	c := 2 * math.Asin(rho/(2*rq))
-	betai := math.Asin((math.Cos(c) * math.Sin(beta0)) + ((d * (north - p.FalseNorthing) * math.Sin(c) * math.Cos(beta0)) / rho))
+	betai := math.Asin((math.Cos(c) * math.Sin(beta0)) + ((g * (north - p.FalseNorthing) * math.Sin(c) * math.Cos(beta0)) / rho))
 
 	phi := betai + ((s.E2/3 + (31*s.E4)/180 + (517*s.E6)/5040) * math.Sin(2*betai)) +
 		((23*s.E4)/360+(251*s.E6)/3780)*math.Sin(4*betai) +
 		((761*s.E6)/45360)*math.Sin(6*betai)
-	lambda := lambda0 + math.Atan2((east-p.FalseEasting)*math.Sin(c), (d*rho*math.Cos(beta0)*math.Cos(c)-math.Pow(d, 2)*(north-p.FalseNorthing)*math.Sin(beta0)*math.Sin(c)))
+	lambda := lambda0 + math.Atan2((east-p.FalseEasting)*math.Sin(c), (g*rho*math.Cos(beta0)*math.Cos(c)-math.Pow(g, 2)*(north-p.FalseNorthing)*math.Sin(beta0)*math.Sin(c)))
 
 	return degree(lambda), degree(phi)
 }
 
-func (p LambertAzimuthalEqualArea) FromGeographic(lon, lat float64) (east, north float64) {
-	s := p.Geographic.Spheroid
-	if s.A == 0 {
-		s = WGS84.Spheroid
-	}
-
+func (p LambertAzimuthalEqualArea) FromGeographic(lon, lat float64, s Spheroid) (east, north float64) {
 	phi0 := radian(p.LatitudeOfCenter)
 	lambda0 := radian(p.LongitudeOfCenter)
 
@@ -714,18 +503,111 @@ func (p LambertAzimuthalEqualArea) FromGeographic(lon, lat float64) (east, north
 	beta0 := math.Asin(q0 / qp)
 	beta := math.Asin(q / qp)
 	rq := s.A * math.Sqrt(qp/2)
-	d := s.A * (math.Cos(phi0) / math.Sqrt(1-s.E2*sin2(phi0))) / (rq * math.Cos(beta0))
+	g := s.A * (math.Cos(phi0) / math.Sqrt(1-s.E2*sin2(phi0))) / (rq * math.Cos(beta0))
 	b := rq * math.Sqrt(2/(1+math.Sin(beta0)*math.Sin(beta)+(math.Cos(beta0)*math.Cos(beta)*math.Cos(lambda-lambda0))))
 
-	east = p.FalseEasting + ((b * d) * (math.Cos(beta) * math.Sin(lambda-lambda0)))
-	north = p.FalseNorthing + (b/d)*((math.Cos(beta0)*math.Sin(beta))-(math.Sin(beta0)*math.Cos(beta)*math.Cos(lambda-lambda0)))
+	east = p.FalseEasting + ((b * g) * (math.Cos(beta) * math.Sin(lambda-lambda0)))
+	north = p.FalseNorthing + (b/g)*((math.Cos(beta0)*math.Sin(beta))-(math.Sin(beta0)*math.Cos(beta)*math.Cos(lambda-lambda0)))
 
 	return east, north
+}
+
+type Krovak struct {
+	LatitudeOfCenter       float64
+	LongitudeOfCenter      float64
+	Azimuth                float64
+	PseudoStandardParallel float64
+	ScaleFactor            float64
+	FalseEasting           float64
+	FalseNorthing          float64
+}
+
+func (p Krovak) FromGeographic(lon, lat float64, s Spheroid) (east, north float64) {
+	phic := radian(p.LatitudeOfCenter)
+	lambda0 := radian(p.LongitudeOfCenter)
+	phi := radian(lat)
+	phip := radian(p.PseudoStandardParallel)
+	lambda := radian(lon)
+	alphac := radian(p.Azimuth)
+
+	A := s.A * math.Sqrt(1-s.E2) / (1 - s.E2*sin2(phic))
+	B := math.Sqrt(1 + (s.E2 * math.Pow(math.Cos(phic), 4) / (1 - s.E2)))
+	gamma0 := math.Asin(math.Sin(phic) / B)
+	t0 := math.Tan(math.Pi/4+gamma0/2) * math.Pow((1+s.E*math.Sin(phic))/(1-s.E*math.Sin(phic)), s.E*B/2) / math.Pow(math.Tan(math.Pi/4+phic/2), B)
+	n := math.Sin(phip)
+	r0 := p.ScaleFactor * A / math.Tan(phip)
+
+	U := 2 * (math.Atan(t0*math.Pow(math.Tan(phi/2+math.Pi/4), B)/math.Pow((1+s.E*math.Sin(phi))/(1-s.E*math.Sin(phi)), s.E*B/2)) - math.Pi/4)
+	V := B * (lambda0 - lambda)
+	T := math.Asin(math.Cos(alphac)*math.Sin(U) + math.Sin(alphac)*math.Cos(U)*math.Cos(V))
+	D := math.Asin(math.Cos(U) * math.Sin(V) / math.Cos(T))
+	theta := n * D
+	r := r0 * math.Pow(math.Tan(math.Pi/4+phip/2), n) / math.Pow(math.Tan(T/2+math.Pi/4), n)
+	Xp := r * math.Cos(theta)
+	Yp := r * math.Sin(theta)
+
+	return -(Yp + p.FalseEasting), -(Xp + p.FalseNorthing)
+}
+
+func (p Krovak) ToGeographic(east, north float64, s Spheroid) (lon, lat float64) {
+	phic := radian(p.LatitudeOfCenter)
+	phip := radian(p.PseudoStandardParallel)
+	lambda0 := radian(p.LongitudeOfCenter)
+	alphac := radian(p.Azimuth)
+
+	A := s.A * math.Sqrt(1-s.E2) / (1 - s.E2*sin2(phic))
+	B := math.Sqrt(1 + (s.E2 * math.Pow(math.Cos(phic), 4) / (1 - s.E2)))
+	gamma0 := math.Asin(math.Sin(phic) / B)
+	t0 := math.Tan(math.Pi/4+gamma0/2) * math.Pow((1+s.E*math.Sin(phic))/(1-s.E*math.Sin(phic)), s.E*B/2) / math.Pow(math.Tan(math.Pi/4+phic/2), B)
+	n := math.Sin(phip)
+	r0 := p.ScaleFactor * A / math.Tan(phip)
+
+	Xpi := (-north) - p.FalseNorthing
+	Ypi := (-east) - p.FalseEasting
+	ri := math.Sqrt(math.Pow(Xpi, 2) + math.Pow(Ypi, 2))
+	thetai := math.Atan2(Ypi, Xpi)
+	Di := thetai / math.Sin(phip)
+	Ti := 2 * (math.Atan(math.Pow(r0/ri, 1/n)*math.Tan(math.Pi/4+phip/2)) - math.Pi/4)
+	Ui := math.Asin(math.Cos(alphac)*math.Sin(Ti) - math.Sin(alphac)*math.Cos(Ti)*math.Cos(Di))
+	Vi := math.Asin(math.Cos(Ti) * math.Sin(Di) / math.Cos(Ui))
+
+	phi := Ui
+
+	for i := 0; i < 3; i++ {
+		phi = 2 * (math.Atan(math.Pow(t0, -1/B)*math.Pow(math.Tan(Ui/2+math.Pi/4), 1/B)*math.Pow((1+s.E*math.Sin(phi))/(1-s.E*math.Sin(phi)), s.E/2)) - math.Pi/4)
+	}
+
+	lambda := lambda0 - Vi/B
+
+	return degree(lambda), degree(phi)
 }
 
 type Spheroid struct {
 	A, Fi                                          float64
 	A2, F, F2, B, E2, E, E4, E6, Ei, Ei2, Ei3, Ei4 float64
+}
+
+func (s Spheroid) ToGeocentric(lon, lat, h float64) (x, y, z float64) {
+	n := s.A / math.Sqrt(1-s.E2*math.Pow(math.Sin(radian(lat)), 2))
+
+	x = (n + h) * math.Cos(radian(lon)) * math.Cos(radian(lat))
+	y = (n + h) * math.Cos(radian(lat)) * math.Sin(radian(lon))
+	z = (n*math.Pow(s.A*(1-s.F), 2)/(s.A2) + h) * math.Sin(radian(lat))
+
+	return x, y, z
+}
+
+func (s Spheroid) FromGeocentric(x, y, z float64) (lon, lat, h float64) {
+	sd := math.Sqrt(x*x + y*y)
+	T := math.Atan(z * s.A / (sd * s.B))
+	B := math.Atan((z + s.E2*(s.A2)/s.B*
+		math.Pow(math.Sin(T), 3)) / (sd - s.E2*s.A*math.Pow(math.Cos(T), 3)))
+	n := s.A / math.Sqrt(1-s.E2*math.Pow(math.Sin(B), 2))
+	h = sd/math.Cos(B) - n
+	lon = degree(math.Atan2(y, x))
+	lat = degree(B)
+
+	return lon, lat, h
 }
 
 func NewSpheroid(a, fi float64) Spheroid {
@@ -758,6 +640,6 @@ func degree(r float64) float64 {
 	return r * 180 / math.Pi
 }
 
-func radian(d float64) float64 {
-	return d * math.Pi / 180
+func radian(g float64) float64 {
+	return g * math.Pi / 180
 }
