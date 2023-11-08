@@ -23,334 +23,109 @@ func (e ErrCodeNotFound) FromWGS84(x, y, z float64) (x0, y0, z0 float64) {
 func EPSG(code int) CoordinateReferenceSystem {
 	switch code {
 	case 2154:
-		return Projected{
-			Geographic: EPSG(4171).(Geographic),
-			Projection: LambertConformalConic2SP{
-				LatitudeOfOrigin:  46.5,
-				CentralMeridian:   3,
-				StandardParallel1: 49,
-				StandardParallel2: 44,
-				FalseEasting:      700000,
-				FalseNorthing:     6600000,
-			},
-		}
+		return RGF93.LambertConformalConic2SP(3, 46.5, 49, 44, 700000, 6600000)
+	case 2157:
+		return IRENET95.TransverseMercator(-8, 53.5, 0.99982, 600000, 750000)
+	case 2158:
+		return IRENET95.TransverseMercator(-9, 0, 0.9996, 500000, 0)
 	case 3035:
-		return Projected{
-			Geographic: EPSG(4258).(Geographic),
-			Projection: LambertAzimuthalEqualArea{
-				LatitudeOfCenter:  52,
-				LongitudeOfCenter: 10,
-				FalseEasting:      4321000,
-				FalseNorthing:     3210000,
-			},
-		}
+		return ETRS89.LambertAzimuthalEqualArea(10, 52, 4321000, 3210000)
 	case 3161:
-		return Projected{
-			Geographic: EPSG(4269).(Geographic),
-			Projection: LambertConformalConic2SP{
-				LatitudeOfOrigin:  0,
-				CentralMeridian:   -85,
-				StandardParallel1: 44.5,
-				StandardParallel2: 53.5,
-				FalseEasting:      930000,
-				FalseNorthing:     6430000,
-			},
-		}
+		return NAD83.LambertConformalConic2SP(-85, 0, 44.5, 53.5, 930000, 6430000)
 	case 3416:
-		return Projected{
-			Geographic: EPSG(4258).(Geographic),
-			Projection: LambertConformalConic2SP{
-				CentralMeridian:   13.33333333333333,
-				LatitudeOfOrigin:  47.5,
-				StandardParallel1: 49,
-				StandardParallel2: 46,
-				FalseEasting:      400000,
-				FalseNorthing:     400000,
-			},
-		}
+		return ETRS89.LambertConformalConic2SP(13.33333333333333, 47.5, 49, 46, 400000, 400000)
 	case 3875:
-		return Projected{
-			Geographic: EPSG(4326).(Geographic),
-			Projection: WebMercator{},
-		}
+		return Datum.WebMercator()
 	case 4156:
-		return Geographic{
-			Spheroid: Bessel1841,
-			Geocentric: Helmert{
-				Tx: 589,
-				Ty: 76,
-				Tz: 480,
-			},
-		}
+		return SJTSK
 	case 4171:
-		return Geographic{
-			Spheroid: GRS80,
-		}
+		return RGF93
+	case 4188:
+		return OSNI1952
+	case 4230:
+		return ED50
 	case 4258:
-		return Geographic{
-			Spheroid: GRS80,
-		}
+		return ETRS89
 	case 4269:
-		return Geographic{
-			Spheroid: GRS80,
-		}
+		return NAD83
 	case 4277:
-		return Geographic{
-			Spheroid: Airy1830,
-			Geocentric: Helmert{
-				Tx: 446.448,
-				Ty: -125.157,
-				Tz: 542.06,
-				Rx: 0.15,
-				Ry: 0.247,
-				Rz: 0.842,
-				Ds: -20.489,
-			},
-		}
+		return OSGB36
+	case 4299:
+		return TM65
+	case 4300:
+		return TM75
 	case 4312:
-		return Geographic{
-			Spheroid: Bessel1841,
-			Geocentric: Helmert{
-				Tx: 577.326,
-				Ty: 90.129,
-				Tz: 463.919,
-				Rx: 5.137,
-				Ry: 1.474,
-				Rz: 5.297,
-				Ds: 2.4232,
-			},
-		}
+		return MGI
 	case 4314:
-		return Geographic{
-			Spheroid: Bessel1841,
-			Geocentric: Helmert{
-				Tx: 598.1,
-				Ty: 73.7,
-				Tz: 418.2,
-				Rx: 0.202,
-				Ry: 0.045,
-				Rz: -2.455,
-				Ds: 6.7,
-			},
-		}
+		return DHDN2001
 	case 4326:
-		return Geographic{
-			Spheroid: WGS84,
-		}
+		return Datum
 	case 4978:
 		return root{}
 	case 5514:
-		return Projected{
-			Geographic: EPSG(4156).(Geographic),
-			Projection: Krovak{
-				LatitudeOfCenter:       49.5,
-				LongitudeOfCenter:      24.8333333333333,
-				Azimuth:                30.2881397527778,
-				PseudoStandardParallel: 78.5,
-				ScaleFactor:            0.9999,
-			},
-		}
+		return SJTSK.Krovak(24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
 	case 6355:
-		return Projected{
-			Geographic: EPSG(4269).(Geographic),
-			Projection: TransverseMercator{
-				LatitudeOfOrigin: 30.5,
-				CentralMeridian:  -85.8333333333333,
-				ScaleFactor:      0.99996,
-				FalseEasting:     200000,
-				FalseNorthing:    0,
-			},
-		}
+		return NAD83.TransverseMercator(-85.8333333333333, 30.5, 0.99996, 200000, 0)
 	case 6356:
-		return Projected{
-			Geographic: EPSG(4269).(Geographic),
-			Projection: TransverseMercator{
-				LatitudeOfOrigin: 30,
-				CentralMeridian:  -87.5,
-				ScaleFactor:      0.999933333,
-				FalseEasting:     600000,
-				FalseNorthing:    0,
-			},
-		}
+		return NAD83.TransverseMercator(-87.5, 30, 0.999933333, 600000, 0)
 	case 6414:
-		return Projected{
-			Geographic: EPSG(4269).(Geographic),
-			Projection: AlbersConicEqualArea{
-				LatitudeOfCenter:  0,
-				LongitudeOfCenter: -120,
-				StandardParallel1: 34,
-				StandardParallel2: 40.5,
-				FalseEasting:      0,
-				FalseNorthing:     -4000000,
-			},
-		}
+		return NAD83.AlbersConicEqualArea(-120, 0, 34, 40.5, 0, -4000000)
+	case 23090:
+		return ED50.TransverseMercator(0, 0, 0.9996, 500000, 0)
 	case 27700:
-		return Projected{
-			Geographic: EPSG(4277).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  -2,
-				LatitudeOfOrigin: 49,
-				ScaleFactor:      0.9996012717,
-				FalseEasting:     400000,
-				FalseNorthing:    -100000,
-			},
-		}
+		return OSGB36.TransverseMercator(-2, 49, 0.9996012717, 400000, -100000)
+	case 29901:
+		return OSNI1952.TransverseMercator(-8, 53.5, 1, 200000, 250000)
+	case 29902:
+		return TM65.TransverseMercator(-8, 53.5, 1.000035, 200000, 250000)
+	case 29903:
+		return TM75.TransverseMercator(-8, 53.5, 1.000035, 200000, 250000)
 	case 31257:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  10.33333333333333,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      1,
-				FalseEasting:     150000,
-				FalseNorthing:    -5000000,
-			},
-		}
+		return MGI.TransverseMercator(10.33333333333333, 0, 1, 150000, -5000000)
 	case 31258:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  13.33333333333333,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      1,
-				FalseEasting:     450000,
-				FalseNorthing:    -5000000,
-			},
-		}
+		return MGI.TransverseMercator(13.33333333333333, 0, 1, 450000, -5000000)
 	case 31259:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  16.33333333333333,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      1,
-				FalseEasting:     750000,
-				FalseNorthing:    -5000000,
-			},
-		}
+		return MGI.TransverseMercator(16.33333333333333, 0, 1, 750000, -5000000)
 	case 31284:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  10.33333333333333,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      1,
-				FalseEasting:     150000,
-				FalseNorthing:    0,
-			},
-		}
+		return MGI.TransverseMercator(10.33333333333333, 0, 1, 150000, 0)
 	case 31285:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  13.33333333333333,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      1,
-				FalseEasting:     450000,
-				FalseNorthing:    0,
-			},
-		}
+		return MGI.TransverseMercator(13.33333333333333, 0, 1, 450000, 0)
 	case 31286:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  16.33333333333333,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      1,
-				FalseEasting:     750000,
-				FalseNorthing:    0,
-			},
-		}
+		return MGI.TransverseMercator(16.33333333333333, 0, 1, 750000, 0)
 	case 31287:
-		return Projected{
-			Geographic: EPSG(4312).(Geographic),
-			Projection: LambertConformalConic2SP{
-				CentralMeridian:   13.33333333333333,
-				LatitudeOfOrigin:  47.5,
-				StandardParallel1: 49,
-				StandardParallel2: 46,
-				FalseEasting:      400000,
-				FalseNorthing:     400000,
-			},
-		}
+		return MGI.LambertConformalConic2SP(13.33333333333333, 47.5, 49, 46, 400000, 400000)
 	case 900913:
-		return EPSG(3857)
+		return Datum.WebMercator()
 	}
 
 	if code > 3941 && code < 3951 {
 		lat := float64(code - 3900)
 
-		return Projected{
-			Geographic: EPSG(4171).(Geographic),
-			Projection: LambertConformalConic2SP{
-				LatitudeOfOrigin:  lat,
-				CentralMeridian:   3,
-				StandardParallel1: lat - 0.75,
-				StandardParallel2: lat + 0.75,
-				FalseEasting:      1700000,
-				FalseNorthing:     2200000 + (lat-43)*1000000,
-			},
-		}
+		return RGF93.LambertConformalConic2SP(3, lat, lat-0.75, lat+0.75, 1700000, 2200000+(lat-43)*1000000)
 	}
 
 	if code > 25827 && code < 25839 {
 		zone := float64(code - 25800)
 
-		return Projected{
-			Geographic: EPSG(4258).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  zone*6 - 183,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      0.9996,
-				FalseEasting:     500000,
-				FalseNorthing:    0,
-			},
-		}
+		return ETRS89.TransverseMercator(zone*6-183, 0, 0.9996, 500000, 0)
 	}
 
 	if code > 31465 && code < 31470 {
 		zone := float64(code - 31464)
 
-		return Projected{
-			Geographic: EPSG(4314).(Geographic),
-			Projection: TransverseMercator{
-				LatitudeOfOrigin: 0,
-				CentralMeridian:  zone * 3,
-				ScaleFactor:      1,
-				FalseEasting:     zone*1000000 + 500000,
-				FalseNorthing:    0,
-			},
-		}
+		return DHDN2001.TransverseMercator(zone*3, 0, 1, zone*1000000+500000, 0)
 	}
 
 	if code > 32600 && code < 32661 {
 		zone := float64(code - 32600)
 
-		return Projected{
-			Geographic: EPSG(4326).(Geographic),
-			Projection: TransverseMercator{
-				LatitudeOfOrigin: 0,
-				CentralMeridian:  zone*6 - 183,
-				ScaleFactor:      0.9996,
-				FalseEasting:     500000,
-				FalseNorthing:    0,
-			},
-		}
+		return Datum.TransverseMercator(zone*6-183, 0, 0.9996, 500000, 0)
 	}
 
 	if code > 32700 && code < 32761 {
 		zone := code - 32700
 
-		return Projected{
-			Geographic: EPSG(4326).(Geographic),
-			Projection: TransverseMercator{
-				CentralMeridian:  float64(zone)*6 - 183,
-				LatitudeOfOrigin: 0,
-				ScaleFactor:      0.9996,
-				FalseEasting:     500000,
-				FalseNorthing:    10000000,
-			},
-		}
+		return Datum.TransverseMercator(float64(zone)*6-183, 0, 0.9996, 500000, 10000000)
 	}
 
 	return ErrCodeNotFound{
