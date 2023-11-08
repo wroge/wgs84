@@ -1,3 +1,4 @@
+//nolint:varnamelen,nonamedreturns,gomnd,gochecknoglobals,exhaustivestruct,exhaustruct,lll
 package wgs84
 
 import (
@@ -29,7 +30,8 @@ var (
 		Spheroid: GRS80,
 	}
 	ETRS89 = Geographic{
-		Spheroid: GRS80,
+		Spheroid:       GRS80,
+		Transformation: nil,
 	}
 	NAD83 = Geographic{
 		Spheroid: GRS80,
@@ -238,13 +240,14 @@ func (g Geographic) TransverseMercator(lonf, latf, scale, eastf, northf float64)
 
 	var M0 float64
 
-	if phi0 == 0 {
+	switch phi0 {
+	case 0:
 		M0 = 0
-	} else if phi0 == math.Pi/2 {
+	case math.Pi / 2:
 		M0 = B * (math.Pi / 2)
-	} else if phi0 == -math.Pi/2 {
+	case -math.Pi / 2:
 		M0 = B * (-math.Pi / 2)
-	} else {
+	default:
 		Q0 := math.Asinh(math.Tan(phi0)) - (e * math.Atanh(e*math.Sin(phi0)))
 		xi00 := math.Atan(math.Sinh(Q0))
 		xi01 := h1 * math.Sin(2*xi00)
@@ -264,6 +267,7 @@ func (g Geographic) TransverseMercator(lonf, latf, scale, eastf, northf float64)
 		geogr:   g,
 		phiO:    phi0,
 		lambdaO: lambda0,
+		scale:   scale,
 		eastf:   eastf,
 		northf:  northf,
 		n:       n,
@@ -320,7 +324,7 @@ func (g Geographic) LambertConformalConic2SP(lonf, latf, sp1, sp2, eastf, northf
 }
 
 func (g Geographic) AlbersConicEqualArea(lonf, latf, sp1, sp2, eastf, northf float64) AlbersConicEqualArea {
-	phif := radian(lonf)
+	phif := radian(latf)
 	phi1 := radian(sp1)
 	phi2 := radian(sp2)
 	lambdaf := radian(lonf)
@@ -404,6 +408,8 @@ func (g Geographic) Krovak(lonf, latf, azimuth, sp, scale, eastf, northf float64
 		t0:      t0,
 		n:       n,
 		r0:      r0,
+		eastf:   eastf,
+		northf:  northf,
 	}
 }
 
@@ -654,7 +660,6 @@ func (p LambertAzimuthalEqualArea) FromWGS84(x0, y0, z0 float64) (east, north, h
 type Krovak struct {
 	geogr                                                Geographic
 	phic, lambda0, phip, alphac, a, b, gamma0, t0, n, r0 float64
-	scale                                                float64
 	eastf                                                float64
 	northf                                               float64
 }
@@ -682,18 +687,18 @@ func (p Krovak) ToWGS84(east, north, h float64) (x0, y0, z0 float64) {
 	Ypi := (-east) - p.eastf
 	ri := math.Sqrt(math.Pow(Xpi, 2) + math.Pow(Ypi, 2))
 	thetai := math.Atan2(Ypi, Xpi)
-	Di := thetai / math.Sin(p.phip)
-	Ti := 2 * (math.Atan(math.Pow(p.r0/ri, 1/p.n)*math.Tan(math.Pi/4+p.phip/2)) - math.Pi/4)
-	Ui := math.Asin(math.Cos(p.alphac)*math.Sin(Ti) - math.Sin(p.alphac)*math.Cos(Ti)*math.Cos(Di))
-	Vi := math.Asin(math.Cos(Ti) * math.Sin(Di) / math.Cos(Ui))
+	di := thetai / math.Sin(p.phip)
+	ti := 2 * (math.Atan(math.Pow(p.r0/ri, 1/p.n)*math.Tan(math.Pi/4+p.phip/2)) - math.Pi/4)
+	ui := math.Asin(math.Cos(p.alphac)*math.Sin(ti) - math.Sin(p.alphac)*math.Cos(ti)*math.Cos(di))
+	vi := math.Asin(math.Cos(ti) * math.Sin(di) / math.Cos(ui))
 
-	phi := Ui
+	phi := ui
 
 	for i := 0; i < 3; i++ {
-		phi = 2 * (math.Atan(math.Pow(p.t0, -1/p.b)*math.Pow(math.Tan(Ui/2+math.Pi/4), 1/p.b)*math.Pow((1+p.geogr.Spheroid.E*math.Sin(phi))/(1-p.geogr.Spheroid.E*math.Sin(phi)), p.geogr.Spheroid.E/2)) - math.Pi/4)
+		phi = 2 * (math.Atan(math.Pow(p.t0, -1/p.b)*math.Pow(math.Tan(ui/2+math.Pi/4), 1/p.b)*math.Pow((1+p.geogr.Spheroid.E*math.Sin(phi))/(1-p.geogr.Spheroid.E*math.Sin(phi)), p.geogr.Spheroid.E/2)) - math.Pi/4)
 	}
 
-	lambda := p.lambda0 - Vi/p.b
+	lambda := p.lambda0 - vi/p.b
 
 	return p.geogr.ToWGS84(degree(lambda), degree(phi), h)
 }

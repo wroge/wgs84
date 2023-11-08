@@ -1,3 +1,4 @@
+//nolint:depguard,cyclop,lll,varnamelen
 package wgs84_test
 
 import (
@@ -19,6 +20,8 @@ type Coordinate struct {
 }
 
 func TestCodes(t *testing.T) {
+	t.Parallel()
+
 	table := []CodeTest{
 		{
 			Name: "EPSG(3035,4258)",
@@ -48,8 +51,4 @@ func TestCodes(t *testing.T) {
 			t.Fatalf("%s: %d to %d: RESULT=[%f %f %f] EXPECT=[%f %f %f]", each.Name, each.To.EPSG, each.From.EPSG, a, b, c, each.From.A, each.From.B, each.From.C)
 		}
 	}
-}
-
-func toDeg(deg, min, sec float64) float64 {
-	return deg + min/60 + sec/3600
 }

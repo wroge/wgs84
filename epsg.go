@@ -1,3 +1,4 @@
+//nolint:gomnd,nonamedreturns,errname,funlen,gocyclo,cyclop,ireturn
 package wgs84
 
 import (
