@@ -44,7 +44,7 @@ func EPSG(code int) CRS {
 	case 4269:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
 	case 4277:
-		crs = loadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", EPSG(4326))
+		crs = loadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", NewSpheroid(6377563.396, 299.3249646), EPSG(4326))
 	case 4299:
 		crs = Geographic(Helmert(482.5, -130.6, 564.6, -1.042, -0.214, -0.631, 8.15), NewSpheroid(6377340.189, 299.3249646))
 	case 4300:
@@ -52,7 +52,7 @@ func EPSG(code int) CRS {
 	case 4312:
 		crs = Geographic(Helmert(577.326, 90.129, 463.919, 5.137, 1.474, 5.297, 2.4232), NewSpheroid(6377397.155, 299.1528128))
 	case 4314:
-		crs = loadNTv2("BeTA2007.gsb", EPSG(4326))
+		crs = loadNTv2("BeTA2007.gsb", NewSpheroid(6377397.155, 299.1528128), EPSG(4326))
 	case 4326:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257223563))
 	case 4978:

@@ -3,6 +3,7 @@ package wgs84
 import (
 	"embed"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"math"
 	"strings"
@@ -22,6 +23,10 @@ func Transform(from, to CRS) Func {
 	for {
 		if from == nil {
 			break
+		}
+
+		if from == to {
+			return chainFunc(toBase...)
 		}
 
 		toBase = append(toBase, from.ToBase)
@@ -45,7 +50,9 @@ func Transform(from, to CRS) Func {
 func chainFunc(f ...Func) Func {
 	return func(a, b, c float64) (float64, float64, float64) {
 		for _, each := range f {
-			a, b, c = each(a, b, c)
+			if each != nil {
+				a, b, c = each(a, b, c)
+			}
 		}
 
 		return a, b, c
@@ -55,7 +62,9 @@ func chainFunc(f ...Func) Func {
 func reverseChainFunc(f ...Func) Func {
 	return func(a, b, c float64) (float64, float64, float64) {
 		for i := len(f) - 1; i >= 0; i-- {
-			a, b, c = f[i](a, b, c)
+			if f[i] != nil {
+				a, b, c = f[i](a, b, c)
+			}
 		}
 
 		return a, b, c
@@ -264,24 +273,25 @@ var (
 	res embed.FS
 )
 
-func loadNTv2(name string, base CRS) CRS {
+func loadNTv2(name string, spheroid Spheroid, base CRS) CRS {
 	file, err := res.Open("ntv2/" + name)
 	if err != nil {
 		return errorCRS{err: err}
 	}
 
-	crs := NTv2(file, base)
+	crs := NTv2(file, spheroid, base)
 
 	return crs
 }
 
-func NTv2(reader io.Reader, base CRS) CRS {
+func NTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 	if base == nil {
 		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
 	}
 
 	data := ntv2{
-		base: base,
+		base:     base,
+		spheroid: spheroid,
 	}
 
 	for i := 1; ; i++ {
@@ -345,18 +355,23 @@ func toString(b []byte) string {
 }
 
 type ntv2 struct {
-	base    CRS
-	numOrec int32
-	numSrec int32
-	numFile int32
-	sLat    float64
-	nLat    float64
-	eLong   float64
-	wLong   float64
-	latInc  float64
-	longInc float64
-	gsCount int32
-	values  [][4]float32
+	spheroid Spheroid
+	base     CRS
+	numOrec  int32
+	numSrec  int32
+	numFile  int32
+	sLat     float64
+	nLat     float64
+	eLong    float64
+	wLong    float64
+	latInc   float64
+	longInc  float64
+	gsCount  int32
+	values   [][4]float32
+}
+
+func (n ntv2) String() string {
+	return fmt.Sprintf("BASE: %v, NUM_OREC: %d, NUM_SREC: %d, NUM_FILE: %d, S_LAT: %f, N_LAT: %f, E_LONG: %f, W_LONG: %f, LAT_INC: %f, LONG_INC: %f, GS_COUNT: %d", n.base, n.numOrec, n.numSrec, n.numFile, n.sLat, n.nLat, n.eLong, n.wLong, n.latInc, n.longInc, n.gsCount)
 }
 
 func (n ntv2) Base() CRS {
@@ -364,7 +379,7 @@ func (n ntv2) Base() CRS {
 }
 
 func (n ntv2) Spheroid() Spheroid {
-	return n.base.Spheroid()
+	return n.spheroid
 }
 
 func (n ntv2) ToBase(lon, lat, h float64) (lon2, lat2, h2 float64) {
@@ -596,6 +611,7 @@ func (p transverseMercator) ToBase(east, north, h float64) (lon, lat, h2 float64
 }
 
 func (p transverseMercator) FromBase(lon, lat, h float64) (east, north, h2 float64) {
+	fmt.Println(lon, lat, h, p.base.Spheroid().A)
 	s := p.base.Spheroid()
 
 	phi := radian(lat)
