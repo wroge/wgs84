@@ -23,6 +23,32 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4173), -9, 0, 0.9996, 500000, 0)
 	case 3035:
 		crs = LambertAzimuthalEqualArea(EPSG(4258), 10, 52, 4321000, 3210000)
+	case 3126:
+		crs = TransverseMercator(EPSG(4258), 19, 0, 1, 500000, 0)
+	case 3127:
+		crs = TransverseMercator(EPSG(4258), 20, 0, 1, 500000, 0)
+	case 3128:
+		crs = TransverseMercator(EPSG(4258), 21, 0, 1, 500000, 0)
+	case 3129:
+		crs = TransverseMercator(EPSG(4258), 22, 0, 1, 500000, 0)
+	case 3130:
+		crs = TransverseMercator(EPSG(4258), 23, 0, 1, 500000, 0)
+	case 3131:
+		crs = TransverseMercator(EPSG(4258), 24, 0, 1, 500000, 0)
+	case 3132:
+		crs = TransverseMercator(EPSG(4258), 25, 0, 1, 500000, 0)
+	case 3133:
+		crs = TransverseMercator(EPSG(4258), 26, 0, 1, 500000, 0)
+	case 3134:
+		crs = TransverseMercator(EPSG(4258), 27, 0, 1, 500000, 0)
+	case 3135:
+		crs = TransverseMercator(EPSG(4258), 28, 0, 1, 500000, 0)
+	case 3136:
+		crs = TransverseMercator(EPSG(4258), 29, 0, 1, 500000, 0)
+	case 3137:
+		crs = TransverseMercator(EPSG(4258), 30, 0, 1, 500000, 0)
+	case 3138:
+		crs = TransverseMercator(EPSG(4258), 31, 0, 1, 500000, 0)
 	case 3161:
 		crs = LambertConformalConic2SP(EPSG(4269), -85, 0, 44.5, 53.5, 930000, 6430000)
 	case 3416:
@@ -41,6 +67,8 @@ func EPSG(code int) CRS {
 		crs = Geographic(Helmert(-87, -98, -121, 0, 0, 0, 0), NewSpheroid(6378388, 297))
 	case 4258:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
+	case 4267:
+		crs = loadNTv2("NTv2_0.gsb", NewSpheroid(6378206.4, 294.978698213898), EPSG(4326))
 	case 4269:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
 	case 4277:
@@ -95,6 +123,12 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4312), 16.33333333333333, 0, 1, 750000, 0)
 	case 31287:
 		crs = LambertConformalConic2SP(EPSG(4312), 13.33333333333333, 47.5, 49, 46, 400000, 400000)
+	case 102109:
+		crs = TransverseMercator(EPSG(4258), 15, 0, 0.9999, 500000, -5000000)
+	case 102157:
+		crs = TransverseMercator(EPSG(4258), 21, 0, 0.9999, 7500000, 0)
+	case 102173:
+		crs = TransverseMercator(EPSG(4258), 19, 0, 0.9993, 500000, -5300000)
 	case 900913:
 		crs = EPSG(3857)
 	default:
