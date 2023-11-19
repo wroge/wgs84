@@ -55,6 +55,10 @@ func EPSG(code int) CRS {
 		crs = loadNTv2("BeTA2007.gsb", NewSpheroid(6377397.155, 299.1528128), EPSG(4326))
 	case 4326:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257223563))
+	case 4490:
+		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
+	case 4549:
+		crs = TransverseMercator(EPSG(4490), 120, 0, 1, 500000, 0)
 	case 4978:
 		crs = base{}
 	case 5514:
