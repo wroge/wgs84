@@ -67,12 +67,22 @@ type Func func(float64, float64, float64) (float64, float64, float64)
 
 func (f Func) Round(dec int) Func {
 	return func(a, b, c float64) (float64, float64, float64) {
+		a, b, c = f(a, b, c)
+
 		return round(a, dec), round(b, dec), round(c, dec)
 	}
 }
 
 func round(val float64, dec int) float64 {
-	return math.Round(val * math.Pow(10, float64(dec)))
+	factor := math.Pow(10, float64(dec))
+
+	val = math.Round(val*factor) / factor
+
+	if val == -0 {
+		return 0
+	}
+
+	return val
 }
 
 type errorCRS struct {
@@ -366,7 +376,7 @@ func (n ntv2) Spheroid() Spheroid {
 }
 
 func (n ntv2) ToBase(lon, lat, h float64) (lon2, lat2, h2 float64) {
-	slon, slat := n.Shift(lon, lat)
+	slon, slat := n.Shift(-lon, lat)
 
 	return lon + slon, lat + slat, h
 }
@@ -391,6 +401,7 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 
 	col := math.Floor(fcol)
 	row := math.Floor(frow)
+
 	ppr := math.Floor((n.wLong-n.eLong)/n.longInc+0.5) + 1
 	ppc := math.Floor((n.nLat-n.sLat)/n.latInc+0.5) + 1
 	se := row*ppr + col

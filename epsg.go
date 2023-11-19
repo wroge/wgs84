@@ -33,7 +33,7 @@ func EPSG(code int) CRS {
 	case 4269:
 		return Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
 	case 4277:
-		return LoadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", Geographic(EPSG(4978), NewSpheroid(6378137, 298.257223563)))
+		return LoadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", EPSG(4326))
 	case 4299:
 		return Geographic(Helmert(482.5, -130.6, 564.6, -1.042, -0.214, -0.631, 8.15), NewSpheroid(6377340.189, 299.3249646))
 	case 4300:
@@ -41,7 +41,7 @@ func EPSG(code int) CRS {
 	case 4312:
 		return Geographic(Helmert(577.326, 90.129, 463.919, 5.137, 1.474, 5.297, 2.4232), NewSpheroid(6377397.155, 299.1528128))
 	case 4314:
-		return LoadNTv2("BeTA2007.gsb", Geographic(EPSG(4978), NewSpheroid(6378137, 298.257223563)))
+		return LoadNTv2("BeTA2007.gsb", EPSG(4326))
 	case 4326:
 		return Geographic(EPSG(4978), NewSpheroid(6378137, 298.257223563))
 	case 4978:
@@ -89,8 +89,6 @@ func EPSG(code int) CRS {
 
 		return LambertConformalConic2SP(EPSG(4171), 3, lat, lat-0.75, lat+0.75, 1700000, 2200000+(lat-43)*1000000)
 	}
-	// 41.31,-1.06,43.07,9.63
-	// 49,-2.03,51.14,8.08
 
 	if code > 25827 && code < 25839 {
 		zone := float64(code - 25800)
