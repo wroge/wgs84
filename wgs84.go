@@ -6,7 +6,6 @@ import (
 	"io"
 	"math"
 	"strings"
-	"sync"
 )
 
 type CRS interface {
@@ -262,23 +261,16 @@ func calcHelmert(x, y, z, tx, ty, tz, rx, ry, rz, ds float64) (x0, y0, z0 float6
 
 var (
 	//go:embed ntv2
-	res      embed.FS
-	crsStore sync.Map
+	res embed.FS
 )
 
-func LoadNTv2(name string, base CRS) CRS {
-	if crs, ok := crsStore.Load(name); ok {
-		return crs.(CRS)
-	}
-
+func loadNTv2(name string, base CRS) CRS {
 	file, err := res.Open("ntv2/" + name)
 	if err != nil {
 		return errorCRS{err: err}
 	}
 
 	crs := NTv2(file, base)
-
-	crsStore.Store(name, crs)
 
 	return crs
 }
