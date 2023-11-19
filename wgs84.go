@@ -611,7 +611,6 @@ func (p transverseMercator) ToBase(east, north, h float64) (lon, lat, h2 float64
 }
 
 func (p transverseMercator) FromBase(lon, lat, h float64) (east, north, h2 float64) {
-	fmt.Println(lon, lat, h, p.base.Spheroid().A)
 	s := p.base.Spheroid()
 
 	phi := radian(lat)
