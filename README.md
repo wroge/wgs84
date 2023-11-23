@@ -1,6 +1,3 @@
-
-<img align="right" src="./logo.png" width="200"/>
-
 ## WGS84 - Coordinate Transformations
 
 ```
