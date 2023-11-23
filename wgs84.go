@@ -1,3 +1,4 @@
+//nolint:varnamelen,nonamedreturns,ireturn,gomnd,exhaustivestruct,exhaustruct,cyclop,errname,lll,funlen
 package wgs84
 
 import (
@@ -17,8 +18,10 @@ type CRS interface {
 }
 
 func Transform(from, to CRS) Func {
-	var toBase []Func
-	var fromBase []Func
+	var (
+		toBase   []Func
+		fromBase []Func
+	)
 
 	for {
 		if from == nil {
@@ -109,11 +112,11 @@ func (errorCRS) Spheroid() Spheroid {
 	return Spheroid{}
 }
 
-func (errorCRS) ToBase(x0, y0, z0 float64) (float64, float64, float64) {
+func (errorCRS) ToBase(_, _, _ float64) (float64, float64, float64) {
 	return math.NaN(), math.NaN(), math.NaN()
 }
 
-func (errorCRS) FromBase(x0, y0, z0 float64) (float64, float64, float64) {
+func (errorCRS) FromBase(_, _, _ float64) (float64, float64, float64) {
 	return math.NaN(), math.NaN(), math.NaN()
 }
 
@@ -191,7 +194,6 @@ func Geographic(geocentric CRS, spheroid Spheroid) CRS {
 	}
 
 	return geographic{
-
 		b: geocentric,
 		s: spheroid,
 	}
@@ -220,7 +222,6 @@ func (b geographic) FromBase(x, y, z float64) (lon, lat, h float64) {
 
 func Helmert(tx, ty, tz, rx, ry, rz, ds float64) CRS {
 	return helmert{
-
 		tx: tx,
 		ty: ty,
 		tz: tz,
@@ -264,10 +265,8 @@ func calcHelmert(x, y, z, tx, ty, tz, rx, ry, rz, ds float64) (x0, y0, z0 float6
 	return
 }
 
-var (
-	//go:embed ntv2
-	res embed.FS
-)
+//go:embed ntv2
+var res embed.FS
 
 func loadNTv2(name string, spheroid Spheroid, base CRS) CRS {
 	file, err := res.Open("ntv2/" + name)
@@ -338,11 +337,13 @@ func NTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 
 func toFloat32(b []byte) float32 {
 	i := binary.LittleEndian.Uint32(b)
+
 	return math.Float32frombits(i)
 }
 
 func toFloat(b []byte) float64 {
 	i := binary.LittleEndian.Uint64(b)
+
 	return math.Float64frombits(i)
 }
 
@@ -356,13 +357,13 @@ type ntv2 struct {
 	numOrec  int32
 	numSrec  int32
 	numFile  int32
+	gsCount  int32
 	sLat     float64
 	nLat     float64
 	eLong    float64
 	wLong    float64
 	latInc   float64
 	longInc  float64
-	gsCount  int32
 	values   [][4]float32
 }
 
@@ -417,28 +418,31 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 		sw = se
 		nw = ne
 	}
+
 	if row >= ppc-1 {
 		ne = se
 		nw = sw
 	}
+
 	if col <= 0 {
 		se = sw
 		ne = nw
 	}
+
 	if row <= 0 {
 		se = ne
 		sw = nw
 	}
 
-	se_index := min(max(int(se), 0), len(n.values)-1)
-	sw_index := min(max(int(sw), 0), len(n.values)-1)
-	ne_index := min(max(int(ne), 0), len(n.values)-1)
-	nw_index := min(max(int(nw), 0), len(n.values)-1)
+	seIndex := min(max(int(se), 0), len(n.values)-1)
+	swIndex := min(max(int(sw), 0), len(n.values)-1)
+	neIndex := min(max(int(ne), 0), len(n.values)-1)
+	nwIndex := min(max(int(nw), 0), len(n.values)-1)
 
-	sse := n.values[se_index]
-	ssw := n.values[sw_index]
-	sne := n.values[ne_index]
-	snw := n.values[nw_index]
+	sse := n.values[seIndex]
+	ssw := n.values[swIndex]
+	sne := n.values[neIndex]
+	snw := n.values[nwIndex]
 
 	dx := fcol - col
 	dy := frow - row

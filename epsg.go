@@ -1,3 +1,4 @@
+//nolint:gomnd,goerr113,forcetypeassert,gochecknoglobals,lll,funlen,gocognit,gocyclo,cyclop,ireturn,maintidx
 package wgs84
 
 import (
@@ -134,23 +135,24 @@ func EPSG(code int) CRS {
 	case 900913:
 		crs = EPSG(3857)
 	default:
-		if code > 3941 && code < 3951 {
+		switch {
+		case code > 3941 && code < 3951:
 			lat := float64(code - 3900)
 
 			crs = LambertConformalConic2SP(EPSG(4171), 3, lat, lat-0.75, lat+0.75, 1700000, 2200000+(lat-43)*1000000)
-		} else if code > 25827 && code < 25839 {
+		case code > 25827 && code < 25839:
 			zone := float64(code - 25800)
 
 			crs = TransverseMercator(EPSG(4258), zone*6-183, 0, 0.9996, 500000, 0)
-		} else if code > 31465 && code < 31470 {
+		case code > 31465 && code < 31470:
 			zone := float64(code - 31464)
 
 			crs = TransverseMercator(EPSG(4314), zone*3, 0, 1, zone*1000000+500000, 0)
-		} else if code > 32600 && code < 32661 {
+		case code > 32600 && code < 32661:
 			zone := float64(code - 32600)
 
 			crs = TransverseMercator(EPSG(4326), zone*6-183, 0, 0.9996, 500000, 0)
-		} else if code > 32700 && code < 32761 {
+		case code > 32700 && code < 32761:
 			zone := code - 32700
 
 			crs = TransverseMercator(EPSG(4326), float64(zone)*6-183, 0, 0.9996, 500000, 10000000)
