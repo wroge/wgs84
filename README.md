@@ -1,8 +1,12 @@
-# wgs84 v2 WIP
 
-```sh
-go get github.com/wroge/wgs84/v2
+<img align="right" src="./logo.png" width="200"/>
+
+## WGS84 - Coordinate Transformations
+
 ```
+github.com/wroge/wgs84/v2
+```  
+
 
 I am currently in the process of rewriting the package. Some things will change and some new features will be added. One of these features is the support of NTv2 grid transformations and other projections, such as Krovak. If you would like to help or have any comments, please report them in the issues.
 

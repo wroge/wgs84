@@ -25,10 +25,6 @@ func Transform(from, to CRS) Func {
 			break
 		}
 
-		if from == to {
-			return chainFunc(toBase...)
-		}
-
 		toBase = append(toBase, from.ToBase)
 
 		from = from.Base()
@@ -114,11 +110,11 @@ func (errorCRS) Spheroid() Spheroid {
 }
 
 func (errorCRS) ToBase(x0, y0, z0 float64) (float64, float64, float64) {
-	return x0, y0, z0
+	return math.NaN(), math.NaN(), math.NaN()
 }
 
 func (errorCRS) FromBase(x0, y0, z0 float64) (float64, float64, float64) {
-	return x0, y0, z0
+	return math.NaN(), math.NaN(), math.NaN()
 }
 
 type Spheroid struct {
@@ -411,8 +407,8 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 
 	ppr := math.Floor((n.wLong-n.eLong)/n.longInc+0.5) + 1
 	ppc := math.Floor((n.nLat-n.sLat)/n.latInc+0.5) + 1
-	se := row*ppr + col
 
+	se := row*ppr + col
 	sw := se + 1
 	ne := se + ppr
 	nw := ne + 1
@@ -434,10 +430,15 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 		sw = nw
 	}
 
-	sse := n.values[int(se)]
-	ssw := n.values[int(sw)]
-	sne := n.values[int(ne)]
-	snw := n.values[int(nw)]
+	se_index := min(max(int(se), 0), len(n.values)-1)
+	sw_index := min(max(int(sw), 0), len(n.values)-1)
+	ne_index := min(max(int(ne), 0), len(n.values)-1)
+	nw_index := min(max(int(nw), 0), len(n.values)-1)
+
+	sse := n.values[se_index]
+	ssw := n.values[sw_index]
+	sne := n.values[ne_index]
+	snw := n.values[nw_index]
 
 	dx := fcol - col
 	dy := frow - row
