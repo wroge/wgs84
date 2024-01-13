@@ -102,6 +102,8 @@ func EPSG(code int) CRS {
 		crs = AlbersConicEqualArea(EPSG(6318), -120, 0, 34, 40.5, 0, -4000000)
 	case 23090:
 		crs = TransverseMercator(EPSG(4230), 0, 0, 0.9996, 500000, 0)
+	case 26917:
+		crs = TransverseMercator(EPSG(4269), -81, 0, 0.9996, 500000, 0)
 	case 27700:
 		crs = TransverseMercator(EPSG(4277), -2, 49, 0.9996012717, 400000, -100000)
 	case 29901:
