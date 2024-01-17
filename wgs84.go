@@ -274,12 +274,12 @@ func loadNTv2(name string, spheroid Spheroid, base CRS) CRS {
 		return errorCRS{err: err}
 	}
 
-	crs := NTv2(file, spheroid, base)
+	crs := loadReaderNTv2(file, spheroid, base)
 
 	return crs
 }
 
-func NTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
+func loadReaderNTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 	if base == nil {
 		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
 	}
