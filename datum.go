@@ -147,6 +147,28 @@ func RGF93() Datum {
 	}
 }
 
+// NTF provides a Datum similar to the Nouvelle Triangulation Française (Paris).
+//
+// It's based on the Clarke 1880 (IGN) Spheroid and a 7-parameter-Helmert-Transformation
+// with the parameters: -168,-60,320,0,0,0,0.
+//
+// https://epsg.io/4807
+//
+// It is used in France (metropolitan).
+func NTF() Datum {
+	return Datum{
+		Spheroid: Clarke1880IGN{},
+		Transformation: helmert{
+			tx: -168,
+			ty: -60,
+			tz: 320,
+		},
+		Area: AreaFunc(func(lon, lat float64) bool {
+			return lon >= -5.14 && lon <= 9.87 && lat >= 41.15 && lat <= 51.56
+		}),
+	}
+}
+
 // NAD83 provides a Datum similar to the North American Datum 1983.
 //
 // It's based on the GRS80 Spheroid.
@@ -270,6 +292,20 @@ func (d Datum) LambertConformalConic2SP(lonf, latf, lat1, lat2, eastf, northf fl
 			latf:   latf,
 			lat1:   lat1,
 			lat2:   lat2,
+			eastf:  eastf,
+			northf: northf,
+		},
+	}
+}
+
+// LambertConformalConic1SP is a projected Coordinate Reference System.
+func (d Datum) LambertConformalConic1SP(lonf, latf, scale, eastf, northf float64) ProjectedReferenceSystem {
+	return ProjectedReferenceSystem{
+		Datum: d,
+		Projection: lambertConformalConic1SP{
+			lonf:   lonf,
+			latf:   latf,
+			scale:  scale,
 			eastf:  eastf,
 			northf: northf,
 		},

@@ -33,6 +33,7 @@ func EPSG() *Repository {
 		6356:   NAD83AlabamaWest(),
 		6414:   NAD83CaliforniaAlbers(),
 		3161:   NAD83OntarioMNRlambert(),
+		27572:  NTFParisFranceLambertZone2(),
 	}
 
 	for i := 1; i < 61; i++ {

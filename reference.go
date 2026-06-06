@@ -187,6 +187,18 @@ func NAD83OntarioMNRlambert() ProjectedReferenceSystem {
 	return NAD83().LambertConformalConic2SP(-85, 0, 44.5, 53.5, 930000, 6430000)
 }
 
+// NTFParisFranceLambertZone2 is a projected Coordinate Reference System similar to
+// https://epsg.io/27572
+func NTFParisFranceLambertZone2() ProjectedReferenceSystem {
+	// Paris prime meridian = 2.5969213 grad = 2.33722917° E of Greenwich
+	crs := NTF().LambertConformalConic1SP(2.33722917, 46.8, 0.99987742, 600000, 2200000)
+	crs.Area = AreaFunc(func(lon, lat float64) bool {
+		return lon >= -5.14 && lon <= 9.87 && lat >= 41.15 && lat <= 51.56
+	})
+
+	return crs
+}
+
 // GeocentricReferenceSystem represents a geocentric Coordinate Reference System.
 type GeocentricReferenceSystem struct {
 	Datum Datum

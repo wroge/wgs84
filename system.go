@@ -144,6 +144,60 @@ func (p lambertConformalConic2SP) _rho(φ float64, sph spheroid) float64 {
 	return sph.A() * p._F(sph) * math.Pow(p._t(φ, sph), p._n(sph))
 }
 
+type lambertConformalConic1SP struct {
+	lonf, latf, scale, eastf, northf float64
+}
+
+func (p lambertConformalConic1SP) ToLonLat(east, north float64, s Spheroid) (lon, lat float64) {
+	sph := spheroid{a: s.A(), fi: s.Fi()}
+
+	ρi := math.Sqrt(math.Pow(east-p.eastf, 2) + math.Pow(p._rho(radian(p.latf), sph)-(north-p.northf), 2))
+	if p._n(sph) < 0 {
+		ρi = -ρi
+	}
+
+	ti := math.Pow(ρi/(sph.A()*p._F(sph)), 1/p._n(sph))
+
+	φ := math.Pi/2 - 2*math.Atan(ti)
+	for i := 0; i < 5; i++ {
+		φ = math.Pi/2 - 2*math.Atan(ti*math.Pow((1-sph.e()*math.Sin(φ))/(1+sph.e()*math.Sin(φ)), sph.e()/2))
+	}
+
+	λ := math.Atan((east-p.eastf)/(p._rho(radian(p.latf), sph)-(north-p.northf)))/p._n(sph) + radian(p.lonf)
+
+	return degree(λ), degree(φ)
+}
+
+func (p lambertConformalConic1SP) FromLonLat(lon, lat float64, s Spheroid) (east, north float64) {
+	sph := spheroid{a: s.A(), fi: s.Fi()}
+	θ := p._n(sph) * (radian(lon) - radian(p.lonf))
+	east = p.eastf + p._rho(radian(lat), sph)*math.Sin(θ)
+	north = p.northf + p._rho(radian(p.latf), sph) - p._rho(radian(lat), sph)*math.Cos(θ)
+
+	return east, north
+}
+
+func (p lambertConformalConic1SP) _t(φ float64, sph spheroid) float64 {
+	return math.Tan(math.Pi/4-φ/2) /
+		math.Pow((1-sph.e()*math.Sin(φ))/(1+sph.e()*math.Sin(φ)), sph.e()/2)
+}
+
+func (p lambertConformalConic1SP) _m(φ float64, sph spheroid) float64 {
+	return math.Cos(φ) / math.Sqrt(1-sph.e2()*sin2(φ))
+}
+
+func (p lambertConformalConic1SP) _n(sph spheroid) float64 {
+	return math.Sin(radian(p.latf))
+}
+
+func (p lambertConformalConic1SP) _F(sph spheroid) float64 {
+	return p.scale * p._m(radian(p.latf), sph) / (p._n(sph) * math.Pow(p._t(radian(p.latf), sph), p._n(sph)))
+}
+
+func (p lambertConformalConic1SP) _rho(φ float64, sph spheroid) float64 {
+	return sph.A() * p._F(sph) * math.Pow(p._t(φ, sph), p._n(sph))
+}
+
 type albersEqualAreaConic struct {
 	lonf, latf, lat1, lat2, eastf, northf float64
 }

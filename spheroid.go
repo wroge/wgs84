@@ -122,3 +122,16 @@ func (Clarke1866) A() float64 {
 func (Clarke1866) Fi() float64 {
 	return 294.9786982139006
 }
+
+// Clarke1880IGN is a spheroid used by several geodetic datums.
+type Clarke1880IGN struct{}
+
+// A returns the major axis of the spheroid.
+func (Clarke1880IGN) A() float64 {
+	return 6378249.2
+}
+
+// Fi returns the inverse Flattening of the spheroid.
+func (Clarke1880IGN) Fi() float64 {
+	return 293.466021293627
+}

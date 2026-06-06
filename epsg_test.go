@@ -47,6 +47,27 @@ func Test(t *testing.T) {
 	}
 }
 
+func Test27572(t *testing.T) {
+	t.Parallel()
+
+	// Reference values from PROJ 9.8.1 (same engine as epsg.io)
+	cases := []struct{ lon, lat, wantE, wantN float64 }{
+		{2.3522, 48.8566, 601152.30, 2428695.90},  // Paris
+		{4.8357, 45.7640, 794390.28, 2087943.39},  // Lyon
+		{5.3698, 43.2965, 846499.55, 1815214.13},  // Marseille
+	}
+
+	transform := wgs84.EPSG().Transform(4326, 27572)
+
+	for _, tc := range cases {
+		e, n, _ := transform.Round(2)(tc.lon, tc.lat, 0)
+		if e != tc.wantE || n != tc.wantN {
+			t.Fatalf("lon=%v lat=%v: got (%v, %v), want (%v, %v)",
+				tc.lon, tc.lat, e, n, tc.wantE, tc.wantN)
+		}
+	}
+}
+
 func Test2(t *testing.T) {
 	t.Parallel()
 
