@@ -72,6 +72,15 @@ func main() {
 		},
 		{
 			From: 4326,
+			To:   27572,
+			Dec:  2,
+			MinX: -4.79,
+			MinY: 42.33,
+			MaxX: 8.23,
+			MaxY: 51.09,
+		},
+		{
+			From: 4326,
 			To:   2157,
 			Dec:  2,
 			MinX: -10.56,
