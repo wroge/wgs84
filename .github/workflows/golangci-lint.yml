@@ -2,11 +2,7 @@ name: golangci-lint
 
 on:
   push:
-    tags:
-      - v*
     branches:
-      - master
-      - main
       - v2
   pull_request:
 
@@ -31,5 +27,5 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v2.12.2
           args: --timeout=5m
