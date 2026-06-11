@@ -23,21 +23,13 @@ func Transform(from, to CRS) Func {
 		fromBase []Func
 	)
 
-	for {
-		if from == nil {
-			break
-		}
-
+	for from != nil {
 		toBase = append(toBase, from.ToBase)
 
 		from = from.Base()
 	}
 
-	for {
-		if to == nil {
-			break
-		}
-
+	for to != nil {
 		fromBase = append(fromBase, to.FromBase)
 
 		to = to.Base()
@@ -148,11 +140,11 @@ func NewSpheroid(a, fi float64) Spheroid {
 }
 
 func (s Spheroid) ToXYZ(lon, lat, h float64) (x, y, z float64) {
-	n := s.A / math.Sqrt(1-s.E2*math.Pow(math.Sin(radian(lat)), 2))
+	n := s.A / math.Sqrt(1-s.E2*intPow(math.Sin(radian(lat)), 2))
 
 	x = (n + h) * math.Cos(radian(lon)) * math.Cos(radian(lat))
 	y = (n + h) * math.Cos(radian(lat)) * math.Sin(radian(lon))
-	z = (n*math.Pow(s.A*(1-s.F), 2)/(s.A2) + h) * math.Sin(radian(lat))
+	z = (n*intPow(s.A*(1-s.F), 2)/(s.A2) + h) * math.Sin(radian(lat))
 
 	return x, y, z
 }
@@ -161,8 +153,8 @@ func (s Spheroid) FromXYZ(x, y, z float64) (lon, lat, h float64) {
 	sd := math.Sqrt(x*x + y*y)
 	T := math.Atan(z * s.A / (sd * s.B))
 	B := math.Atan((z + s.E2*(s.A2)/s.B*
-		math.Pow(math.Sin(T), 3)) / (sd - s.E2*s.A*math.Pow(math.Cos(T), 3)))
-	n := s.A / math.Sqrt(1-s.E2*math.Pow(math.Sin(B), 2))
+		intPow(math.Sin(T), 3)) / (sd - s.E2*s.A*intPow(math.Cos(T), 3)))
+	n := s.A / math.Sqrt(1-s.E2*intPow(math.Sin(B), 2))
 	h = sd/math.Cos(B) - n
 	lon = degree(math.Atan2(y, x))
 	lat = degree(B)
@@ -292,7 +284,7 @@ func loadReaderNTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 	for i := 1; ; i++ {
 		set := make([]byte, 16)
 
-		_, err := reader.Read(set)
+		_, err := io.ReadFull(reader, set)
 		if err != nil {
 			return errorCRS{err: err}
 		}
@@ -380,20 +372,24 @@ func (n ntv2) Spheroid() Spheroid {
 }
 
 func (n ntv2) ToBase(lon, lat, h float64) (lon2, lat2, h2 float64) {
-	slon, slat := n.Shift(-lon, lat)
+	slon, slat := n.Shift(lon, lat)
 
 	return lon + slon, lat + slat, h
 }
 
 func (n ntv2) FromBase(lon, lat, h float64) (lon2, lat2, h2 float64) {
-	qlat := lat
-	qlon := lon
+	qlon, qlat := lon, lat
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 10; i++ {
 		slon, slat := n.Shift(qlon, qlat)
+		newLon := lon - slon
+		newLat := lat - slat
 
-		qlon = lon - slon
-		qlat = lat - slat
+		if math.Abs(newLon-qlon) < 1e-12 && math.Abs(newLat-qlat) < 1e-12 {
+			break
+		}
+
+		qlon, qlat = newLon, newLat
 	}
 
 	return qlon, qlat, h
@@ -413,6 +409,9 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 	sw := se + 1
 	ne := se + ppr
 	nw := ne + 1
+
+	col = math.Max(0, math.Min(col, ppr-2))
+	row = math.Max(0, math.Min(row, ppc-2))
 
 	if col >= ppr-1 {
 		sw = se
@@ -482,7 +481,7 @@ func (p webMercator) ToBase(east, north, h float64) (lon, lat, h2 float64) {
 	phi := math.Pi/2 - 2*math.Atan(math.Pow(math.E, D))
 	lambda := east / s.A
 
-	return radian(lambda), radian(phi), h
+	return degree(lambda), degree(phi), h
 }
 
 func (p webMercator) FromBase(lon, lat, h float64) (east, north, h2 float64) {
@@ -507,9 +506,9 @@ func TransverseMercator(base CRS, lonf, latf, scale, eastf, northf float64) CRS 
 	phi0 := radian(latf)
 	lambda0 := radian(lonf)
 	n := s.F / (2 - s.F)
-	n2 := math.Pow(n, 2)
-	n3 := math.Pow(n, 3)
-	n4 := math.Pow(n, 4)
+	n2 := n * n
+	n3 := n * n * n
+	n4 := n * n * n * n
 	B := (s.A / (1 + n)) * (1 + n2/4 + n4/64)
 	h1 := n/2.0 - (2/3.0)*n2 + (5/16.0)*n3 + (41/180.0)*n4
 	h2 := (13/48.0)*n2 - (3/5.0)*n3 + (557/1440.0)*n4
@@ -604,9 +603,12 @@ func (p transverseMercator) ToBase(east, north, h float64) (lon, lat, h2 float64
 	Qii := Qi + (s.E * math.Atanh(s.E*math.Tanh(Qi)))
 
 	for i := 0; i < 15; i++ {
-		q := Qi + (s.E * math.Atanh(s.E*math.Tanh(Qii)))
+		newQ := Qi + (s.E * math.Atanh(s.E*math.Tanh(Qii)))
+		if math.Abs(newQ-Qii) < 1e-14 {
+			break
+		}
 
-		Qii = q
+		Qii = newQ
 	}
 
 	phi := math.Atan(math.Sinh(Qii))
@@ -701,7 +703,7 @@ func (p lambertConformalConic2SP) Spheroid() Spheroid {
 func (p lambertConformalConic2SP) ToBase(east, north, h float64) (lon, lat, h2 float64) {
 	s := p.base.Spheroid()
 
-	ri := math.Sqrt(math.Pow(east-p.eastf, 2) + math.Pow(p.rf-(north-p.northf), 2))
+	ri := math.Sqrt(intPow(east-p.eastf, 2) + intPow(p.rf-(north-p.northf), 2))
 	if p.n < 0 && ri > 0 {
 		ri = -ri
 	}
@@ -770,8 +772,8 @@ func AlbersConicEqualArea(base CRS, lonf, latf, sp1, sp2, eastf, northf float64)
 	m1 := math.Cos(phi1) / math.Sqrt(1-s.E2*sin2(phi1))
 	m2 := math.Cos(phi2) / math.Sqrt(1-s.E2*sin2(phi2))
 
-	n := (math.Pow(m1, 2) - math.Pow(m2, 2)) / (alpha2 - alpha1)
-	c := math.Pow(m1, 2) + (n * alpha1)
+	n := (m1*m1 - m2*m2) / (alpha2 - alpha1)
+	c := m1*m1 + (n * alpha1)
 	rf := (s.A * math.Sqrt(c-n*alphaf)) / n
 
 	return albersConicEqualArea{
@@ -804,8 +806,8 @@ func (p albersConicEqualArea) Spheroid() Spheroid {
 func (p albersConicEqualArea) ToBase(east, north, h float64) (lon, lat, h2 float64) {
 	s := p.base.Spheroid()
 
-	ri := math.Sqrt(math.Pow(east-p.eastf, 2) + math.Pow(p.rf-(north-p.northf), 2))
-	alphai := (p.c - (math.Pow(ri, 2) * math.Pow(p.n, 2) / s.A2)) / p.n
+	ri := math.Sqrt(intPow(east-p.eastf, 2) + intPow(p.rf-(north-p.northf), 2))
+	alphai := (p.c - (intPow(ri, 2) * intPow(p.n, 2) / s.A2)) / p.n
 	betai := math.Asin(alphai / (1 - ((1 - s.E2) / (2 * s.E) * math.Log((1-s.E)/(1+s.E)))))
 
 	var theta float64
@@ -889,14 +891,14 @@ func (p lambertAzimuthalEqualArea) Spheroid() Spheroid {
 func (p lambertAzimuthalEqualArea) ToBase(east, north, h float64) (lon, lat, h2 float64) {
 	s := p.base.Spheroid()
 
-	rho := math.Sqrt(math.Pow((east-p.eastf)/p.g, 2) + math.Pow(p.g*(north-p.northf), 2))
+	rho := math.Sqrt(intPow((east-p.eastf)/p.g, 2) + intPow(p.g*(north-p.northf), 2))
 	c := 2 * math.Asin(rho/(2*p.rq))
 	betai := math.Asin((math.Cos(c) * math.Sin(p.beta0)) + ((p.g * (north - p.northf) * math.Sin(c) * math.Cos(p.beta0)) / rho))
 
 	phi := betai + ((s.E2/3 + (31*s.E4)/180 + (517*s.E6)/5040) * math.Sin(2*betai)) +
 		((23*s.E4)/360+(251*s.E6)/3780)*math.Sin(4*betai) +
 		((761*s.E6)/45360)*math.Sin(6*betai)
-	lambda := p.lambda0 + math.Atan2((east-p.eastf)*math.Sin(c), (p.g*rho*math.Cos(p.beta0)*math.Cos(c)-math.Pow(p.g, 2)*(north-p.northf)*math.Sin(p.beta0)*math.Sin(c)))
+	lambda := p.lambda0 + math.Atan2((east-p.eastf)*math.Sin(c), (p.g*rho*math.Cos(p.beta0)*math.Cos(c)-intPow(p.g, 2)*(north-p.northf)*math.Sin(p.beta0)*math.Sin(c)))
 
 	return degree(lambda), degree(phi), h
 }
@@ -935,7 +937,7 @@ func Krovak(base CRS, lonf, latf, azimuth, sp, scale, eastf, northf float64) CRS
 	alphac := radian(azimuth)
 
 	A := s.A * math.Sqrt(1-s.E2) / (1 - s.E2*sin2(phic))
-	B := math.Sqrt(1 + (s.E2 * math.Pow(math.Cos(phic), 4) / (1 - s.E2)))
+	B := math.Sqrt(1 + (s.E2 * intPow(math.Cos(phic), 4) / (1 - s.E2)))
 	gamma0 := math.Asin(math.Sin(phic) / B)
 	t0 := math.Tan(math.Pi/4+gamma0/2) * math.Pow((1+s.E*math.Sin(phic))/(1-s.E*math.Sin(phic)), s.E*B/2) / math.Pow(math.Tan(math.Pi/4+phic/2), B)
 	n := math.Sin(phip)
@@ -993,7 +995,7 @@ func (p krovak) ToBase(east, north, h float64) (lon, lat, h2 float64) {
 
 	Xpi := (-north) - p.northf
 	Ypi := (-east) - p.eastf
-	ri := math.Sqrt(math.Pow(Xpi, 2) + math.Pow(Ypi, 2))
+	ri := math.Sqrt(intPow(Xpi, 2) + intPow(Ypi, 2))
 	thetai := math.Atan2(Ypi, Xpi)
 	di := thetai / math.Sin(p.phip)
 	ti := 2 * (math.Atan(math.Pow(p.r0/ri, 1/p.n)*math.Tan(math.Pi/4+p.phip/2)) - math.Pi/4)
@@ -1082,8 +1084,8 @@ func (p swiss) lv03ToWgs84(east float64, north float64, h float64) (float64, flo
 	northAux := (north - 200000) / 1000000
 
 	// Convert latitude (north, y) and longitude (east, x)
-	lat := (16.9023892 + (3.238272 * northAux)) - (0.270978 * math.Pow(eastAux, 2)) - (0.002528 * math.Pow(northAux, 2)) - (0.0447 * math.Pow(eastAux, 2) * northAux) - (0.0140 * math.Pow(northAux, 3))
-	lon := (2.6779094 + (4.728982 * eastAux) + (0.791484 * eastAux * northAux) + (0.1306 * eastAux * math.Pow(northAux, 2))) - (0.0436 * math.Pow(eastAux, 3))
+	lat := (16.9023892 + (3.238272 * northAux)) - (0.270978 * intPow(eastAux, 2)) - (0.002528 * intPow(northAux, 2)) - (0.0447 * intPow(eastAux, 2) * northAux) - (0.0140 * intPow(northAux, 3))
+	lon := (2.6779094 + (4.728982 * eastAux) + (0.791484 * eastAux * northAux) + (0.1306 * eastAux * intPow(northAux, 2))) - (0.0436 * intPow(eastAux, 3))
 
 	// Unit 10000" to 1 " and converts seconds to degrees (dec)
 	lat = (lat * 100) / 36
@@ -1104,10 +1106,10 @@ func (p swiss) wgs84ToLv03(lon float64, lat float64, h float64) (float64, float6
 	lonAux := (lon - 26782.5) / 10000
 
 	// Convert longitude (east, x)
-	x := (600072.37 + (211455.93 * lonAux)) - (10938.51 * lonAux * latAux) - (0.36 * lonAux * math.Pow(latAux, 2)) - (44.54 * math.Pow(lonAux, 3))
+	x := (600072.37 + (211455.93 * lonAux)) - (10938.51 * lonAux * latAux) - (0.36 * lonAux * intPow(latAux, 2)) - (44.54 * intPow(lonAux, 3))
 
 	// Convert latitude (north, y)
-	y := ((200147.07 + (308807.95 * latAux) + (3745.25 * math.Pow(lonAux, 2)) + (76.63 * math.Pow(latAux, 2))) - (194.56 * math.Pow(lonAux, 2) * latAux)) + (119.79 * math.Pow(latAux, 3))
+	y := ((200147.07 + (308807.95 * latAux) + (3745.25 * intPow(lonAux, 2)) + (76.63 * intPow(latAux, 2))) - (194.56 * intPow(lonAux, 2) * latAux)) + (119.79 * intPow(latAux, 3))
 
 	// Convert height
 	h = (h - 49.55) + (2.73 * lonAux) + (6.94 * latAux)
@@ -1116,7 +1118,7 @@ func (p swiss) wgs84ToLv03(lon float64, lat float64, h float64) (float64, float6
 }
 
 func sin2(r float64) float64 {
-	return math.Pow(math.Sin(r), 2)
+	return intPow(math.Sin(r), 2)
 }
 
 func degree(r float64) float64 {
@@ -1125,4 +1127,14 @@ func degree(r float64) float64 {
 
 func radian(g float64) float64 {
 	return g * math.Pi / 180
+}
+
+func intPow(val float64, times int) float64 {
+	result := 1.0
+
+	for range times {
+		result *= val
+	}
+
+	return result
 }

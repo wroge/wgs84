@@ -1,41 +1,67 @@
 package wgs84
 
 import (
+	"encoding/json"
+	"os"
 	"testing"
 )
 
+type Input struct {
+	Name  string  `json:"name"`
+	From  int     `json:"from"`
+	InA   float64 `json:"in_a"`
+	InB   float64 `json:"in_b"`
+	To    int     `json:"to"`
+	WantA float64 `json:"want_a"`
+	WantB float64 `json:"want_b"`
+	Dec   int     `json:"dec"`
+}
+
 func TestTransform(t *testing.T) {
-	tests := []struct {
-		name     string
-		fromEpsg int
-		inA      float64
-		inB      float64
-		inC      float64
-		toEpsg   int
-		wantA    float64
-		wantB    float64
-		wantC    float64
-	}{
-		{"Web Mercator: EPSG(4326) to EPSG(3857)", 4326, 10, 50, 0, 3857, 1.113194908e+06, 6.446275841e+06, 0},
-		{"OSGB: EPSG(4326) to EPSG(27700)", 4326, -2.25, 52.25, 0, 27700, 383029.296, 261341.615, 0},
+	file, err := os.Open("./generate/data.json")
+	if err != nil {
+		t.Fatal(err)
+
+		return
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fromEPSG := EPSG(tt.fromEpsg)
-			toEPSG := EPSG(tt.toEpsg)
 
-			transform := Transform(fromEPSG, toEPSG).Round(3)
+	//nolint:errcheck
+	defer file.Close()
 
-			gotA, gotB, gotC := transform(tt.inA, tt.inB, tt.inC)
+	var inputs []Input
 
-			if gotA != tt.wantA {
-				t.Errorf("Transform() A = %v, want %v", gotA, tt.wantA)
+	err = json.NewDecoder(file).Decode(&inputs)
+	if err != nil {
+		t.Fatal(err)
+
+		return
+	}
+
+	for _, in := range inputs {
+		t.Run(in.Name, func(t *testing.T) {
+			fromEPSG := EPSG(in.From)
+			toEPSG := EPSG(in.To)
+
+			transform := Transform(fromEPSG, toEPSG).Round(in.Dec)
+
+			gotA, gotB, gotC := transform(in.InA, in.InB, 0)
+
+			if gotA != in.WantA {
+				t.Errorf("Transform() A = %v, want %v", gotA, in.WantA)
 			}
-			if gotB != tt.wantB {
-				t.Errorf("Transform() B = %v, want %v", gotB, tt.wantB)
+			if gotB != in.WantB {
+				t.Errorf("Transform() B = %v, want %v", gotB, in.WantB)
 			}
-			if gotC != tt.wantC {
-				t.Errorf("Transform() C = %v, want %v", gotC, tt.wantC)
+
+			backtest := Transform(toEPSG, fromEPSG).Round(in.Dec)
+
+			inA, inB, _ := backtest(gotA, gotB, gotC)
+
+			if inA != in.InA {
+				t.Errorf("backtest() A = %v, want %v", inA, in.InA)
+			}
+			if inB != in.InB {
+				t.Errorf("backtest() B = %v, want %v", inB, in.InB)
 			}
 		})
 	}
