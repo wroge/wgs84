@@ -12,14 +12,13 @@ import (
 )
 
 type Input struct {
-	From    int
-	To      int
-	Command []string
-	Dec     int
-	MinX    float64
-	MaxX    float64
-	MinY    float64
-	MaxY    float64
+	From int
+	To   int
+	Dec  int
+	MinX float64
+	MaxX float64
+	MinY float64
+	MaxY float64
 }
 
 type Output struct {
@@ -38,16 +37,6 @@ func main() {
 		{
 			From: 4326,
 			To:   3857,
-			Command: []string{
-				"-d", "5",
-				"+proj=pipeline",
-				"+step",
-				"+proj=longlat",
-				"+datum=WGS84",
-				"+no_defs",
-				"+step",
-				"+proj=webmerc",
-			},
 			Dec:  5,
 			MinX: -180,
 			MinY: -85.06,
@@ -57,18 +46,6 @@ func main() {
 		{
 			From: 4326,
 			To:   4277,
-			Command: []string{
-				"-d", "3",
-				"+proj=pipeline",
-				"+step",
-				"+proj=longlat",
-				"+datum=WGS84",
-				"+no_defs",
-				"+step",
-				"+proj=hgridshift",
-				"+grids=OSTN15_NTv2_OSGBtoETRS.gsb",
-				"+inv",
-			},
 			Dec:  3,
 			MinX: -9.01,
 			MinY: 49.75,
@@ -78,27 +55,6 @@ func main() {
 		{
 			From: 4326,
 			To:   27700,
-			Command: []string{
-				"-d", "3",
-				"+proj=pipeline",
-				"+step",
-				"+proj=longlat",
-				"+datum=WGS84",
-				"+no_defs",
-				"+step",
-				"+inv",
-				"+proj=hgridshift",
-				"+grids=OSTN15_NTv2_OSGBtoETRS.gsb",
-				"+step",
-				"+proj=tmerc",
-				"+lat_0=49",
-				"+lon_0=-2",
-				"+k=0.9996012717",
-				"+x_0=400000",
-				"+y_0=-100000",
-				"+ellps=airy",
-				"+units=m",
-			},
 			Dec:  3,
 			MinX: -9.01,
 			MinY: 49.75,
@@ -113,7 +69,7 @@ func main() {
 		points := generateGrid(in.MinX, in.MaxX, in.MinY, in.MaxY, in.Dec)
 
 		for index, p := range points {
-			cmd := exec.Command("cct", in.Command...)
+			cmd := exec.Command("cs2cs", fmt.Sprintf("+init=epsg:%d", in.From), "+to", fmt.Sprintf("+init=epsg:%d", in.To), "-d", strconv.Itoa(in.Dec))
 
 			coords := fmt.Sprintf("%f %f 0 0", p[0], p[1])
 
