@@ -9,11 +9,11 @@ import (
 type Input struct {
 	Name  string  `json:"name"`
 	From  int     `json:"from"`
-	InA   float64 `json:"in_a"`
-	InB   float64 `json:"in_b"`
+	FromA float64 `json:"from_a"`
+	FromB float64 `json:"from_b"`
 	To    int     `json:"to"`
-	WantA float64 `json:"want_a"`
-	WantB float64 `json:"want_b"`
+	ToA   float64 `json:"to_a"`
+	ToB   float64 `json:"to_b"`
 	Dec   int     `json:"dec"`
 }
 
@@ -44,24 +44,24 @@ func TestTransform(t *testing.T) {
 
 			transform := Transform(fromEPSG, toEPSG).Round(in.Dec)
 
-			gotA, gotB, gotC := transform(in.InA, in.InB, 0)
+			gotA, gotB, gotC := transform(in.FromA, in.FromB, 0)
 
-			if gotA != in.WantA {
-				t.Errorf("Transform() A = %v, want %v", gotA, in.WantA)
+			if gotA != in.ToA {
+				t.Errorf("Transform() A = %v, want %v", gotA, in.ToA)
 			}
-			if gotB != in.WantB {
-				t.Errorf("Transform() B = %v, want %v", gotB, in.WantB)
+			if gotB != in.ToB {
+				t.Errorf("Transform() B = %v, want %v", gotB, in.ToB)
 			}
 
 			backtest := Transform(toEPSG, fromEPSG).Round(in.Dec)
 
 			inA, inB, _ := backtest(gotA, gotB, gotC)
 
-			if inA != in.InA {
-				t.Errorf("backtest() A = %v, want %v", inA, in.InA)
+			if inA != in.FromA {
+				t.Errorf("backtest() A = %v, want %v", inA, in.FromA)
 			}
-			if inB != in.InB {
-				t.Errorf("backtest() B = %v, want %v", inB, in.InB)
+			if inB != in.FromB {
+				t.Errorf("backtest() B = %v, want %v", inB, in.FromB)
 			}
 		})
 	}

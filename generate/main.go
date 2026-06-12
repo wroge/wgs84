@@ -24,11 +24,11 @@ type Input struct {
 type Output struct {
 	Name  string  `json:"name"`
 	From  int     `json:"from"`
-	InA   float64 `json:"in_a"`
-	InB   float64 `json:"in_b"`
+	FromA float64 `json:"from_a"`
+	FromB float64 `json:"from_b"`
 	To    int     `json:"to"`
-	WantA float64 `json:"want_a"`
-	WantB float64 `json:"want_b"`
+	ToA   float64 `json:"to_a"`
+	ToB   float64 `json:"to_b"`
 	Dec   int     `json:"dec"`
 }
 
@@ -36,8 +36,206 @@ func main() {
 	inputs := []Input{
 		{
 			From: 4326,
+			To:   27700,
+			Dec:  4,
+			MinX: -9.01,
+			MinY: 49.75,
+			MaxX: 2.01,
+			MaxY: 61.01,
+		},
+		{
+			From: 4326,
+			To:   2056,
+			Dec:  3,
+			MinX: 5.95,
+			MinY: 45.81,
+			MaxX: 10.5,
+			MaxY: 47.81,
+		},
+		{
+			From: 4326,
+			To:   21781,
+			Dec:  3,
+			MinX: 5.95,
+			MinY: 45.81,
+			MaxX: 10.5,
+			MaxY: 47.81,
+		},
+		{
+			From: 4326,
+			To:   2154,
+			Dec:  2,
+			MinX: -9.86,
+			MinY: 41.15,
+			MaxX: 10.38,
+			MaxY: 51.56,
+		},
+		{
+			From: 4326,
+			To:   2157,
+			Dec:  2,
+			MinX: -10.56,
+			MinY: 51.39,
+			MaxX: -5.34,
+			MaxY: 55.43,
+		},
+		{
+			From: 4326,
+			To:   2158,
+			Dec:  1,
+			MinX: -10.56,
+			MinY: 51.39,
+			MaxX: -5.34,
+			MaxY: 55.43,
+		},
+		{
+			From: 4326,
+			To:   3035,
+			Dec:  2,
+			MinX: -16.1,
+			MinY: 33.26,
+			MaxX: 38.01,
+			MaxY: 84.73,
+		},
+		{
+			From: 4326,
+			To:   3126,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3127,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3128,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3129,
+			Dec:  1,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3130,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3131,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3132,
+			Dec:  1,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3133,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3134,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3135,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3136,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3137,
+			Dec:  2,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		{
+			From: 4326,
+			To:   3138,
+			Dec:  1,
+			MinX: 19.08,
+			MinY: 58.84,
+			MaxX: 31.59,
+			MaxY: 70.09,
+		},
+		// {
+		// 	From: 4326,
+		// 	To:   3161,
+		// 	Dec:  0,
+		// 	MinX: -172.54,
+		// 	MinY: 23.81,
+		// 	MaxX: -47.74,
+		// 	MaxY: 86.46,
+		// },
+		{
+			From: 4326,
+			To:   3416,
+			Dec:  1,
+			MinX: -16.1,
+			MinY: 33.26,
+			MaxX: 38.01,
+			MaxY: 84.73,
+		},
+		{
+			From: 4326,
 			To:   3857,
-			Dec:  5,
+			Dec:  7,
 			MinX: -180,
 			MinY: -85.06,
 			MaxX: 180,
@@ -45,8 +243,80 @@ func main() {
 		},
 		{
 			From: 4326,
+			To:   4156,
+			Dec:  2,
+			MinX: 12.09,
+			MinY: 47.73,
+			MaxX: 22.56,
+			MaxY: 51.06,
+		},
+		{
+			From: 4326,
+			To:   4171,
+			Dec:  7,
+			MinX: -9.86,
+			MinY: 41.15,
+			MaxX: 10.38,
+			MaxY: 51.56,
+		},
+		{
+			From: 4326,
+			To:   4173,
+			Dec:  7,
+			MinX: -10.56,
+			MinY: 51.39,
+			MaxX: -5.34,
+			MaxY: 55.43,
+		},
+		{
+			From: 4326,
+			To:   4188,
+			Dec:  5,
+			MinX: -8.18,
+			MinY: 53.96,
+			MaxX: -5.34,
+			MaxY: 55.36,
+		},
+		{
+			From: 4326,
+			To:   4230,
+			Dec:  2,
+			MinX: -9.56,
+			MinY: 34.88,
+			MaxX: 31.59,
+			MaxY: 71.24,
+		},
+		{
+			From: 4326,
+			To:   4258,
+			Dec:  7,
+			MinX: -16.1,
+			MinY: 33.26,
+			MaxX: 38.0,
+			MaxY: 84.73,
+		},
+		// {
+		// 	From: 4326,
+		// 	To:   4267,
+		// 	Dec:  5,
+		// 	MinX: -141.01,
+		// 	MinY: 40.0,
+		// 	MaxX: -44.0,
+		// 	MaxY: 83.17,
+		// },
+		{
+			From: 4326,
+			To:   4269,
+			Dec:  5,
+			MinX: -172.54,
+			MinY: 23.81,
+			MaxX: -47.74,
+			MaxY: 86.46,
+		},
+		{
+			From: 4326,
 			To:   4277,
-			Dec:  3,
+			Dec:  6,
 			MinX: -9.01,
 			MinY: 49.75,
 			MaxX: 2.01,
@@ -54,13 +324,58 @@ func main() {
 		},
 		{
 			From: 4326,
-			To:   27700,
-			Dec:  3,
-			MinX: -9.01,
-			MinY: 49.75,
-			MaxX: 2.01,
-			MaxY: 61.01,
+			To:   4299,
+			Dec:  6,
+			MinX: -10.56,
+			MinY: 51.39,
+			MaxX: -5.34,
+			MaxY: 55.43,
 		},
+		{
+			From: 4326,
+			To:   4312,
+			Dec:  4,
+			MinX: 9.53,
+			MinY: 46.4,
+			MaxX: 17.17,
+			MaxY: 49.02,
+		},
+		{
+			From: 4326,
+			To:   4313,
+			Dec:  4,
+			MinX: 2.5,
+			MinY: 49.5,
+			MaxX: 6.4,
+			MaxY: 51.51,
+		},
+		{
+			From: 4326,
+			To:   4314,
+			Dec:  7,
+			MinX: 5.86,
+			MinY: 47.27,
+			MaxX: 15.04,
+			MaxY: 55.09,
+		},
+		{
+			From: 4326,
+			To:   4549,
+			Dec:  3,
+			MinX: 118.5,
+			MinY: 24.43,
+			MaxX: 121.5,
+			MaxY: 53.33,
+		},
+		// {
+		// 	From: 4326,
+		// 	To:   5514,
+		// 	Dec:  0,
+		// 	MinX: 12.09,
+		// 	MinY: 47.73,
+		// 	MaxX: 22.56,
+		// 	MaxY: 51.06,
+		// },
 	}
 
 	output := []Output{}
@@ -69,7 +384,7 @@ func main() {
 		points := generateGrid(in.MinX, in.MaxX, in.MinY, in.MaxY, in.Dec)
 
 		for index, p := range points {
-			cmd := exec.Command("cs2cs", fmt.Sprintf("+init=epsg:%d", in.From), "+to", fmt.Sprintf("+init=epsg:%d", in.To), "-d", strconv.Itoa(in.Dec))
+			cmd := exec.Command("cs2cs", fmt.Sprintf("+init=epsg:%d", in.From), "+to", fmt.Sprintf("+init=epsg:%d", in.To), "-d", strconv.Itoa(max(0, in.Dec)))
 
 			coords := fmt.Sprintf("%f %f 0 0", p[0], p[1])
 
@@ -99,11 +414,11 @@ func main() {
 			output = append(output, Output{
 				Name:  fmt.Sprintf("%d:%d (%d)", in.From, in.To, index+1),
 				From:  in.From,
-				InA:   p[0],
-				InB:   p[1],
+				FromA: p[0],
+				FromB: p[1],
 				To:    in.To,
-				WantA: wantA,
-				WantB: wantB,
+				ToA:   wantA,
+				ToB:   wantB,
 				Dec:   in.Dec,
 			})
 		}
@@ -128,8 +443,8 @@ func generateGrid(minX, maxX, minY, maxY float64, dec int) [][2]float64 {
 		return math.Round(v*factor) / factor
 	}
 
-	for j := 0; j < n; j++ {
-		for i := 0; i < n; i++ {
+	for j := range n {
+		for i := range n {
 			tx := (float64(i) + 0.5) * step
 			ty := (float64(j) + 0.5) * step
 

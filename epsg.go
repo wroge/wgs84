@@ -17,9 +17,13 @@ func EPSG(code int) CRS {
 
 	switch code {
 	case 2056:
-		crs = Swiss(true)
+		crs = HotineObliqueMercatorAzimuthCenter(
+			Geographic(Helmert(674.374, 15.056, 405.346, 0, 0, 0, 0), NewSpheroid(6377397.155, 299.1528128)),
+			7.43958333333333, 46.9524055555556, 90, 90, 1, 2600000, 1200000)
 	case 21781:
-		crs = Swiss(false)
+		crs = HotineObliqueMercatorAzimuthCenter(
+			Geographic(Helmert(674.374, 15.056, 405.346, 0, 0, 0, 0), NewSpheroid(6377397.155, 299.1528128)),
+			7.43958333333333, 46.9524055555556, 90, 90, 1, 600000, 200000)
 	case 2154:
 		crs = LambertConformalConic2SP(EPSG(4171), 3, 46.5, 49, 44, 700000, 6600000)
 	case 2157:
@@ -54,8 +58,8 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4258), 30, 0, 1, 500000, 0)
 	case 3138:
 		crs = TransverseMercator(EPSG(4258), 31, 0, 1, 500000, 0)
-	case 3161:
-		crs = LambertConformalConic2SP(EPSG(4269), -85, 0, 44.5, 53.5, 930000, 6430000)
+	// case 3161:
+	// 	crs = LambertConformalConic2SP(EPSG(4269), -85, 0, 44.5, 53.5, 930000, 6430000)
 	case 3416:
 		crs = LambertConformalConic2SP(EPSG(4258), 13.33333333333333, 47.5, 49, 46, 400000, 400000)
 	case 3857:
@@ -96,8 +100,8 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4490), 120, 0, 1, 500000, 0)
 	case 4978:
 		crs = base{}
-	case 5514:
-		crs = Krovak(EPSG(4156), 24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
+	// case 5514:
+	// 	crs = Krovak(EPSG(4156), 24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
 	case 6318:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
 	case 6355:
