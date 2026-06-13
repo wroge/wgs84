@@ -56,3 +56,10 @@ func main() {
 	// 383029.296 261341.615 0.000
 }
 ```
+
+### Update Test Data & Run Tests
+
+```sh
+// install proj
+go run generate/main.go > generate/data.json && go test -race ./...
+```
