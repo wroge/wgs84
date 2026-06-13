@@ -100,8 +100,8 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4490), 120, 0, 1, 500000, 0)
 	case 4978:
 		crs = base{}
-	// case 5514:
-	// 	crs = Krovak(EPSG(4156), 24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
+	case 5514:
+		crs = Krovak(EPSG(4156), 24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
 	case 6318:
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
 	case 6355:
