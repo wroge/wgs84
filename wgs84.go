@@ -677,11 +677,8 @@ func LambertConformalConic2SP(base CRS, lonf, latf, sp1, sp2, eastf, northf floa
 	f := m1 / (n * math.Pow(t1, n))
 	rf := s.A * f * math.Pow(tf, n)
 
-	return lambertConformalConic2SP{
+	return lambertConformalConic{
 		base:    base,
-		phif:    phif,
-		phi1:    phi1,
-		phi2:    phi2,
 		lambdaf: lambdaf,
 		n:       n,
 		f:       f,
@@ -691,22 +688,54 @@ func LambertConformalConic2SP(base CRS, lonf, latf, sp1, sp2, eastf, northf floa
 	}
 }
 
-type lambertConformalConic2SP struct {
-	base                                CRS
-	phif, phi1, phi2, lambdaf, n, f, rf float64
-	eastf                               float64
-	northf                              float64
+func LambertConformalConic1SP(base CRS, lonf, latf, scale, eastf, northf float64) CRS {
+	if base == nil {
+		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+	}
+
+	s := base.Spheroid()
+
+	phif := radian(latf)
+	lambdaf := radian(lonf)
+
+	tf := math.Tan(math.Pi/4-phif/2) / math.Pow((1-s.E*math.Sin(phif))/(1+s.E*math.Sin(phif)), s.E/2)
+	m1 := math.Cos(phif) / math.Sqrt(1-s.E2*sin2(phif))
+
+	n := math.Sin(phif)
+	f := scale * m1 / (n * math.Pow(tf, n))
+	rf := s.A * f * math.Pow(tf, n)
+
+	return lambertConformalConic{
+		base:    base,
+		lambdaf: lambdaf,
+		n:       n,
+		f:       f,
+		rf:      rf,
+		eastf:   eastf,
+		northf:  northf,
+	}
 }
 
-func (p lambertConformalConic2SP) Base() CRS {
+// lambertConformalConic implements the Lambert Conformal Conic projection.
+// The forward and inverse formulas are shared by the 1SP and 2SP variants,
+// which differ only in how the constants n, f and rf are derived from the
+// projection parameters (see the respective constructors).
+type lambertConformalConic struct {
+	base              CRS
+	lambdaf, n, f, rf float64
+	eastf             float64
+	northf            float64
+}
+
+func (p lambertConformalConic) Base() CRS {
 	return p.base
 }
 
-func (p lambertConformalConic2SP) Spheroid() Spheroid {
+func (p lambertConformalConic) Spheroid() Spheroid {
 	return p.base.Spheroid()
 }
 
-func (p lambertConformalConic2SP) ToBase(east, north, h float64) (lon, lat, h2 float64) {
+func (p lambertConformalConic) ToBase(east, north, h float64) (lon, lat, h2 float64) {
 	s := p.base.Spheroid()
 
 	ri := math.Hypot(east-p.eastf, p.rf-(north-p.northf))
@@ -732,7 +761,7 @@ func (p lambertConformalConic2SP) ToBase(east, north, h float64) (lon, lat, h2 f
 	return degree(lambda), degree(phi), h
 }
 
-func (p lambertConformalConic2SP) FromBase(lon, lat, h float64) (east, north, h2 float64) {
+func (p lambertConformalConic) FromBase(lon, lat, h float64) (east, north, h2 float64) {
 	s := p.base.Spheroid()
 
 	phi := radian(lat)

@@ -82,6 +82,8 @@ func EPSG(code int) CRS {
 		crs = Geographic(EPSG(4978), NewSpheroid(6378137, 298.257222101))
 	case 4277:
 		crs = loadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", NewSpheroid(6377563.396, 299.3249646), EPSG(4326))
+	case 4807:
+		crs = Geographic(Helmert(-168, -60, 320, 0, 0, 0, 0), NewSpheroid(6378249.2, 293.466021293627))
 	case 4299:
 		crs = Geographic(Helmert(482.5, -130.6, 564.6, -1.042, -0.214, -0.631, 8.15), NewSpheroid(6377340.189, 299.3249646))
 	case 4300:
@@ -114,6 +116,9 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4230), 0, 0, 0.9996, 500000, 0)
 	case 26917:
 		crs = TransverseMercator(EPSG(4269), -81, 0, 0.9996, 500000, 0)
+	case 27572:
+		// Paris prime meridian = 2.5969213 grad = 2.33722917° E of Greenwich
+		crs = LambertConformalConic1SP(EPSG(4807), 2.33722917, 46.8, 0.99987742, 600000, 2200000)
 	case 27700:
 		crs = TransverseMercator(EPSG(4277), -2, 49, 0.9996012717, 400000, -100000)
 	case 29901:
