@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"reflect"
 	"strings"
 )
 
@@ -18,43 +19,84 @@ type CRS interface {
 }
 
 func Transform(from, to CRS) Func {
+	comparable := reflect.ValueOf(from).Comparable() && reflect.ValueOf(to).Comparable()
+
+	if comparable && from == to {
+		return identityFunc
+	}
+
+	ancestors := make(map[CRS]int)
+
+	if comparable {
+		depth := 0
+		for c := from; c != nil; c = c.Base() {
+			ancestors[c] = depth
+			depth++
+		}
+	}
+
 	var (
 		toBase   []Func
 		fromBase []Func
+		lca      CRS
 	)
 
-	for from != nil {
-		toBase = append(toBase, from.ToBase)
-
-		from = from.Base()
-	}
-
-	for to != nil {
-		fromBase = append(fromBase, to.FromBase)
-
-		to = to.Base()
-	}
-
-	return chainFunc(chainFunc(toBase...), reverseChainFunc(fromBase...))
-}
-
-func chainFunc(f ...Func) Func {
-	return func(a, b, c float64) (float64, float64, float64) {
-		for _, each := range f {
-			if each != nil {
-				a, b, c = each(a, b, c)
+	for c := to; c != nil; c = c.Base() {
+		if comparable {
+			if _, ok := ancestors[c]; ok {
+				lca = c
+				break
 			}
 		}
 
-		return a, b, c
+		fromBase = append(fromBase, c.FromBase)
+	}
+
+	for c := from; c != lca; c = c.Base() {
+		toBase = append(toBase, c.ToBase)
+	}
+
+	steps := make([]Func, 0, len(toBase)+len(fromBase))
+	for _, f := range toBase {
+		if f != nil {
+			steps = append(steps, f)
+		}
+	}
+
+	for i := len(fromBase) - 1; i >= 0; i-- {
+		if fromBase[i] != nil {
+			steps = append(steps, fromBase[i])
+		}
+	}
+
+	switch len(steps) {
+	case 0:
+		return identityFunc
+	case 1:
+		return steps[0]
+	default:
+		return chainFunc(steps...)
 	}
 }
 
-func reverseChainFunc(f ...Func) Func {
+var defaultSpheroid = NewSpheroid(6378137, 298.257223563)
+
+func identityFunc(a, b, c float64) (float64, float64, float64) {
+	return a, b, c
+}
+
+func chainFunc(steps ...Func) Func {
+	switch len(steps) {
+	case 0:
+		return identityFunc
+	case 1:
+		return steps[0]
+	}
+
 	return func(a, b, c float64) (float64, float64, float64) {
-		for i := len(f) - 1; i >= 0; i-- {
-			if f[i] != nil {
-				a, b, c = f[i](a, b, c)
+		for _, step := range steps {
+			if step != nil {
+				a, b, c = step(a, b, c)
 			}
 		}
 
@@ -84,31 +126,31 @@ func round(val float64, dec int) float64 {
 	return val
 }
 
-type errorCRS struct {
-	err error
+type Error struct {
+	Cause error
 }
 
-func (e errorCRS) Unwrap() error {
-	return e.err
+func (e Error) Unwrap() error {
+	return e.Cause
 }
 
-func (e errorCRS) Error() string {
-	return e.err.Error()
+func (e Error) Error() string {
+	return e.Cause.Error()
 }
 
-func (errorCRS) Base() CRS {
+func (Error) Base() CRS {
 	return nil
 }
 
-func (errorCRS) Spheroid() Spheroid {
+func (Error) Spheroid() Spheroid {
 	return Spheroid{}
 }
 
-func (errorCRS) ToBase(_, _, _ float64) (float64, float64, float64) {
+func (Error) ToBase(_, _, _ float64) (float64, float64, float64) {
 	return math.NaN(), math.NaN(), math.NaN()
 }
 
-func (errorCRS) FromBase(_, _, _ float64) (float64, float64, float64) {
+func (Error) FromBase(_, _, _ float64) (float64, float64, float64) {
 	return math.NaN(), math.NaN(), math.NaN()
 }
 
@@ -263,7 +305,7 @@ var res embed.FS
 func loadNTv2(name string, spheroid Spheroid, base CRS) CRS {
 	file, err := res.Open("ntv2/" + name)
 	if err != nil {
-		return errorCRS{err: err}
+		return Error{Cause: err}
 	}
 
 	crs := loadReaderNTv2(file, spheroid, base)
@@ -273,10 +315,10 @@ func loadNTv2(name string, spheroid Spheroid, base CRS) CRS {
 
 func loadReaderNTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
-	data := ntv2{
+	data := &ntv2{
 		base:     base,
 		spheroid: spheroid,
 	}
@@ -286,7 +328,7 @@ func loadReaderNTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 
 		_, err := io.ReadFull(reader, set)
 		if err != nil {
-			return errorCRS{err: err}
+			return Error{Cause: err}
 		}
 
 		switch toString(set[:8]) {
@@ -454,7 +496,7 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 
 func WebMercator(base CRS) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	return webMercator{
@@ -498,7 +540,7 @@ func (p webMercator) FromBase(lon, lat, h float64) (east, north, h2 float64) {
 
 func TransverseMercator(base CRS, lonf, latf, scale, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -650,7 +692,7 @@ func (p transverseMercator) FromBase(lon, lat, h float64) (east, north, h2 float
 
 func LambertConformalConic2SP(base CRS, lonf, latf, sp1, sp2, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -690,7 +732,7 @@ func LambertConformalConic2SP(base CRS, lonf, latf, sp1, sp2, eastf, northf floa
 
 func LambertConformalConic1SP(base CRS, lonf, latf, scale, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -780,7 +822,7 @@ func (p lambertConformalConic) FromBase(lon, lat, h float64) (east, north, h2 fl
 
 func AlbersConicEqualArea(base CRS, lonf, latf, sp1, sp2, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -868,7 +910,7 @@ func (p albersConicEqualArea) FromBase(lon, lat, h float64) (east, north, h2 flo
 
 func LambertAzimuthalEqualArea(base CRS, lonf, latf, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -950,7 +992,7 @@ func (p lambertAzimuthalEqualArea) FromBase(lon, lat, h float64) (east, north, h
 
 func Krovak(base CRS, lonf, latf, azimuth, sp, scale, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -1063,7 +1105,7 @@ func HotineObliqueMercatorAzimuthCenter(
 	lonc, latc, azimuth, gammac, k0, eastf, northf float64,
 ) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
