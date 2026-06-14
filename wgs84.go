@@ -79,9 +79,10 @@ func Transform(from, to CRS) Func {
 	}
 }
 
+var defaultSpheroid = NewSpheroid(6378137, 298.257223563)
+
 func identityFunc(a, b, c float64) (float64, float64, float64) {
 	return a, b, c
-
 }
 
 func chainFunc(steps ...Func) Func {
@@ -314,7 +315,7 @@ func loadNTv2(name string, spheroid Spheroid, base CRS) CRS {
 
 func loadReaderNTv2(reader io.Reader, spheroid Spheroid, base CRS) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	data := &ntv2{
@@ -495,7 +496,7 @@ func (n ntv2) Shift(lon, lat float64) (float64, float64) {
 
 func WebMercator(base CRS) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	return webMercator{
@@ -539,7 +540,7 @@ func (p webMercator) FromBase(lon, lat, h float64) (east, north, h2 float64) {
 
 func TransverseMercator(base CRS, lonf, latf, scale, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -691,7 +692,7 @@ func (p transverseMercator) FromBase(lon, lat, h float64) (east, north, h2 float
 
 func LambertConformalConic2SP(base CRS, lonf, latf, sp1, sp2, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -731,7 +732,7 @@ func LambertConformalConic2SP(base CRS, lonf, latf, sp1, sp2, eastf, northf floa
 
 func LambertConformalConic1SP(base CRS, lonf, latf, scale, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -821,7 +822,7 @@ func (p lambertConformalConic) FromBase(lon, lat, h float64) (east, north, h2 fl
 
 func AlbersConicEqualArea(base CRS, lonf, latf, sp1, sp2, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -909,7 +910,7 @@ func (p albersConicEqualArea) FromBase(lon, lat, h float64) (east, north, h2 flo
 
 func LambertAzimuthalEqualArea(base CRS, lonf, latf, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -991,7 +992,7 @@ func (p lambertAzimuthalEqualArea) FromBase(lon, lat, h float64) (east, north, h
 
 func Krovak(base CRS, lonf, latf, azimuth, sp, scale, eastf, northf float64) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()
@@ -1104,7 +1105,7 @@ func HotineObliqueMercatorAzimuthCenter(
 	lonc, latc, azimuth, gammac, k0, eastf, northf float64,
 ) CRS {
 	if base == nil {
-		base = Geographic(nil, NewSpheroid(6378137, 298.257223563))
+		base = Geographic(nil, defaultSpheroid)
 	}
 
 	s := base.Spheroid()

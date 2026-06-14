@@ -67,9 +67,9 @@ func EPSG(code int) CRS {
 	case 4156:
 		crs = Geographic(Helmert(589, 76, 480, 0, 0, 0, 0), NewSpheroid(6377397.155, 299.1528128))
 	case 4171:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257222101))
+		crs = EPSG(4258)
 	case 4173:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257222101))
+		crs = EPSG(4258)
 	case 4188:
 		crs = Geographic(Helmert(482.5, -130.6, 564.6, -1.042, -0.214, -0.631, 8.15), NewSpheroid(6377563.396, 299.3249646))
 	case 4230:
@@ -79,7 +79,7 @@ func EPSG(code int) CRS {
 	// case 4267:
 	// 	crs = loadNTv2("NTv2_0.gsb", NewSpheroid(6378206.4, 294.978698213898), EPSG(4326))
 	case 4269:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257222101))
+		crs = EPSG(4258)
 	case 4277:
 		crs = loadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", NewSpheroid(6377563.396, 299.3249646), EPSG(4326))
 	case 4807:
@@ -97,7 +97,7 @@ func EPSG(code int) CRS {
 	case 4326:
 		crs = Geographic(nil, NewSpheroid(6378137, 298.257223563))
 	case 4490:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257222101))
+		crs = EPSG(4258)
 	case 4549:
 		crs = TransverseMercator(EPSG(4490), 120, 0, 1, 500000, 0)
 	case 4978:
@@ -105,7 +105,7 @@ func EPSG(code int) CRS {
 	case 5514:
 		crs = Krovak(EPSG(4156), 24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
 	case 6318:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257222101))
+		crs = EPSG(4258)
 	case 6355:
 		crs = TransverseMercator(EPSG(6318), -85.8333333333333, 30.5, 0.99996, 200000, 0)
 	case 6356:
