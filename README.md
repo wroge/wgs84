@@ -61,5 +61,7 @@ func main() {
 
 ```sh
 // install proj
+// add ntv2 data from this repository to proj
+export PROJ_DATA="${PROJ_DATA}:$(pwd)/ntv2"
 go run generate/main.go > generate/data.json && go test -race ./...
 ```
