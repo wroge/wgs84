@@ -127,6 +127,8 @@ func EPSG(code int) CRS {
 		crs = TransverseMercator(EPSG(4299), -8, 53.5, 1.000035, 200000, 250000)
 	case 29903:
 		crs = TransverseMercator(EPSG(4300), -8, 53.5, 1.000035, 200000, 250000)
+	case 31255:
+		crs = TransverseMercator(EPSG(4312), 13.33333333333333, 0, 1, 0, -5000000)
 	case 31257:
 		crs = TransverseMercator(EPSG(4312), 10.33333333333333, 0, 1, 150000, -5000000)
 	case 31258:
