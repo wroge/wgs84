@@ -16,7 +16,7 @@ import (
 	"os"
 
 	"github.com/wroge/wgs84/v2"
-	// Alternativ to wgs84.RegisterGridFS
+	// alternative to wgs84.RegisterGridFS
 	// _ "github.com/wroge/wgs84/grids/osgb36"
 )
 
@@ -25,7 +25,7 @@ func main() {
 
 	fmt.Println(EPSG4277)
 
-	conv := wgs84.EPSG[4326].TransformTo(EPSG4277)
+	conv := wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
 
 	east, north, h, err := conv(-2, 50.7, 0)
 	if err != nil {
@@ -33,7 +33,6 @@ func main() {
 	}
 
 	fmt.Println(east, north, h)
-	// 	-1.9986362310906312 50.69942427880695 -47.549131196923554
 
 	wgs84.RegisterGridFS("", os.DirFS("/opt/homebrew/opt/proj/share/proj"))
 
@@ -41,7 +40,7 @@ func main() {
 
 	fmt.Println(EPSG4277)
 
-	conv = wgs84.EPSG[4326].TransformTo(EPSG4277)
+	conv = wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
 
 	east, north, h, err = conv(-2, 50.7, 0)
 	if err != nil {
@@ -49,13 +48,12 @@ func main() {
 	}
 
 	fmt.Println(east, north, h)
-	// -1.998642581025955 50.699434040486324 -9.313225746154785e-10
 
 	EPSG4277 = wgs84.EPSG[4277].Filter(func(t wgs84.Transformation) bool { return t.Grid == "" }).Load(-2, 50.7)
 
 	fmt.Println(EPSG4277)
 
-	conv = wgs84.EPSG[4326].TransformTo(EPSG4277)
+	conv = wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
 
 	east, north, h, err = conv(-2, 50.7, 0)
 	if err != nil {
@@ -63,13 +61,12 @@ func main() {
 	}
 
 	fmt.Println(east, north, h)
-	// -1.9986362310906312 50.69942427880695 -47.549131196923554
 
 	EPSG4277 = wgs84.EPSG[4277].Filter(func(t wgs84.Transformation) bool { return t.Accuracy > 2 }).Load(-2, 50.7)
 
 	fmt.Println(EPSG4277)
 
-	conv = wgs84.EPSG[4326].TransformTo(EPSG4277)
+	conv = wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
 
 	east, north, h, err = conv(-2, 50.7, 0)
 	if err != nil {
@@ -77,8 +74,16 @@ func main() {
 	}
 
 	fmt.Println(east, north, h)
-	// -1.9986420967349676 50.69943498890854 -47.51741572842002
 }
+
+// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489
+// -1.998636231 50.699424279 -47.5
+// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +nadgrids=uk_os_OSTN15_NTv2_OSGBtoETRS.tif
+// -1.998642581 50.69943404 -0
+// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489
+// -1.998636231 50.699424279 -47.5
+// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=370.936,-108.938,435.682,0,0,0,0
+// -1.998642097 50.699434989 -47.5
 
 // echo "-2 50.7 0" | cs2cs -f "%.9f" \
 //   +proj=longlat +datum=WGS84 +to \
