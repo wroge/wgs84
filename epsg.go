@@ -1,190 +1,600 @@
-//nolint:gomnd,goerr113,forcetypeassert,gochecknoglobals,lll,funlen,gocognit,gocyclo,cyclop,ireturn,maintidx
 package wgs84
 
-import (
-	"fmt"
-	"sync"
-)
+var EPSG = map[int]CoordinateReferenceSystem{
+	4978: {
+		CoordinateSystem: Geocentric{},
+		Datum:            WGS84,
+	},
+	4326: {
+		CoordinateSystem: Geographic{},
+		Datum:            WGS84,
+	},
+	3857: {
+		CoordinateSystem: WebMercator{},
+		Datum: Datum{
+			Spheroid: WGS84.Spheroid,
+			Transformations: []Transformation{
+				{
+					BoundingBox: BoundingBox{-180.0, -85.06, 180.0, 85.06},
+				},
+			},
+		},
+	},
+	900913: {
+		CoordinateSystem: WebMercator{},
+		Datum: Datum{
+			Spheroid: WGS84.Spheroid,
+			Transformations: []Transformation{
+				{
+					BoundingBox: BoundingBox{-180.0, -85.06, 180.0, 85.06},
+				},
+			},
+		},
+	},
+	4267: {
+		CoordinateSystem: Geographic{},
+		Datum:            NAD27,
+	},
+	32024: {
+		CoordinateSystem: LambertConformalConic2SP{
+			Lonf:   -98,
+			Latf:   35,
+			Sp1:    35.5666666666667,
+			Sp2:    36.7666666666667,
+			Eastf:  2000000,
+			Northf: 0,
+		},
+		Datum: NAD27,
+	},
+	4314: {
+		CoordinateSystem: Geographic{},
+		Datum:            DHDN90,
+	},
+	4313: {
+		CoordinateSystem: Geographic{},
+		Datum:            BD72,
+	},
+	31370: {
+		CoordinateSystem: LambertConformalConic2SP{
+			Lonf:   4.36748666666667,
+			Latf:   90,
+			Sp1:    51.1666672333333,
+			Sp2:    49.8333339,
+			Eastf:  150000.013,
+			Northf: 5400088.438,
+		},
+		Datum: BD72,
+	},
+	4312: {
+		CoordinateSystem: Geographic{},
+		Datum:            MGI,
+	},
+	31255: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   13.33333333333333,
+			Scale:  1,
+			Eastf:  0,
+			Northf: -5000000,
+		},
+		Datum: MGI,
+	},
+	31257: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   10.33333333333333,
+			Scale:  1,
+			Eastf:  150000,
+			Northf: -5000000,
+		},
+		Datum: MGI,
+	},
+	31258: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   13.33333333333333,
+			Scale:  1,
+			Eastf:  450000,
+			Northf: -5000000,
+		},
+		Datum: MGI,
+	},
+	31259: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   16.33333333333333,
+			Scale:  1,
+			Eastf:  750000,
+			Northf: -5000000,
+		},
+		Datum: MGI,
+	},
+	31284: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   10.33333333333333,
+			Scale:  1,
+			Eastf:  150000,
+			Northf: 0,
+		},
+		Datum: MGI,
+	},
+	31285: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   13.33333333333333,
+			Scale:  1,
+			Eastf:  450000,
+			Northf: 0,
+		},
+		Datum: MGI,
+	},
+	31286: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   16.33333333333333,
+			Scale:  1,
+			Eastf:  750000,
+			Northf: 0,
+		},
+		Datum: MGI,
+	},
+	4277: {
+		CoordinateSystem: Geographic{},
+		Datum:            OSGB36,
+	},
+	27700: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   49,
+			Lonf:   -2,
+			Scale:  0.9996012717,
+			Eastf:  400000,
+			Northf: -100000,
+		},
+		Datum: OSGB36,
+	},
+	4156: {
+		CoordinateSystem: Geographic{},
+		Datum:            SJTSK,
+	},
+	5514: {
+		CoordinateSystem: Krovak{
+			Lonf:    24.8333333333333,
+			Latf:    49.5,
+			Azimuth: 30.2881397527778,
+			Sp:      78.5,
+			Scale:   0.9999,
+			Eastf:   0,
+			Northf:  0,
+		},
+		Datum: SJTSK,
+	},
+	4173: {
+		CoordinateSystem: Geographic{},
+		Datum:            IRENET95,
+	},
+	2157: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   53.5,
+			Lonf:   -8,
+			Scale:  0.99982,
+			Eastf:  600000,
+			Northf: 750000,
+		},
+		Datum: IRENET95,
+	},
+	2158: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   -9,
+			Scale:  0.9996,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: IRENET95,
+	},
+	4171: {
+		CoordinateSystem: Geographic{},
+		Datum:            RGF93,
+	},
+	2154: {
+		CoordinateSystem: LambertConformalConic2SP{
+			Lonf:   3,
+			Latf:   46.5,
+			Sp1:    49,
+			Sp2:    44,
+			Eastf:  700000,
+			Northf: 6600000,
+		},
+		Datum: RGF93,
+	},
+	4258: {
+		CoordinateSystem: Geographic{},
+		Datum:            ETRS89,
+	},
+	3035: {
+		CoordinateSystem: LambertAzimuthalEqualArea{
+			Lonf:   10,
+			Latf:   52,
+			Eastf:  4321000,
+			Northf: 3210000,
+		},
+		Datum: ETRS89,
+	},
+	3416: {
+		CoordinateSystem: LambertConformalConic2SP{
+			Lonf:   13.33333333333333,
+			Latf:   47.5,
+			Sp1:    49,
+			Sp2:    46,
+			Eastf:  400000,
+			Northf: 400000,
+		},
+		Datum: ETRS89,
+	},
+	102109: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   15,
+			Scale:  0.9999,
+			Eastf:  500000,
+			Northf: -5000000,
+		},
+		Datum: ETRS89,
+	},
+	102157: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   21,
+			Scale:  0.9999,
+			Eastf:  7500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	102173: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   19,
+			Scale:  0.9993,
+			Eastf:  500000,
+			Northf: -5300000,
+		},
+		Datum: ETRS89,
+	},
+	3126: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   19,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3127: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   20,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3128: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   21,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3129: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   22,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3130: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   23,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3131: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   24,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3132: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   25,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3133: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   26,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3134: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   27,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3135: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   28,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3136: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   29,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3137: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   30,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	3138: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   31,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ETRS89,
+	},
+	4230: {
+		CoordinateSystem: Geographic{},
+		Datum:            ED50,
+	},
+	23090: {
+		CoordinateSystem: TransverseMercator{
+			Lonf:   0,
+			Latf:   0,
+			Scale:  0.9996,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ED50,
+	},
+	4269: {
+		CoordinateSystem: Geographic{},
+		Datum:            NAD83,
+	},
+	3161: {
+		CoordinateSystem: LambertConformalConic2SP{
+			Lonf:   -85,
+			Latf:   0,
+			Sp1:    44.5,
+			Sp2:    53.5,
+			Eastf:  930000,
+			Northf: 6430000,
+		},
+		Datum: NAD83,
+	},
+	26917: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   0,
+			Lonf:   -81,
+			Scale:  0.9996,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: NAD83,
+	},
+	4188: {
+		CoordinateSystem: Geographic{},
+		Datum:            OSNI1952,
+	},
+	29901: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   53.5,
+			Lonf:   -8,
+			Scale:  1,
+			Eastf:  200000,
+			Northf: 250000,
+		},
+		Datum: OSNI1952,
+	},
+	4299: {
+		CoordinateSystem: Geographic{},
+		Datum:            TM65,
+	},
+	29902: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   53.5,
+			Lonf:   -8,
+			Scale:  1.000035,
+			Eastf:  200000,
+			Northf: 250000,
+		},
+		Datum: TM65,
+	},
+	4300: {
+		CoordinateSystem: Geographic{},
+		Datum:            TM75,
+	},
+	29903: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   53.5,
+			Lonf:   -8,
+			Scale:  1.000035,
+			Eastf:  200000,
+			Northf: 250000,
+		},
+		Datum: TM75,
+	},
+	4490: {
+		CoordinateSystem: Geographic{},
+		Datum:            ChinaGeodeticCoordinateSystem2000,
+	},
+	4549: {
+		CoordinateSystem: TransverseMercator{
+			Lonf:   120,
+			Latf:   0,
+			Scale:  1,
+			Eastf:  500000,
+			Northf: 0,
+		},
+		Datum: ChinaGeodeticCoordinateSystem2000,
+	},
+	4807: {
+		CoordinateSystem: Geographic{},
+		Datum:            NTF,
+	},
+	27572: {
+		CoordinateSystem: LambertConformalConic1SP{
+			Lonf:   2.33722917,
+			Latf:   46.8,
+			Scale:  0.99987742,
+			Eastf:  600000,
+			Northf: 2200000,
+		},
+	},
+	6414: {
+		CoordinateSystem: AlbersConicEqualArea{
+			Lonf:   -120,
+			Latf:   0,
+			Sp1:    34,
+			Sp2:    40.5,
+			Eastf:  0,
+			Northf: -4000000,
+		},
+		Datum: Datum{
+			Spheroid: GRS80,
+			Transformations: []Transformation{
+				{
+					Accuracy:    2,
+					BoundingBox: BoundingBox{167.65, 14.92, -63.88, 74.71},
+				},
+			},
+		},
+	},
+}
 
-var crsStore sync.Map
+func init() {
+	for code := 25828; code < 25839; code++ {
+		zone := float64(code - 25800)
 
-func EPSG(code int) CRS {
-	if crs, ok := crsStore.Load(code); ok {
-		return crs.(CRS)
-	}
-
-	var crs CRS
-
-	switch code {
-	case 2056:
-		crs = HotineObliqueMercatorAzimuthCenter(
-			Geographic(Helmert(674.374, 15.056, 405.346, 0, 0, 0, 0), NewSpheroid(6377397.155, 299.1528128)),
-			7.43958333333333, 46.9524055555556, 90, 90, 1, 2600000, 1200000)
-	case 21781:
-		crs = HotineObliqueMercatorAzimuthCenter(
-			Geographic(Helmert(674.374, 15.056, 405.346, 0, 0, 0, 0), NewSpheroid(6377397.155, 299.1528128)),
-			7.43958333333333, 46.9524055555556, 90, 90, 1, 600000, 200000)
-	case 2154:
-		crs = LambertConformalConic2SP(EPSG(4171), 3, 46.5, 49, 44, 700000, 6600000)
-	case 2157:
-		crs = TransverseMercator(EPSG(4173), -8, 53.5, 0.99982, 600000, 750000)
-	case 2158:
-		crs = TransverseMercator(EPSG(4173), -9, 0, 0.9996, 500000, 0)
-	case 3035:
-		crs = LambertAzimuthalEqualArea(EPSG(4258), 10, 52, 4321000, 3210000)
-	case 3126:
-		crs = TransverseMercator(EPSG(4258), 19, 0, 1, 500000, 0)
-	case 3127:
-		crs = TransverseMercator(EPSG(4258), 20, 0, 1, 500000, 0)
-	case 3128:
-		crs = TransverseMercator(EPSG(4258), 21, 0, 1, 500000, 0)
-	case 3129:
-		crs = TransverseMercator(EPSG(4258), 22, 0, 1, 500000, 0)
-	case 3130:
-		crs = TransverseMercator(EPSG(4258), 23, 0, 1, 500000, 0)
-	case 3131:
-		crs = TransverseMercator(EPSG(4258), 24, 0, 1, 500000, 0)
-	case 3132:
-		crs = TransverseMercator(EPSG(4258), 25, 0, 1, 500000, 0)
-	case 3133:
-		crs = TransverseMercator(EPSG(4258), 26, 0, 1, 500000, 0)
-	case 3134:
-		crs = TransverseMercator(EPSG(4258), 27, 0, 1, 500000, 0)
-	case 3135:
-		crs = TransverseMercator(EPSG(4258), 28, 0, 1, 500000, 0)
-	case 3136:
-		crs = TransverseMercator(EPSG(4258), 29, 0, 1, 500000, 0)
-	case 3137:
-		crs = TransverseMercator(EPSG(4258), 30, 0, 1, 500000, 0)
-	case 3138:
-		crs = TransverseMercator(EPSG(4258), 31, 0, 1, 500000, 0)
-	// case 3161:
-	// 	crs = LambertConformalConic2SP(EPSG(4269), -85, 0, 44.5, 53.5, 930000, 6430000)
-	case 3416:
-		crs = LambertConformalConic2SP(EPSG(4258), 13.33333333333333, 47.5, 49, 46, 400000, 400000)
-	case 3857:
-		crs = WebMercator(EPSG(4326))
-	case 4156:
-		crs = Geographic(Helmert(589, 76, 480, 0, 0, 0, 0), NewSpheroid(6377397.155, 299.1528128))
-	case 4171:
-		crs = EPSG(4258)
-	case 4173:
-		crs = EPSG(4258)
-	case 4188:
-		crs = Geographic(Helmert(482.5, -130.6, 564.6, -1.042, -0.214, -0.631, 8.15), NewSpheroid(6377563.396, 299.3249646))
-	case 4230:
-		crs = Geographic(Helmert(-87, -98, -121, 0, 0, 0, 0), NewSpheroid(6378388, 297))
-	case 4258:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257222101))
-	// case 4267:
-	// 	crs = loadNTv2("NTv2_0.gsb", NewSpheroid(6378206.4, 294.978698213898), EPSG(4326))
-	case 4269:
-		crs = EPSG(4258)
-	case 4277:
-		crs = loadNTv2("OSTN15_NTv2_OSGBtoETRS.gsb", NewSpheroid(6377563.396, 299.3249646), EPSG(4326))
-	case 4807:
-		crs = Geographic(Helmert(-168, -60, 320, 0, 0, 0, 0), NewSpheroid(6378249.2, 293.466021293627))
-	case 4299:
-		crs = Geographic(Helmert(482.5, -130.6, 564.6, -1.042, -0.214, -0.631, 8.15), NewSpheroid(6377340.189, 299.3249646))
-	case 4300:
-		crs = EPSG(4299)
-	case 4312:
-		crs = Geographic(Helmert(577.326, 90.129, 463.919, 5.137, 1.474, 5.297, 2.4232), NewSpheroid(6377397.155, 299.1528128))
-	case 4313:
-		crs = Geographic(Helmert(-106.8686, 52.2978, -103.7239, 0.3366, -0.457, 1.8422, -1.2747), NewSpheroid(6378388, 297))
-	case 4314:
-		crs = loadNTv2("BeTA2007.gsb", NewSpheroid(6377397.155, 299.1528128), EPSG(4326))
-	case 4326:
-		crs = Geographic(nil, NewSpheroid(6378137, 298.257223563))
-	case 4490:
-		crs = EPSG(4258)
-	case 4549:
-		crs = TransverseMercator(EPSG(4490), 120, 0, 1, 500000, 0)
-	case 4978:
-		crs = base{}
-	case 5514:
-		crs = Krovak(EPSG(4156), 24.8333333333333, 49.5, 30.2881397527778, 78.5, 0.9999, 0, 0)
-	case 6318:
-		crs = EPSG(4258)
-	case 6355:
-		crs = TransverseMercator(EPSG(6318), -85.8333333333333, 30.5, 0.99996, 200000, 0)
-	case 6356:
-		crs = TransverseMercator(EPSG(6318), -87.5, 30, 0.999933333, 600000, 0)
-	case 6414:
-		crs = AlbersConicEqualArea(EPSG(6318), -120, 0, 34, 40.5, 0, -4000000)
-	case 23090:
-		crs = TransverseMercator(EPSG(4230), 0, 0, 0.9996, 500000, 0)
-	case 26917:
-		crs = TransverseMercator(EPSG(4269), -81, 0, 0.9996, 500000, 0)
-	case 27572:
-		// Paris prime meridian = 2.5969213 grad = 2.33722917° E of Greenwich
-		crs = LambertConformalConic1SP(EPSG(4807), 2.33722917, 46.8, 0.99987742, 600000, 2200000)
-	case 27700:
-		crs = TransverseMercator(EPSG(4277), -2, 49, 0.9996012717, 400000, -100000)
-	case 29901:
-		crs = TransverseMercator(EPSG(4188), -8, 53.5, 1, 200000, 250000)
-	case 29902:
-		crs = TransverseMercator(EPSG(4299), -8, 53.5, 1.000035, 200000, 250000)
-	case 29903:
-		crs = TransverseMercator(EPSG(4300), -8, 53.5, 1.000035, 200000, 250000)
-	case 31255:
-		crs = TransverseMercator(EPSG(4312), 13.33333333333333, 0, 1, 0, -5000000)
-	case 31257:
-		crs = TransverseMercator(EPSG(4312), 10.33333333333333, 0, 1, 150000, -5000000)
-	case 31258:
-		crs = TransverseMercator(EPSG(4312), 13.33333333333333, 0, 1, 450000, -5000000)
-	case 31259:
-		crs = TransverseMercator(EPSG(4312), 16.33333333333333, 0, 1, 750000, -5000000)
-	case 31284:
-		crs = TransverseMercator(EPSG(4312), 10.33333333333333, 0, 1, 150000, 0)
-	case 31285:
-		crs = TransverseMercator(EPSG(4312), 13.33333333333333, 0, 1, 450000, 0)
-	case 31286:
-		crs = TransverseMercator(EPSG(4312), 16.33333333333333, 0, 1, 750000, 0)
-	case 31287:
-		crs = LambertConformalConic2SP(EPSG(4312), 13.33333333333333, 47.5, 49, 46, 400000, 400000)
-	case 31370:
-		crs = LambertConformalConic2SP(EPSG(4313), 4.36748666666667, 90, 51.1666672333333, 49.8333339, 150000.013, 5400088.438)
-	// case 32024:
-	// 	crs = LambertConformalConic2SP(EPSG(4267), -98, 35, 35.5666666666667, 36.7666666666667, 2000000, 0)
-	case 102109:
-		crs = TransverseMercator(EPSG(4258), 15, 0, 0.9999, 500000, -5000000)
-	case 102157:
-		crs = TransverseMercator(EPSG(4258), 21, 0, 0.9999, 7500000, 0)
-	case 102173:
-		crs = TransverseMercator(EPSG(4258), 19, 0, 0.9993, 500000, -5300000)
-	case 900913:
-		crs = EPSG(3857)
-	default:
-		switch {
-		case code > 3941 && code < 3951:
-			lat := float64(code - 3900)
-
-			crs = LambertConformalConic2SP(EPSG(4171), 3, lat, lat-0.75, lat+0.75, 1700000, 2200000+(lat-43)*1000000)
-		case code > 25827 && code < 25839:
-			zone := float64(code - 25800)
-
-			crs = TransverseMercator(EPSG(4258), zone*6-183, 0, 0.9996, 500000, 0)
-		case code > 31465 && code < 31470:
-			zone := float64(code - 31464)
-
-			crs = TransverseMercator(EPSG(4314), zone*3, 0, 1, zone*1000000+500000, 0)
-		case code > 32600 && code < 32661:
-			zone := float64(code - 32600)
-
-			crs = TransverseMercator(EPSG(4326), zone*6-183, 0, 0.9996, 500000, 0)
-		case code > 32700 && code < 32761:
-			zone := code - 32700
-
-			crs = TransverseMercator(EPSG(4326), float64(zone)*6-183, 0, 0.9996, 500000, 10000000)
+		EPSG[code] = CoordinateReferenceSystem{
+			CoordinateSystem: TransverseMercator{
+				Lonf:   zone*6 - 183,
+				Latf:   0,
+				Scale:  0.9996,
+				Eastf:  500000,
+				Northf: 0,
+			},
+			Datum: ETRS89,
 		}
 	}
 
-	if crs == nil {
-		return Error{Cause: fmt.Errorf("epsg code '%d' not found", code)}
+	for code := 31466; code < 31470; code++ {
+		zone := float64(code - 31464)
+
+		EPSG[code] = CoordinateReferenceSystem{
+			CoordinateSystem: TransverseMercator{
+				Lonf:   zone * 3,
+				Latf:   0,
+				Scale:  1,
+				Eastf:  zone*1000000 + 500000,
+				Northf: 0,
+			},
+			Datum: DHDN90,
+		}
 	}
 
-	crsStore.Store(code, crs)
+	for code := 32601; code < 32661; code++ {
+		zone := float64(code - 32600)
 
-	return crs
+		EPSG[code] = CoordinateReferenceSystem{
+			CoordinateSystem: TransverseMercator{
+				Lonf:   zone*6 - 183,
+				Latf:   0,
+				Scale:  0.9996,
+				Eastf:  500000,
+				Northf: 0,
+			},
+			Datum: WGS84,
+		}
+	}
+
+	for code := 32701; code < 32761; code++ {
+		zone := float64(code - 32700)
+
+		EPSG[code] = CoordinateReferenceSystem{
+			CoordinateSystem: TransverseMercator{
+				Lonf:   zone*6 - 183,
+				Latf:   0,
+				Scale:  0.9996,
+				Eastf:  500000,
+				Northf: 10000000,
+			},
+			Datum: WGS84,
+		}
+	}
+
+	for code := 3942; code < 3951; code++ {
+		lat := float64(code - 3900)
+
+		EPSG[code] = CoordinateReferenceSystem{
+			CoordinateSystem: LambertConformalConic2SP{
+				Lonf:   3,
+				Latf:   lat,
+				Sp1:    lat - 0.75,
+				Sp2:    lat + 0.75,
+				Eastf:  1700000,
+				Northf: 2200000 + (lat-43)*1000000,
+			},
+			Datum: RGF93,
+		}
+	}
 }

@@ -1,0 +1,266 @@
+package wgs84
+
+var NAD83 = Datum{
+	Spheroid: GRS80,
+	Transformations: []Transformation{
+		{
+			Accuracy:    4,
+			BoundingBox: BoundingBox{-172.54, 23.81, -47.74, 86.46},
+		},
+		{
+			Accuracy:    1.5,
+			Grid:        "ca_nrc_NA83SCRS.tif",
+			BoundingBox: BoundingBox{-79.85, 44.99, -57.1, 62.62},
+		},
+		{
+			Accuracy:    1.5,
+			Grid:        "ca_nrc_ABCSRSV4.tif",
+			BoundingBox: BoundingBox{-120.0, 48.99, -109.98, 60.0},
+		},
+		{
+			Accuracy:    1.5,
+			Grid:        "ca_nrc_SK83-98.tif",
+			BoundingBox: BoundingBox{-110.0, 49.0, -101.34, 60.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_ethpgn.tif",
+			BoundingBox: BoundingBox{-100.0, 25.83, -93.5, 34.58},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_wthpgn.tif",
+			BoundingBox: BoundingBox{-106.66, 28.04, -100.0, 36.5},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_FL.tif",
+			BoundingBox: BoundingBox{-87.63, 24.41, -79.97, 31.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_emhpgn.tif",
+			BoundingBox: BoundingBox{-113.0, 41.99, -104.04, 49.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_WO.tif",
+			BoundingBox: BoundingBox{-124.79, 41.98, -116.47, 49.05},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_mihpgn.tif",
+			BoundingBox: BoundingBox{-90.42, 41.69, -82.13, 48.32},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_cnhpgn.tif",
+			BoundingBox: BoundingBox{-124.45, 36.5, -116.54, 42.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_nvhpgn.tif",
+			BoundingBox: BoundingBox{-120.0, 34.99, -114.03, 42.0},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_mnhpgn.tif",
+			BoundingBox: BoundingBox{-97.22, 43.49, -89.49, 49.38},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_nmhpgn.tif",
+			BoundingBox: BoundingBox{-109.06, 31.33, -102.99, 37.0},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_azhpgn.tif",
+			BoundingBox: BoundingBox{-114.81, 31.33, -109.04, 37.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_nyhpgn.tif",
+			BoundingBox: BoundingBox{-79.77, 40.47, -71.8, 45.02},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_cshpgn.tif",
+			BoundingBox: BoundingBox{-121.98, 32.53, -114.12, 36.5},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_mohpgn.tif",
+			BoundingBox: BoundingBox{-95.77, 35.98, -89.1, 40.61},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_okhpgn.tif",
+			BoundingBox: BoundingBox{-103.0, 33.62, -94.42, 37.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_WI.tif",
+			BoundingBox: BoundingBox{-92.89, 42.48, -86.25, 47.31},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_cohpgn.tif",
+			BoundingBox: BoundingBox{-109.06, 36.98, -102.04, 41.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_wmhpgn.tif",
+			BoundingBox: BoundingBox{-117.24, 41.99, -113.0, 49.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_wyhpgn.tif",
+			BoundingBox: BoundingBox{-111.06, 40.99, -104.05, 45.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_nchpgn.tif",
+			BoundingBox: BoundingBox{-84.33, 33.83, -75.38, 36.59},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_nbhpgn.tif",
+			BoundingBox: BoundingBox{-104.06, 39.99, -95.3, 43.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_uthpgn.tif",
+			BoundingBox: BoundingBox{-114.05, 36.99, -109.04, 42.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_vahpgn.tif",
+			BoundingBox: BoundingBox{-83.68, 36.54, -75.31, 39.46},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_ilhpgn.tif",
+			BoundingBox: BoundingBox{-91.52, 36.97, -87.02, 42.51},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_sdhpgn.tif",
+			BoundingBox: BoundingBox{-104.07, 42.48, -96.43, 45.95},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_lahpgn.tif",
+			BoundingBox: BoundingBox{-94.05, 28.85, -88.75, 33.03},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_gahpgn.tif",
+			BoundingBox: BoundingBox{-85.61, 30.36, -80.77, 35.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_hihpgn.tif",
+			BoundingBox: BoundingBox{-160.3, 18.87, -154.74, 22.29},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_kshpgn.tif",
+			BoundingBox: BoundingBox{-102.06, 36.99, -94.58, 40.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_kyhpgn.tif",
+			BoundingBox: BoundingBox{-89.57, 36.49, -81.95, 39.15},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_ndhpgn.tif",
+			BoundingBox: BoundingBox{-104.07, 45.93, -96.55, 49.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_iahpgn.tif",
+			BoundingBox: BoundingBox{-96.65, 40.36, -90.14, 43.51},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_mshpgn.tif",
+			BoundingBox: BoundingBox{-91.65, 30.01, -88.09, 35.01},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_alhpgn.tif",
+			BoundingBox: BoundingBox{-88.48, 30.14, -84.89, 35.02},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_arhpgn.tif",
+			BoundingBox: BoundingBox{-94.62, 33.01, -89.64, 36.5},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_wvhpgn.tif",
+			BoundingBox: BoundingBox{-82.65, 37.2, -77.72, 40.64},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_mehpgn.tif",
+			BoundingBox: BoundingBox{-71.09, 43.04, -66.91, 47.47},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_ohhpgn.tif",
+			BoundingBox: BoundingBox{-84.83, 38.4, -80.51, 42.33},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_schpgn.tif",
+			BoundingBox: BoundingBox{-83.36, 32.05, -78.52, 35.21},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_pahpgn.tif",
+			BoundingBox: BoundingBox{-80.53, 39.71, -74.7, 42.53},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_nehpgn.tif",
+			BoundingBox: BoundingBox{-73.73, 40.98, -69.86, 45.31},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_TN.tif",
+			BoundingBox: BoundingBox{-90.31, 34.98, -81.65, 36.68},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_inhpgn.tif",
+			BoundingBox: BoundingBox{-88.1, 37.77, -84.78, 41.77},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_MD.tif",
+			BoundingBox: BoundingBox{-79.49, 37.97, -74.97, 39.85},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_njhpgn.tif",
+			BoundingBox: BoundingBox{-75.6, 38.87, -73.88, 41.36},
+		},
+		{
+			Accuracy:    2,
+			Grid:        "us_noaa_pvhpgn.tif",
+			BoundingBox: BoundingBox{-67.97, 17.62, -64.51, 18.57},
+		},
+		{
+			Accuracy:    4,
+			Helmert:     Helmert{1, 1, -1, 0, 0, 0, 0},
+			BoundingBox: BoundingBox{-163.74, 15.56, -151.27, 25.58},
+		},
+		{
+			Accuracy:    8,
+			Helmert:     Helmert{2, 0, 4, 0, 0, 0, 0},
+			BoundingBox: BoundingBox{172.42, 51.3, -164.84, 54.34},
+		},
+	},
+}

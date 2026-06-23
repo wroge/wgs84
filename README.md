@@ -1,67 +1,71 @@
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84@v2.0.0-alpha.13)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84/v2@v2.0.0-alpha.15)
 
 ## WGS84 - Coordinate Transformations
 
 ```
-go get github.com/wroge/wgs84/v2@v2.0.0-alpha.13
+go get github.com/wroge/wgs84/v2@v2.0.0-alpha.15
 ```  
 
-
-I am currently in the process of rewriting the package. Some things will change and some new features will be added. One of these features is the support of NTv2 grid transformations and other projections, such as Krovak. If you would like to help or have any comments, please report them in the issues.
-
-### Web Mercator
+### Example
 
 ```go
 package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/wroge/wgs84/v2"
+	// Alternativ to wgs84.RegisterGridFS
+	// _ "github.com/wroge/wgs84/v2/grid/osgb36"
 )
 
 func main() {
-	transform := wgs84.Transform(wgs84.EPSG(4326), wgs84.EPSG(3857)).Round(3)
+	conv := wgs84.EPSG[4326].TransformTo(wgs84.EPSG[4277])
 
-	east, north, _ := transform(10, 50, 0)
-
-	fmt.Println(east, north)
-	// 1.113194908e+06 6.446275841e+06
-
-	// echo 10 50 | cs2cs +init=epsg:4326 +to +init=epsg:3857 -d 3
-	// 1113194.908     6446275.841
-}
-```
-
-### OSGB
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/wroge/wgs84/v2"
-)
-
-func main() {
-	transform := wgs84.Transform(wgs84.EPSG(4326), wgs84.EPSG(27700)).Round(3)
-
-	east, north, h := transform(-2.25, 52.25, 0)
+	east, north, h, err := conv(-2, 50.7, 0)
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println(east, north, h)
-	// 383029.296 261341.615 0
+	// 	-1.9986362310906312 50.69942427880695 -47.549131196923554
 
-	// echo -2.25 52.25 | cs2cs +init=epsg:4326 +to +init=epsg:27700 -d 3
-	// 383029.296 261341.615 0.000
+    // For mac: brew install proj
+	wgs84.RegisterGridFS("", os.DirFS("/opt/homebrew/opt/proj/share/proj"))
+
+	conv = wgs84.EPSG[4326].TransformTo(wgs84.EPSG[4277])
+
+	east, north, h, err = conv(-2, 50.7, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(east, north, h)
+	// -1.998642581025955 50.699434040486324 -9.313225746154785e-10
+
+	conv = wgs84.EPSG[4326].TransformTo(wgs84.EPSG[4277].Filter(func(t wgs84.Transformation) bool { return t.Grid == "" }))
+
+	east, north, h, err = conv(-2, 50.7, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(east, north, h)
+	// -1.9986362310906312 50.69942427880695 -47.549131196923554
+
+	conv = wgs84.EPSG[4326].TransformTo(wgs84.EPSG[4277].Filter(func(t wgs84.Transformation) bool { return t.Accuracy > 2 }))
+
+	east, north, h, err = conv(-2, 50.7, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(east, north, h)
+	// -1.9986420967349676 50.69943498890854 -47.51741572842002
 }
+
+// echo -2 50.7 0 | /opt/homebrew/bin/cct -d 6 +proj=pipeline +step +proj=unitconvert +xy_in=deg +xy_out=rad +step +inv +proj=hgridshift +grids=uk_os_OSTN15_Grid_OSGBtoETRS.tif +step +proj=unitconvert +xy_in=rad +xy_out=deg
+//      -1.998643       50.699434      0.000000           inf
 ```
 
-### Update Test Data & Run Tests
-
-```sh
-// install proj
-// add ntv2 data from this repository to proj
-export PROJ_DATA="${PROJ_DATA}:$(pwd)/ntv2"
-go run generate/main.go > generate/data.json && go test -race ./...
-```
