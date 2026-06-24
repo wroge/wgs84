@@ -1,22 +1,29 @@
 package wgs84
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
-var _ CoordinateSystem = HotineObliqueMercatorAzimuthCenter{}
-
-type HotineObliqueMercatorAzimuthCenter struct {
-	Lonf, Latf, Azimuth, GridAngle, Scale, Eastf, Northf float64
+type SwissObliqueMercator struct {
+	Lonf, Latf, Scale, Eastf, Northf float64
 }
 
-func (h HotineObliqueMercatorAzimuthCenter) FromGeographic(lon float64, lat float64, height float64, s Spheroid) (east, north, height2 float64) {
+func (som SwissObliqueMercator) String() string {
+	return fmt.Sprintf("+proj=somerc +lat_0=%s +lon_0=%s +k_0=%s +x_0=%s +y_0=%s",
+		projFloat(som.Latf), projFloat(som.Lonf), projFloat(som.Scale), projFloat(som.Eastf), projFloat(som.Northf),
+	)
+}
+
+func (som SwissObliqueMercator) FromGeographic(lon float64, lat float64, height float64, s Spheroid) (east, north, height2 float64) {
 	a := s.A
 	e := s.E()
 	e2 := s.E2()
 
-	phiC := radian(h.Latf)
-	lambdaC := radian(h.Lonf)
-	alphaC := radian(h.Azimuth)
-	gammaC := radian(h.GridAngle)
+	phiC := radian(som.Latf)
+	lambdaC := radian(som.Lonf)
+	alphaC := radian(90)
+	gammaC := radian(90)
 
 	sinφ := math.Sin(phiC)
 	cosφ := math.Cos(phiC)
@@ -25,7 +32,7 @@ func (h HotineObliqueMercatorAzimuthCenter) FromGeographic(lon float64, lat floa
 
 	B := math.Sqrt(1 + (e2*math.Pow(cosφ, 4))/(1-e2))
 
-	A := a * h.Scale * math.Sqrt(1-e2) * B /
+	A := a * som.Scale * math.Sqrt(1-e2) * B /
 		(1 - e2*sinφ*sinφ)
 
 	t0 := math.Tan(math.Pi/4-phiC/2) /
@@ -84,21 +91,21 @@ func (h HotineObliqueMercatorAzimuthCenter) FromGeographic(lon float64, lat floa
 
 	u := u0 - math.Abs(uc)*sLat*sign(lambda-lon0)
 
-	E := v*math.Cos(gammaC) + u*math.Sin(gammaC) + h.Eastf
-	N := u*math.Cos(gammaC) - v*math.Sin(gammaC) + h.Northf
+	E := v*math.Cos(gammaC) + u*math.Sin(gammaC) + som.Eastf
+	N := u*math.Cos(gammaC) - v*math.Sin(gammaC) + som.Northf
 
 	return E, N, height
 }
 
-func (h HotineObliqueMercatorAzimuthCenter) ToGeographic(east, north, height float64, s Spheroid) (lon float64, lat float64, height2 float64) {
+func (som SwissObliqueMercator) ToGeographic(east, north, height float64, s Spheroid) (lon float64, lat float64, height2 float64) {
 	a := s.A
 	e := s.E()
 	e2 := s.E2()
 
-	phiC := radian(h.Latf)
-	lambdaC := radian(h.Lonf)
-	alphaC := radian(h.Azimuth)
-	gammaC := radian(h.GridAngle)
+	phiC := radian(som.Latf)
+	lambdaC := radian(som.Lonf)
+	alphaC := radian(90)
+	gammaC := radian(90)
 
 	sinφ := math.Sin(phiC)
 	cosφ := math.Cos(phiC)
@@ -107,7 +114,7 @@ func (h HotineObliqueMercatorAzimuthCenter) ToGeographic(east, north, height flo
 
 	B := math.Sqrt(1 + (e2*math.Pow(cosφ, 4))/(1-e2))
 
-	A := a * h.Scale * math.Sqrt(1-e2) * B /
+	A := a * som.Scale * math.Sqrt(1-e2) * B /
 		(1 - e2*sinφ*sinφ)
 
 	t0 := math.Tan(math.Pi/4-phiC/2) /
@@ -143,11 +150,11 @@ func (h HotineObliqueMercatorAzimuthCenter) ToGeographic(east, north, height flo
 		uc = (A / B) * math.Atan2(sqrtTerm, math.Cos(alphaC)) * sLat
 	}
 
-	v := (east-h.Eastf)*math.Cos(gammaC) -
-		(north-h.Northf)*math.Sin(gammaC)
+	v := (east-som.Eastf)*math.Cos(gammaC) -
+		(north-som.Northf)*math.Sin(gammaC)
 
-	u := (north-h.Northf)*math.Cos(gammaC) +
-		(east-h.Eastf)*math.Sin(gammaC)
+	u := (north-som.Northf)*math.Cos(gammaC) +
+		(east-som.Eastf)*math.Sin(gammaC)
 
 	u += math.Abs(uc) * sLat
 

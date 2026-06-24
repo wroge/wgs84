@@ -10,8 +10,8 @@ type Krovak struct {
 }
 
 func (k Krovak) String() string {
-	return fmt.Sprintf("+proj=krovak +lat_0=%g +lon_0=%g +alpha=%g +k=%g +x_0=%g +y_0=%g",
-		k.Latf, k.Lonf, k.Alpha, k.Scale, k.Eastf, k.Northf,
+	return fmt.Sprintf("+proj=krovak +lat_0=%s +lon_0=%s +alpha=%s +k=%s +x_0=%s +y_0=%s",
+		projFloat(k.Latf), projFloat(k.Lonf), projFloat(k.Alpha), projFloat(k.Scale), projFloat(k.Eastf), projFloat(k.Northf),
 	)
 }
 

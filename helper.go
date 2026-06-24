@@ -2,6 +2,7 @@ package wgs84
 
 import (
 	"math"
+	"strconv"
 )
 
 func degree(r float64) float64 {
@@ -20,6 +21,10 @@ func intPow(val float64, times int) float64 {
 	}
 
 	return result
+}
+
+func projFloat(v float64) string {
+	return strconv.FormatFloat(v, 'f', -1, 64)
 }
 
 func sin2(r float64) float64 {

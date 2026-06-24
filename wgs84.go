@@ -3,6 +3,7 @@ package wgs84
 import (
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -171,7 +172,8 @@ type Helmert struct {
 }
 
 func (h Helmert) String() string {
-	return fmt.Sprintf("+towgs84=%g,%g,%g,%g,%g,%g,%g", h.Tx, h.Ty, h.Tz, h.Rx, h.Ry, h.Rz, h.Ds)
+	return fmt.Sprintf("+towgs84=%s,%s,%s,%s,%s,%s,%s",
+		projFloat(h.Tx), projFloat(h.Ty), projFloat(h.Tz), projFloat(h.Rx), projFloat(h.Ry), projFloat(h.Rz), projFloat(h.Ds))
 }
 
 func (h Helmert) ToWGS84(x, y, z float64) (x0, y0, z0 float64) {
@@ -200,7 +202,11 @@ type Spheroid struct {
 }
 
 func (s Spheroid) String() string {
-	return fmt.Sprintf("+a=%g +rf=%g", s.A, s.Fi)
+	if s.Fi == 0 {
+		return fmt.Sprintf("+a=%s +b=%s", projFloat(s.A), projFloat(s.A))
+	}
+
+	return fmt.Sprintf("+a=%s +rf=%s", projFloat(s.A), projFloat(s.Fi))
 }
 
 func (s Spheroid) F() float64 {
@@ -297,6 +303,335 @@ type CoordinateSystem interface {
 	FromGeographic(lon, lat, h float64, s Spheroid) (a, b, c float64)
 }
 
+func ParseProj(proj string) (CoordinateReferenceSystem, error) {
+	datum, err := parseDatum(proj)
+	if err != nil {
+		return CoordinateReferenceSystem{}, err
+	}
+
+	cs, err := parseCoordinateSystem(proj)
+	if err != nil {
+		return CoordinateReferenceSystem{}, err
+	}
+
+	return CoordinateReferenceSystem{
+		Datum:            datum,
+		CoordinateSystem: cs,
+	}, nil
+}
+
+func parseDatum(proj string) (Datum, error) {
+	var (
+		S   Spheroid
+		B   float64
+		H   Helmert
+		G   string
+		err error
+	)
+
+	for pair := range strings.FieldsSeq(proj) {
+		key, val, ok := strings.Cut(pair, "=")
+		if !ok {
+			continue
+		}
+
+		switch key {
+		case "+ellps":
+			switch val {
+			case "GRS80":
+				S = GRS80
+			case "bessel":
+				S = Bessel1841
+			case "intl":
+				S = International1924
+			case "airy":
+				S = Airy1830
+			case "clrk66":
+				S = Clarke1866
+			case "clrk80ign":
+				S = Clarke1880
+			}
+		case "+datum":
+			switch val {
+			case "WGS84":
+				return WGS84, nil
+			}
+		case "+b":
+			B, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return Datum{}, err
+			}
+		case "+a":
+			S.A, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return Datum{}, err
+			}
+		case "+rf":
+			S.Fi, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return Datum{}, err
+			}
+		case "+nadgrids":
+			G = val
+		case "+towgs84":
+			parts := strings.Split(val, ",")
+
+			if len(parts) > 7 {
+				return Datum{}, fmt.Errorf("invalid number of values in +towgs84: %d", len(parts))
+			}
+
+			for i, part := range parts {
+				switch i {
+				case 0:
+					H.Tx, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				case 1:
+					H.Ty, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				case 2:
+					H.Tz, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				case 3:
+					H.Rx, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				case 4:
+					H.Ry, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				case 5:
+					H.Rz, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				case 6:
+					H.Ds, err = strconv.ParseFloat(part, 64)
+					if err != nil {
+						return Datum{}, err
+					}
+				}
+			}
+		}
+	}
+
+	if B != 0 && S.Fi == 0 && B != S.A {
+		S.Fi = S.A / (S.A - B)
+	}
+
+	if G != "" && G != "@null" {
+		return Datum{
+			Spheroid: S,
+			Transformations: []Transformation{
+				{
+					Grid: G,
+				},
+			},
+		}, nil
+	}
+
+	return Datum{
+		Spheroid: S,
+		Transformations: []Transformation{
+			{
+				Helmert: H,
+			},
+		},
+	}, nil
+}
+
+func parseCoordinateSystem(proj string) (CoordinateSystem, error) {
+	var (
+		toCS                             func() CoordinateSystem
+		Lonf, Latf, Scale, Eastf, Northf float64
+		Sp1, Sp2                         float64
+		Alpha                            float64
+		Zone                             int64
+		PrimeMeridian                    float64
+		South                            = false
+		err                              error
+	)
+
+	for pair := range strings.FieldsSeq(proj) {
+		key, val, _ := strings.Cut(pair, "=")
+
+		switch key {
+		case "+south":
+			South = true
+		case "+zone":
+			Zone, err = strconv.ParseInt(val, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+pm":
+			switch val {
+			case "paris":
+				PrimeMeridian = 2.33722917
+			}
+		case "+lat_0":
+			Latf, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+lon_0":
+			Lonf, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+k_0", "+k":
+			Scale, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+x_0":
+			Eastf, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+y_0":
+			Northf, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+lat_1":
+			Sp1, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+lat_2":
+			Sp2, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+alpha":
+			Alpha, err = strconv.ParseFloat(val, 64)
+			if err != nil {
+				return nil, err
+			}
+		case "+proj":
+			switch val {
+			case "geocent":
+				toCS = func() CoordinateSystem {
+					return Geocentric{}
+				}
+			case "longlat":
+				toCS = func() CoordinateSystem {
+					return Geographic{}
+				}
+			case "merc":
+				toCS = func() CoordinateSystem {
+					return WebMercator{}
+				}
+			case "utm":
+				toCS = func() CoordinateSystem {
+					if South {
+						Northf = 10000000
+					}
+
+					return TransverseMercator{
+						Lonf:   float64(Zone)*6 - 183,
+						Latf:   Latf,
+						Scale:  0.9996,
+						Eastf:  500000,
+						Northf: Northf,
+					}
+				}
+			case "tmerc":
+				toCS = func() CoordinateSystem {
+					return TransverseMercator{
+						Lonf:   Lonf,
+						Latf:   Latf,
+						Scale:  Scale,
+						Eastf:  Eastf,
+						Northf: Northf,
+					}
+				}
+			case "aea":
+				toCS = func() CoordinateSystem {
+					return AlbersConicEqualArea{
+						Lonf:   Lonf,
+						Latf:   Latf,
+						Sp1:    Sp1,
+						Sp2:    Sp2,
+						Eastf:  Eastf,
+						Northf: Northf,
+					}
+				}
+			case "somerc":
+				toCS = func() CoordinateSystem {
+					return SwissObliqueMercator{
+						Lonf:   Lonf,
+						Latf:   Latf,
+						Scale:  Scale,
+						Eastf:  Eastf,
+						Northf: Northf,
+					}
+				}
+			case "krovak":
+				toCS = func() CoordinateSystem {
+					return Krovak{
+						Lonf:   Lonf,
+						Latf:   Latf,
+						Alpha:  Alpha,
+						Scale:  Scale,
+						Eastf:  Eastf,
+						Northf: Northf,
+					}
+				}
+			case "laea":
+				toCS = func() CoordinateSystem {
+					return LambertAzimuthalEqualArea{
+						Lonf:   Lonf,
+						Latf:   Latf,
+						Eastf:  Eastf,
+						Northf: Northf,
+					}
+				}
+			case "lcc":
+				toCS = func() CoordinateSystem {
+					if Sp2 != 0 {
+						return LambertConformalConic2SP{
+							Lonf:   Lonf,
+							Latf:   Latf,
+							Sp1:    Sp1,
+							Sp2:    Sp2,
+							Eastf:  Eastf,
+							Northf: Northf,
+						}
+					}
+
+					return LambertConformalConic1SP{
+						Lonf:   Lonf,
+						Latf:   Latf,
+						Scale:  Scale,
+						Eastf:  Eastf,
+						Northf: Northf,
+					}
+				}
+			default:
+				return nil, fmt.Errorf("proj '%s' is not implemented", val)
+			}
+		}
+	}
+
+	if Lonf == 0 && PrimeMeridian != 0 {
+		Lonf = PrimeMeridian
+	}
+
+	if toCS == nil {
+		return nil, fmt.Errorf("proj '%s' is not implemented", proj)
+	}
+
+	return toCS(), nil
+}
+
 type CoordinateReferenceSystem struct {
 	CoordinateSystem CoordinateSystem
 	Datum            Datum
@@ -378,6 +713,10 @@ func (t Transformation) FromWGS84(x0, y0, z0 float64, s Spheroid) (lon, lat, h f
 
 		lon, lat, h = WGS84.Spheroid.FromXYZ(x0, y0, z0)
 
+		if (t.BoundingBox != BoundingBox{}) && !t.BoundingBox.Contains(lon, lat) {
+			return 0, 0, 0, fmt.Errorf("coordinate is not within bbox")
+		}
+
 		lon, lat = grid.FromWGS84(lon, lat)
 
 		return lon, lat, h, nil
@@ -399,6 +738,10 @@ func (t Transformation) ToWGS84(lon, lat, h float64, s Spheroid) (x0, y0, z0 flo
 
 		lon, lat = grid.ToWGS84(lon, lat)
 
+		if (t.BoundingBox != BoundingBox{}) && !t.BoundingBox.Contains(lon, lat) {
+			return 0, 0, 0, fmt.Errorf("coordinate is not within bbox")
+		}
+
 		x0, y0, z0 = WGS84.Spheroid.ToXYZ(lon, lat, h)
 
 		return x0, y0, z0, nil
@@ -418,21 +761,10 @@ type Datum struct {
 
 func (d Datum) String() string {
 	if len(d.Transformations) == 0 {
-		return "no transformations"
+		return "+invalid_datum"
 	}
 
-	var b strings.Builder
-
-	b.WriteString(d.Spheroid.String())
-
-	for _, t := range d.Transformations {
-		str := t.String()
-		if len(str) > 0 {
-			b.WriteString(" " + str)
-		}
-	}
-
-	return b.String()
+	return fmt.Sprintf("%s %s", d.Spheroid, d.Transformations[0])
 }
 
 func (d Datum) Filter(where func(t Transformation) bool) Datum {
@@ -475,13 +807,7 @@ func (d Datum) Load(lon, lat float64) Datum {
 }
 
 func (d Datum) FromWGS84(x0, y0, z0 float64) (lon, lat, h float64, err error) {
-	wlon, wlat, _ := WGS84.Spheroid.FromXYZ(x0, y0, z0)
-
 	for _, t := range d.Transformations {
-		if !t.BoundingBox.Contains(wlon, wlat) {
-			continue
-		}
-
 		lon, lat, h, err = t.FromWGS84(x0, y0, z0, d.Spheroid)
 		if err != nil {
 			continue
@@ -497,12 +823,6 @@ func (d Datum) ToWGS84(lon, lat, h float64) (x0, y0, z0 float64, err error) {
 	for _, t := range d.Transformations {
 		x0, y0, z0, err = t.ToWGS84(lon, lat, h, d.Spheroid)
 		if err != nil {
-			continue
-		}
-
-		wlon, wlat, _ := WGS84.Spheroid.FromXYZ(x0, y0, z0)
-
-		if !t.BoundingBox.Contains(wlon, wlat) {
 			continue
 		}
 

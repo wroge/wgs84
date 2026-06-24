@@ -10,8 +10,8 @@ type LambertAzimuthalEqualArea struct {
 }
 
 func (l LambertAzimuthalEqualArea) String() string {
-	return fmt.Sprintf("+proj=laea +lat_0=%g +lon_0=%g +x_0=%g +y_0=%g",
-		l.Latf, l.Lonf, l.Eastf, l.Northf,
+	return fmt.Sprintf("+proj=laea +lat_0=%s +lon_0=%s +x_0=%s +y_0=%s",
+		projFloat(l.Latf), projFloat(l.Lonf), projFloat(l.Eastf), projFloat(l.Northf),
 	)
 }
 

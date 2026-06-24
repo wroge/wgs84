@@ -1,14 +1,12 @@
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84/v2@v2.0.0-alpha.16)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/wroge/wgs84/v2@v2.0.0-alpha.17)
 
 ## WGS84 - Coordinate Transformations
 
 ```
-go get github.com/wroge/wgs84/v2@v2.0.0-alpha.16
+go get github.com/wroge/wgs84/v2@v2.0.0-alpha.17
 ```  
 
 ### Example
-
-[playground](https://go.dev/play/p/LNdEXub4cAK)
 
 ```go
 package main
@@ -16,71 +14,51 @@ package main
 import (
 	"fmt"
 
-	_ "github.com/wroge/wgs84/grids/osgb36"
+	_ "github.com/wroge/wgs84/grids/dhdn90" // import osgb36 grid
+	_ "github.com/wroge/wgs84/grids/osgb36" // import dhdn90 grid
 	"github.com/wroge/wgs84/v2"
 )
 
 func main() {
-	EPSG4277 := wgs84.EPSG[4277].Load(-2, 50.7)
+	// 1. convert wgs84 longitude/latitude to webmercator
+	convert := wgs84.EPSG[4326].ConvertTo(wgs84.WebMercator{}).Round(3, 3, 0)
 
-	fmt.Println(EPSG4277)
+	east, north, h, err := convert(10, 50, 0)
 
-	conv := wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
+	fmt.Println(east, north, h, err)
+	// 1.113194908e+06 6.446275841e+06 0 <nil>
 
-	east, north, h, err := conv(-2, 50.7, 0)
-	if err != nil {
-		panic(err)
-	}
+	// 2. transform wgs84 longitude/latitude to british national grid using imported osgb36
+	fmt.Println(wgs84.EPSG[27700])
+	// +proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +a=6377563.396 +rf=299.3249646 +nadgrids=uk_os_OSTN15_NTv2_OSGBtoETRS.tif
 
-	fmt.Println(east, north, h)
+	transform := wgs84.EPSG[4326].TransformTo(wgs84.EPSG[27700]).Round(3, 3, 0)
 
-	EPSG4277 = wgs84.EPSG[4277].Filter(func(t wgs84.Transformation) bool { return t.Grid == "" }).Load(-2, 50.7)
+	east, north, h, err = transform(-5, 55, 0)
 
-	fmt.Println(EPSG4277)
+	fmt.Println(east, north, h, err)
+	// 208215.245 571385.903 -0 <nil>
 
-	conv = wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
+	// 3. parse proj4 format and import dhdn90 grid
 
-	east, north, h, err = conv(-2, 50.7, 0)
-	if err != nil {
-		panic(err)
-	}
+	crs, err := wgs84.ParseProj("+proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +ellps=bessel +nadgrids=de_adv_BETA2007.tif +units=m +no_defs +type=crs")
 
-	fmt.Println(east, north, h)
+	fmt.Println(crs, err)
+	// +proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +a=6377397.155 +rf=299.1528128 +nadgrids=de_adv_BETA2007.tif <nil>
 
-	EPSG4277 = wgs84.EPSG[4277].Filter(func(t wgs84.Transformation) bool { return t.Accuracy > 2 }).Load(-2, 50.7)
+	transform = wgs84.EPSG[4326].TransformTo(crs).Round(3, 3, 0)
 
-	fmt.Println(EPSG4277)
+	east, north, h, err = transform(10, 50, 0)
 
-	conv = wgs84.EPSG[4326].TransformTo(EPSG4277).Round(9, 9, 1)
+	fmt.Println(east, north, h, err)
+	// 3.5717699e+06 5.540887024e+06 -0 <nil>
 
-	east, north, h, err = conv(-2, 50.7, 0)
-	if err != nil {
-		panic(err)
-	}
+	// Is the same as
+	fmt.Println(wgs84.EPSG[31467])
+	// +proj=tmerc +lat_0=0 +lon_0=9 +k=1 +x_0=3500000 +y_0=0 +a=6377397.155 +rf=299.1528128 +nadgrids=de_adv_BETA2007.tif
 
-	fmt.Println(east, north, h)
+	fmt.Println(wgs84.EPSG[4326].TransformTo(wgs84.EPSG[31467]).Round(3, 3, 0)(10, 50, 0))
+	// 3.5717699e+06 5.540887024e+06 -0 <nil>
 }
-
-// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +nadgrids=uk_os_OSTN15_NTv2_OSGBtoETRS.tif
-// -1.998642581 50.69943404 -0
-// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489
-// -1.998636231 50.699424279 -47.5
-// +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=370.936,-108.938,435.682,0,0,0,0
-// -1.998642097 50.699434989 -47.5
-
-// echo "-2 50.7 0" | cs2cs -f "%.9f" \
-//   +proj=longlat +datum=WGS84 +to \
-//   +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +nadgrids=uk_os_OSTN15_NTv2_OSGBtoETRS.tif
-// -1.998642581    50.699434040 0.000000000
-
-// echo "-2 50.7 0" | cs2cs -f "%.9f" \
-//   +proj=longlat +datum=WGS84 +to \
-//   +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489
-// -1.998636179    50.699424268 0.000000000
-
-// echo "-2 50.7 0" | cs2cs -f "%.9f" \
-//   +proj=longlat +datum=WGS84 +to \
-//   +proj=longlat +a=6.377563396e+06 +rf=299.3249646 +towgs84=370.936,-108.938,435.682,0,0,0,0
-// -1.998642097    50.699434989 0.000000000
 ```
 

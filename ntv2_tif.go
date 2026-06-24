@@ -196,6 +196,29 @@ func (p *tifParser) u32(off int) uint32 {
 	return p.order.Uint32(p.data[off:])
 }
 
+func (p *tifParser) ifdValueSize(typ uint16) int {
+	switch typ {
+	case 3, 8: // SHORT, SBYTE
+		return 2
+	case 4, 9, 11: // LONG, SLONG, FLOAT
+		return 4
+	default:
+		return 0
+	}
+}
+
+func (p *tifParser) ifdInline(e ifdEntry) bool {
+	sz := p.ifdValueSize(e.typ)
+	return sz > 0 && int(e.count)*sz <= 4
+}
+
+func (p *tifParser) ifdInlineU16(e ifdEntry, i int) uint16 {
+	var b [4]byte
+	p.order.PutUint32(b[:], e.val)
+
+	return p.order.Uint16(b[i*2 : i*2+2])
+}
+
 func (p *tifParser) tagLong(tags map[uint16]ifdEntry, tag uint16) uint32 {
 	e, ok := tags[tag]
 	if !ok {
@@ -206,9 +229,15 @@ func (p *tifParser) tagLong(tags map[uint16]ifdEntry, tag uint16) uint32 {
 		if e.count == 1 {
 			return uint32(uint16(e.val))
 		}
+		if p.ifdInline(e) {
+			return uint32(p.ifdInlineU16(e, 0))
+		}
 		return uint32(p.u16(int(e.val)))
 	case 4: // LONG
 		if e.count == 1 {
+			return e.val
+		}
+		if p.ifdInline(e) {
 			return e.val
 		}
 		return p.u32(int(e.val))
@@ -538,6 +567,7 @@ func (p *tifParser) tagLongArray(tags map[uint16]ifdEntry, tag uint16) []uint32 
 	if !ok {
 		return nil
 	}
+
 	if e.count == 1 {
 		switch e.typ {
 		case 3:
@@ -545,6 +575,22 @@ func (p *tifParser) tagLongArray(tags map[uint16]ifdEntry, tag uint16) []uint32 
 		case 4:
 			return []uint32{e.val}
 		}
+	}
+
+	if p.ifdInline(e) {
+		out := make([]uint32, e.count)
+		for i := range e.count {
+			switch e.typ {
+			case 3:
+				out[i] = uint32(p.ifdInlineU16(e, int(i)))
+			case 4:
+				out[i] = e.val
+			default:
+				return nil
+			}
+		}
+
+		return out
 	}
 	off := int(e.val)
 	out := make([]uint32, e.count)

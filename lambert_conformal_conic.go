@@ -10,8 +10,8 @@ type LambertConformalConic2SP struct {
 }
 
 func (l LambertConformalConic2SP) String() string {
-	return fmt.Sprintf("+proj=lcc +lat_0=%g +lon_0=%g +lat_1=%g +lat_2=%g +x_0=%g +y_0=%g",
-		l.Latf, l.Lonf, l.Sp1, l.Sp2, l.Eastf, l.Northf,
+	return fmt.Sprintf("+proj=lcc +lat_0=%s +lon_0=%s +lat_1=%s +lat_2=%s +x_0=%s +y_0=%s",
+		projFloat(l.Latf), projFloat(l.Lonf), projFloat(l.Sp1), projFloat(l.Sp2), projFloat(l.Eastf), projFloat(l.Northf),
 	)
 }
 
@@ -103,8 +103,8 @@ type LambertConformalConic1SP struct {
 }
 
 func (l LambertConformalConic1SP) String() string {
-	return fmt.Sprintf("+proj=lcc +lat_0=%g +lon_0=%g +k_0=%g +x_0=%g +y_0=%g",
-		l.Latf, l.Lonf, l.Scale, l.Eastf, l.Northf,
+	return fmt.Sprintf("+proj=lcc +lat_0=%s +lon_0=%s +k_0=%s +x_0=%s +y_0=%s",
+		projFloat(l.Latf), projFloat(l.Lonf), projFloat(l.Scale), projFloat(l.Eastf), projFloat(l.Northf),
 	)
 }
 

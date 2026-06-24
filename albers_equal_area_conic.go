@@ -10,8 +10,8 @@ type AlbersConicEqualArea struct {
 }
 
 func (a AlbersConicEqualArea) String() string {
-	return fmt.Sprintf("+proj=aea +lat_0=%g +lon_0=%g +lat_1=%g +lat_2=%g +x_0=%g +y_0=%g",
-		a.Latf, a.Lonf, a.Sp1, a.Sp2, a.Eastf, a.Northf,
+	return fmt.Sprintf("+proj=aea +lat_0=%s +lon_0=%s +lat_1=%s +lat_2=%s +x_0=%s +y_0=%s",
+		projFloat(a.Latf), projFloat(a.Lonf), projFloat(a.Sp1), projFloat(a.Sp2), projFloat(a.Eastf), projFloat(a.Northf),
 	)
 }
 

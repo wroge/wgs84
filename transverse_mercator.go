@@ -10,7 +10,8 @@ type TransverseMercator struct {
 }
 
 func (t TransverseMercator) String() string {
-	return fmt.Sprintf("+proj=tmerc +lat_0=%g +lon_0=%g +k=%g +x_0=%g +y_0=%g", t.Latf, t.Lonf, t.Scale, t.Eastf, t.Northf)
+	return fmt.Sprintf("+proj=tmerc +lat_0=%s +lon_0=%s +k=%s +x_0=%s +y_0=%s",
+		projFloat(t.Latf), projFloat(t.Lonf), projFloat(t.Scale), projFloat(t.Eastf), projFloat(t.Northf))
 }
 
 func (t TransverseMercator) FromGeographic(lon float64, lat float64, h float64, s Spheroid) (east, north, height float64) {

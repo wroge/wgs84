@@ -169,26 +169,22 @@ var EPSG = map[int]CoordinateReferenceSystem{
 		Datum:            CH1903,
 	},
 	2056: {
-		CoordinateSystem: HotineObliqueMercatorAzimuthCenter{
-			Latf:      46.9524055555556,
-			Lonf:      7.43958333333333,
-			Azimuth:   90,
-			GridAngle: 90,
-			Scale:     1,
-			Eastf:     2600000,
-			Northf:    1200000,
+		CoordinateSystem: SwissObliqueMercator{
+			Latf:   46.9524055555556,
+			Lonf:   7.43958333333333,
+			Scale:  1,
+			Eastf:  2600000,
+			Northf: 1200000,
 		},
 		Datum: CH1903,
 	},
 	21781: {
-		CoordinateSystem: HotineObliqueMercatorAzimuthCenter{
-			Latf:      46.9524055555556,
-			Lonf:      7.43958333333333,
-			Azimuth:   90,
-			GridAngle: 90,
-			Scale:     1,
-			Eastf:     600000,
-			Northf:    200000,
+		CoordinateSystem: SwissObliqueMercator{
+			Latf:   46.9524055555556,
+			Lonf:   7.43958333333333,
+			Scale:  1,
+			Eastf:  600000,
+			Northf: 200000,
 		},
 		Datum: CH1903,
 	},
