@@ -1,18 +1,25 @@
 package wgs84
 
-import "math"
-
-var _ CoordinateSystem = Krovak{}
+import (
+	"fmt"
+	"math"
+)
 
 type Krovak struct {
-	Lonf, Latf, Azimuth, Sp, Scale, Eastf, Northf float64
+	Lonf, Latf, Alpha, Scale, Eastf, Northf float64
+}
+
+func (k Krovak) String() string {
+	return fmt.Sprintf("+proj=krovak +lat_0=%g +lon_0=%g +alpha=%g +k=%g +x_0=%g +y_0=%g",
+		k.Latf, k.Lonf, k.Alpha, k.Scale, k.Eastf, k.Northf,
+	)
 }
 
 func (k Krovak) FromGeographic(lon float64, lat float64, h float64, s Spheroid) (east, north, h2 float64) {
 	phic := radian(k.Latf)
 	lambda0 := radian(k.Lonf)
-	phip := radian(k.Sp)
-	alphac := radian(k.Azimuth)
+	phip := radian(78.5)
+	alphac := radian(k.Alpha)
 
 	A := s.A * math.Sqrt(1-s.E2()) / (1 - s.E2()*sin2(phic))
 	B := math.Sqrt(1 + (s.E2() * intPow(math.Cos(phic), 4) / (1 - s.E2())))
@@ -39,8 +46,8 @@ func (k Krovak) FromGeographic(lon float64, lat float64, h float64, s Spheroid) 
 func (k Krovak) ToGeographic(east, north, h float64, s Spheroid) (lon float64, lat float64, h2 float64) {
 	phic := radian(k.Latf)
 	lambda0 := radian(k.Lonf)
-	phip := radian(k.Sp)
-	alphac := radian(k.Azimuth)
+	phip := radian(78.5)
+	alphac := radian(k.Alpha)
 
 	A := s.A * math.Sqrt(1-s.E2()) / (1 - s.E2()*sin2(phic))
 	B := math.Sqrt(1 + (s.E2() * intPow(math.Cos(phic), 4) / (1 - s.E2())))

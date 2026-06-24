@@ -139,6 +139,17 @@ var EPSG = map[int]CoordinateReferenceSystem{
 		},
 		Datum: MGI,
 	},
+	31287: {
+		CoordinateSystem: LambertConformalConic2SP{
+			Lonf:   13.3333333333333,
+			Latf:   47.5,
+			Sp1:    49,
+			Sp2:    46,
+			Eastf:  400000,
+			Northf: 400000,
+		},
+		Datum: MGI,
+	},
 	4277: {
 		CoordinateSystem: Geographic{},
 		Datum:            OSGB36,
@@ -153,19 +164,46 @@ var EPSG = map[int]CoordinateReferenceSystem{
 		},
 		Datum: OSGB36,
 	},
+	4150: {
+		CoordinateSystem: Geographic{},
+		Datum:            CH1903,
+	},
+	2056: {
+		CoordinateSystem: HotineObliqueMercatorAzimuthCenter{
+			Latf:      46.9524055555556,
+			Lonf:      7.43958333333333,
+			Azimuth:   90,
+			GridAngle: 90,
+			Scale:     1,
+			Eastf:     2600000,
+			Northf:    1200000,
+		},
+		Datum: CH1903,
+	},
+	21781: {
+		CoordinateSystem: HotineObliqueMercatorAzimuthCenter{
+			Latf:      46.9524055555556,
+			Lonf:      7.43958333333333,
+			Azimuth:   90,
+			GridAngle: 90,
+			Scale:     1,
+			Eastf:     600000,
+			Northf:    200000,
+		},
+		Datum: CH1903,
+	},
 	4156: {
 		CoordinateSystem: Geographic{},
 		Datum:            SJTSK,
 	},
 	5514: {
 		CoordinateSystem: Krovak{
-			Lonf:    24.8333333333333,
-			Latf:    49.5,
-			Azimuth: 30.2881397527778,
-			Sp:      78.5,
-			Scale:   0.9999,
-			Eastf:   0,
-			Northf:  0,
+			Lonf:   24.8333333333333,
+			Latf:   49.5,
+			Alpha:  30.2881397527778,
+			Scale:  0.9999,
+			Eastf:  0,
+			Northf: 0,
 		},
 		Datum: SJTSK,
 	},
@@ -498,6 +536,52 @@ var EPSG = map[int]CoordinateReferenceSystem{
 			Scale:  0.99987742,
 			Eastf:  600000,
 			Northf: 2200000,
+		},
+		Datum: NTF,
+	},
+	6318: {
+		CoordinateSystem: Geographic{},
+		Datum: Datum{
+			Spheroid: GRS80,
+			Transformations: []Transformation{
+				{
+					BoundingBox: BoundingBox{167.65, 14.92, -63.88, 74.71},
+				},
+			},
+		},
+	},
+	6355: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   30.5,
+			Lonf:   -85.8333333333333,
+			Scale:  0.99996,
+			Eastf:  200000,
+			Northf: 0,
+		},
+		Datum: Datum{
+			Spheroid: GRS80,
+			Transformations: []Transformation{
+				{
+					BoundingBox: BoundingBox{167.65, 14.92, -63.88, 74.71},
+				},
+			},
+		},
+	},
+	6356: {
+		CoordinateSystem: TransverseMercator{
+			Latf:   30,
+			Lonf:   -87.5,
+			Scale:  0.999933333,
+			Eastf:  600000,
+			Northf: 0,
+		},
+		Datum: Datum{
+			Spheroid: GRS80,
+			Transformations: []Transformation{
+				{
+					BoundingBox: BoundingBox{167.65, 14.92, -63.88, 74.71},
+				},
+			},
 		},
 	},
 	6414: {

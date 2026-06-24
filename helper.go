@@ -25,3 +25,20 @@ func intPow(val float64, times int) float64 {
 func sin2(r float64) float64 {
 	return intPow(math.Sin(r), 2)
 }
+
+func sign(x float64) float64 {
+	if x < 0 {
+		return -1
+	}
+	return 1
+}
+
+func clamp(x, min, max float64) float64 {
+	if x < min {
+		return min
+	}
+	if x > max {
+		return max
+	}
+	return x
+}

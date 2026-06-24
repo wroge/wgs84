@@ -123,6 +123,16 @@ var (
 			},
 		},
 	}
+
+	CH1903 = Datum{
+		Spheroid: Bessel1841,
+		Transformations: []Transformation{
+			{
+				BoundingBox: BoundingBox{5.95, 45.81, 10.5, 47.81},
+				Helmert:     Helmert{674.374, 15.056, 405.346, 0, 0, 0, 0},
+			},
+		},
+	}
 )
 
 type Func func(float64, float64, float64) (float64, float64, float64, error)

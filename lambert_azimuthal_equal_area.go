@@ -1,9 +1,18 @@
 package wgs84
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type LambertAzimuthalEqualArea struct {
 	Lonf, Latf, Eastf, Northf float64
+}
+
+func (l LambertAzimuthalEqualArea) String() string {
+	return fmt.Sprintf("+proj=laea +lat_0=%g +lon_0=%g +x_0=%g +y_0=%g",
+		l.Latf, l.Lonf, l.Eastf, l.Northf,
+	)
 }
 
 func (l LambertAzimuthalEqualArea) FromGeographic(lon float64, lat float64, h float64, s Spheroid) (east, north, h2 float64) {

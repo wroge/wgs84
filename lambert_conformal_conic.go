@@ -1,9 +1,18 @@
 package wgs84
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type LambertConformalConic2SP struct {
 	Lonf, Latf, Sp1, Sp2, Eastf, Northf float64
+}
+
+func (l LambertConformalConic2SP) String() string {
+	return fmt.Sprintf("+proj=lcc +lat_0=%g +lon_0=%g +lat_1=%g +lat_2=%g +x_0=%g +y_0=%g",
+		l.Latf, l.Lonf, l.Sp1, l.Sp2, l.Eastf, l.Northf,
+	)
 }
 
 func (l LambertConformalConic2SP) FromGeographic(lon float64, lat float64, h float64, s Spheroid) (east, north, h2 float64) {
@@ -91,6 +100,12 @@ func (l LambertConformalConic2SP) ToGeographic(east, north, h float64, s Spheroi
 
 type LambertConformalConic1SP struct {
 	Lonf, Latf, Scale, Eastf, Northf float64
+}
+
+func (l LambertConformalConic1SP) String() string {
+	return fmt.Sprintf("+proj=lcc +lat_0=%g +lon_0=%g +k_0=%g +x_0=%g +y_0=%g",
+		l.Latf, l.Lonf, l.Scale, l.Eastf, l.Northf,
+	)
 }
 
 func (l LambertConformalConic1SP) FromGeographic(lon float64, lat float64, h float64, s Spheroid) (east, north, h2 float64) {

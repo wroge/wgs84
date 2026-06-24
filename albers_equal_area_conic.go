@@ -1,9 +1,18 @@
 package wgs84
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type AlbersConicEqualArea struct {
 	Lonf, Latf, Sp1, Sp2, Eastf, Northf float64
+}
+
+func (a AlbersConicEqualArea) String() string {
+	return fmt.Sprintf("+proj=aea +lat_0=%g +lon_0=%g +lat_1=%g +lat_2=%g +x_0=%g +y_0=%g",
+		a.Latf, a.Lonf, a.Sp1, a.Sp2, a.Eastf, a.Northf,
+	)
 }
 
 func (a AlbersConicEqualArea) FromGeographic(lon float64, lat float64, h float64, s Spheroid) (east, north, h2 float64) {
