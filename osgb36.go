@@ -7,6 +7,7 @@ var OSGB36 = Datum{
 			Accuracy:    1,
 			BoundingBox: BoundingBox{-9.01, 49.75, 2.01, 61.01},
 			Grid:        "uk_os_OSTN15_NTv2_OSGBtoETRS.tif",
+			GridOptional: true,
 		},
 		{
 			Accuracy:    2,

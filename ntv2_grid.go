@@ -79,7 +79,7 @@ func LoadGrid(p string) (*Grid, error) {
 
 	f, err := openGridFile(p)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %s", ErrGridNotFound, p)
 	}
 
 	defer f.Close() //nolint:errcheck
@@ -119,17 +119,24 @@ type SubGrid struct {
 	Values  [][2]float32
 }
 
-func (g *Grid) ToWGS84(lon, lat float64) (float64, float64) {
-	dlon, dlat := g.Shift(lon, lat)
+func (g *Grid) ToWGS84(lon, lat float64) (float64, float64, error) {
+	dlon, dlat, err := g.Shift(lon, lat)
+	if err != nil {
+		return 0, 0, err
+	}
 
-	return lon + dlon, lat + dlat
+	return lon + dlon, lat + dlat, nil
 }
 
-func (g *Grid) FromWGS84(lon, lat float64) (float64, float64) {
+func (g *Grid) FromWGS84(lon, lat float64) (float64, float64, error) {
 	qlon, qlat := lon, lat
 
 	for range 10 {
-		dlon, dlat := g.Shift(qlon, qlat)
+		dlon, dlat, err := g.Shift(qlon, qlat)
+		if err != nil {
+			return 0, 0, err
+		}
+
 		newLon := lon - dlon
 		newLat := lat - dlat
 
@@ -140,13 +147,13 @@ func (g *Grid) FromWGS84(lon, lat float64) (float64, float64) {
 		qlon, qlat = newLon, newLat
 	}
 
-	return qlon, qlat
+	return qlon, qlat, nil
 }
 
-func (g *Grid) Shift(lon, lat float64) (dlon, dlat float64) {
+func (g *Grid) Shift(lon, lat float64) (dlon, dlat float64, err error) {
 	idx := g.selectSubgrid(lon, lat)
 	if idx < 0 {
-		return 0, 0
+		return 0, 0, ErrOutOfBounds
 	}
 
 	return g.SubGrids[idx].shift(lon, lat)
@@ -185,71 +192,87 @@ func (g *Grid) deepestSubgrid(idx int, phi, lam float64) int {
 	return best
 }
 
-func (sg SubGrid) contains(phi, lam float64) bool {
-	return phi >= sg.SLat && phi <= sg.NLat && lam >= sg.ELong && lam <= sg.WLong
+const relToleranceHGridShift = 1e-5
+
+func (sg SubGrid) gridEpsilon() float64 {
+	return (sg.LongInc + sg.LatInc) * relToleranceHGridShift
 }
 
-func (sg SubGrid) shift(lon, lat float64) (dlon, dlat float64) {
-	if sg.Columns < 2 || sg.Rows < 2 || len(sg.Values) == 0 {
-		return 0, 0
+func (sg SubGrid) contains(phi, lam float64) bool {
+	eps := sg.gridEpsilon()
+	return phi >= sg.SLat-eps && phi <= sg.NLat+eps &&
+		lam >= sg.ELong-eps && lam <= sg.WLong+eps
+}
+
+func interpolateIndex(f float64, size int) (idx int, frac float64, ok bool) {
+	if math.IsNaN(f) {
+		return 0, 0, true
 	}
 
-	fcol := (-lon*3600 - sg.ELong) / sg.LongInc
-	frow := (lat*3600 - sg.SLat) / sg.LatInc
+	idx = int(math.Round(math.Floor(f)))
+	frac = f - float64(idx)
 
-	col := math.Floor(fcol)
-	row := math.Floor(frow)
+	if idx < 0 {
+		if idx == -1 && frac > 1-10*relToleranceHGridShift {
+			idx++
+			frac = 0
+		} else {
+			return 0, 0, false
+		}
+	} else if idx+1 >= size {
+		if idx+1 == size && frac < 10*relToleranceHGridShift {
+			idx--
+			frac = 1
+		} else {
+			return 0, 0, false
+		}
+	}
 
-	ppr := float64(sg.Columns)
-	ppc := float64(sg.Rows)
+	return idx, frac, true
+}
+
+func (sg SubGrid) shift(lon, lat float64) (dlon, dlat float64, err error) {
+	if sg.Columns < 2 || sg.Rows < 2 || len(sg.Values) == 0 {
+		return 0, 0, ErrOutOfBounds
+	}
+
+	phi := lat * 3600
+	lam := -lon * 3600
+	if !sg.contains(phi, lam) {
+		return 0, 0, ErrOutOfBounds
+	}
+
+	fcol := (lam - sg.ELong) / sg.LongInc
+	frow := (phi - sg.SLat) / sg.LatInc
+
+	ppr := sg.Columns
+
+	col, dx, ok := interpolateIndex(fcol, ppr)
+	if !ok {
+		return 0, 0, ErrOutOfBounds
+	}
+
+	row, dy, ok := interpolateIndex(frow, sg.Rows)
+	if !ok {
+		return 0, 0, ErrOutOfBounds
+	}
 
 	se := row*ppr + col
 	sw := se + 1
 	ne := se + ppr
 	nw := ne + 1
 
-	col = math.Max(0, math.Min(col, ppr-2))
-	row = math.Max(0, math.Min(row, ppc-2))
-
-	if col >= ppr-1 {
-		sw = se
-		nw = ne
-	}
-
-	if row >= ppc-1 {
-		ne = se
-		nw = sw
-	}
-
-	if col <= 0 {
-		se = sw
-		ne = nw
-	}
-
-	if row <= 0 {
-		se = ne
-		sw = nw
-	}
-
-	seIndex := clampInt(int(se), 0, len(sg.Values)-1)
-	swIndex := clampInt(int(sw), 0, len(sg.Values)-1)
-	neIndex := clampInt(int(ne), 0, len(sg.Values)-1)
-	nwIndex := clampInt(int(nw), 0, len(sg.Values)-1)
-
-	sse := sg.Values[seIndex]
-	ssw := sg.Values[swIndex]
-	sne := sg.Values[neIndex]
-	snw := sg.Values[nwIndex]
-
-	dx := fcol - col
-	dy := frow - row
+	sse := sg.Values[se]
+	ssw := sg.Values[sw]
+	sne := sg.Values[ne]
+	snw := sg.Values[nw]
 
 	latsv := (1-dx)*(1-dy)*float64(sse[0]) + dx*(1-dy)*float64(ssw[0]) +
 		(1-dx)*dy*float64(sne[0]) + dx*dy*float64(snw[0])
 	lonsv := (1-dx)*(1-dy)*float64(sse[1]) + dx*(1-dy)*float64(ssw[1]) +
 		(1-dx)*dy*float64(sne[1]) + dx*dy*float64(snw[1])
 
-	return -lonsv / 3600, latsv / 3600
+	return -lonsv / 3600, latsv / 3600, nil
 }
 
 func (sg SubGrid) validate() error {

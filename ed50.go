@@ -16,6 +16,7 @@ var ED50 = Datum{
 		{
 			Accuracy:    1,
 			Grid:        "es_ign_SPED2ETV2.tif",
+			GridOptional: true,
 			BoundingBox: BoundingBox{-9.37, 35.26, 4.39, 43.82},
 		},
 		{

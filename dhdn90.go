@@ -7,6 +7,7 @@ var DHDN90 = Datum{
 			Accuracy:    1,
 			BoundingBox: BoundingBox{5.86, 47.27, 15.04, 55.09},
 			Grid:        "de_adv_BETA2007.tif",
+			GridOptional: true,
 		},
 		{
 			Accuracy:    2,

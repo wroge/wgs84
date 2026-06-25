@@ -47,3 +47,15 @@ func clamp(x, min, max float64) float64 {
 	}
 	return x
 }
+
+func round(val float64, dec int) float64 {
+	factor := math.Pow(10, float64(dec))
+
+	r := math.Round(val*factor) / factor
+
+	if r == -0 {
+		return 0
+	}
+
+	return r
+}
