@@ -182,7 +182,3 @@ func recordName(rec gridRecord) string {
 func recordFloat32(rec gridRecord, off int) float32 {
 	return math.Float32frombits(binary.LittleEndian.Uint32(rec[off : off+4]))
 }
-
-func clampInt(v, lo, hi int) int {
-	return int(math.Max(float64(lo), math.Min(float64(hi), float64(v))))
-}
