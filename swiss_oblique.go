@@ -167,7 +167,7 @@ func (som SwissObliqueMercator) ToGeographic(east, north, height float64, s Sphe
 
 	Up := (Vp*math.Cos(gamma0) + Sp*math.Sin(gamma0)) / Tp
 
-	tp := H / math.Pow(math.Sqrt((1+Up)/(1-Up)), 1.0/B)
+	tp := math.Pow(H/math.Sqrt((1+Up)/(1-Up)), 1.0/B)
 
 	chi := math.Pi/2 - 2*math.Atan(tp)
 
