@@ -620,7 +620,23 @@ func (d Datum) Load(lon, lat float64) (Datum, error) {
 }
 
 func (d Datum) fromGeocentricWGS84(x0, y0, z0 float64) (lon, lat, h float64, err error) {
+	// Try the transformations whose area contains the point first, as the
+	// inverse does, and keep the others as a fallback.
+	lon0, lat0, _ := WGS84.Spheroid.FromXYZ(x0, y0, z0)
+
+	ts := make([]Transformation, 0, len(d.Transformations))
 	for _, t := range d.Transformations {
+		if t.BoundingBox.Contains(lon0, lat0) {
+			ts = append(ts, t)
+		}
+	}
+	for _, t := range d.Transformations {
+		if !t.BoundingBox.Contains(lon0, lat0) {
+			ts = append(ts, t)
+		}
+	}
+
+	for _, t := range ts {
 		lon, lat, h, err = t.fromGeocentricWGS84(x0, y0, z0, d.Spheroid)
 		if err != nil {
 			if errors.Is(err, ErrGridNotFound) && t.GridOptional {
